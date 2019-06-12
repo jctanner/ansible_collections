@@ -1,0 +1,30 @@
+- name: Generate privatekey1 - standard
+  jctanner.crypto.openssh_keypair:
+    path: '{{ output_dir }}/privatekey1'
+  register: privatekey1_result
+
+- name: Generate privatekey2 - size 2048
+  jctanner.crypto.openssh_keypair:
+    path: '{{ output_dir }}/privatekey2'
+    size: 2048
+
+- name: Generate privatekey3 - type dsa
+  jctanner.crypto.openssh_keypair:
+    path: '{{ output_dir }}/privatekey3'
+    type: dsa
+
+- name: Generate privatekey4 - standard
+  jctanner.crypto.openssh_keypair:
+    path: '{{ output_dir }}/privatekey4'
+
+- name: Delete privatekey4 - standard
+  jctanner.crypto.openssh_keypair:
+    state: absent
+    path: '{{ output_dir }}/privatekey4'
+
+- name: Generate privatekey5 - standard
+  jctanner.crypto.openssh_keypair:
+    path: '{{ output_dir }}/privatekey5'
+  register: publickey_gen
+
+- import_tasks: ../tests/validate.yml

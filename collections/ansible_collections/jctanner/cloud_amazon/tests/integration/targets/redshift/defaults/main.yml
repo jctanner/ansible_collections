@@ -1,0 +1,6 @@
+---
+# defaults file for test_jctanner.cloud_amazon.redshift
+jctanner.cloud_amazon.redshift_cluster_name: '{{ resource_prefix }}'
+reshift_master_password: "th1s_is_A_test"
+jctanner.cloud_amazon.redshift_master_username: "master_user"
+node_type: "dc2.large"

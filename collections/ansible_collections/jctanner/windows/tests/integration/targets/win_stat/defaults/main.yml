@@ -1,0 +1,2 @@
+jctanner.windows.win_stat_dir: '{{win_output_dir}}\jctanner.windows.win_stat'
+jctanner.windows.win_stat_user: test-stat

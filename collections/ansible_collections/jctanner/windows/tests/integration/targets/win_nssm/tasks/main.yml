@@ -1,0 +1,44 @@
+---
+- name: install NSSM
+  jctanner.windows.win_chocolatey:
+    name: NSSM
+    state: present
+
+- name: ensure testing folder exists
+  jctanner.windows.win_file:
+    path: '{{test_jctanner.windows.win_nssm_path}}'
+    state: directory
+
+- name: create test user for service execution
+  jctanner.windows.win_user:
+    name: '{{test_jctanner.windows.win_nssm_username}}'
+    password: '{{test_jctanner.windows.win_nssm_password}}'
+    state: present
+    groups:
+    - Users
+
+# Run actual tests
+- block:
+  - include_tasks: tests.yml
+
+  always:
+    - name: ensure test service is absent
+      jctanner.windows.win_service:
+        name: '{{ test_service_name }}'
+        state: absent
+
+    - name: remove test user
+      jctanner.windows.win_user:
+        name: '{{test_jctanner.windows.win_nssm_username}}'
+        state: absent
+
+    - name: cleanup test folder
+      jctanner.windows.win_file:
+        path: '{{test_jctanner.windows.win_nssm_path}}'
+        state: absent
+
+    - name: uninstall NSSM
+      jctanner.windows.win_chocolatey:
+        name: NSSM
+        state: absent
+      failed_when: false

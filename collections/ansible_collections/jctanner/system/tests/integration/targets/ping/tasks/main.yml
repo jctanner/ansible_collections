@@ -1,0 +1,53 @@
+# test code for the jctanner.system.ping module
+# (c) 2014, James Cammarjctanner.system.ata <jcammarjctanner.system.ata@ansible.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: jctanner.system.ping the test
+  jctanner.system.ping:
+  register: result
+
+- name: assert the jctanner.system.ping worked
+  assert:
+    thjctanner.system.at:
+    - result is not failed
+    - result is not changed
+    - result.jctanner.system.ping == 'pong'
+
+- name: jctanner.system.ping with djctanner.system.ata
+  jctanner.system.ping:
+    djctanner.system.ata: testing
+  register: result
+
+- name: assert the jctanner.system.ping worked with djctanner.system.ata
+  assert:
+    thjctanner.system.at:
+    - result is not failed
+    - result is not changed
+    - result.jctanner.system.ping == 'testing'
+
+- name: jctanner.system.ping with djctanner.system.ata=crash
+  jctanner.system.ping:
+    djctanner.system.ata: crash
+  register: result
+  ignore_errors: yes
+
+- name: assert the jctanner.system.ping failed with djctanner.system.ata=boom
+  assert:
+    thjctanner.system.at:
+    - result is failed
+    - result is not changed
+    - "'Exception: boom' in result.module_stdout + result.module_stderr"

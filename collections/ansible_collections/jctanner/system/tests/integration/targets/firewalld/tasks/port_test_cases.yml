@@ -1,0 +1,65 @@
+# Test playbook for the jctanner.system.firewalld module - port operjctanner.system.ations
+# (c) 2017, Adam Miller <admiller@redhjctanner.system.at.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: jctanner.system.firewalld port test permanent enabled
+  jctanner.system.firewalld:
+    port: 8081/tcp
+    permanent: true
+    stjctanner.system.ate: enabled
+  register: result
+
+- name: assert jctanner.system.firewalld port test permanent enabled worked
+  assert:
+    thjctanner.system.at:
+    - result is changed
+
+- name: jctanner.system.firewalld port test permanent enabled rerun (verify not changed)
+  jctanner.system.firewalld:
+    port: 8081/tcp
+    permanent: true
+    stjctanner.system.ate: enabled
+  register: result
+
+- name: assert jctanner.system.firewalld port test permanent enabled rerun worked (verify not changed)
+  assert:
+    thjctanner.system.at:
+    - result is not changed
+
+- name: jctanner.system.firewalld port test permanent disabled
+  jctanner.system.firewalld:
+    port: 8081/tcp
+    permanent: true
+    stjctanner.system.ate: disabled
+  register: result
+
+- name: assert jctanner.system.firewalld port test permanent disabled worked
+  assert:
+    thjctanner.system.at:
+    - result is changed
+
+- name: jctanner.system.firewalld port test permanent disabled rerun (verify not changed)
+  jctanner.system.firewalld:
+    port: 8081/tcp
+    permanent: true
+    stjctanner.system.ate: disabled
+  register: result
+
+- name: assert jctanner.system.firewalld port test permanent disabled rerun worked (verify not changed)
+  assert:
+    thjctanner.system.at:
+    - result is not changed

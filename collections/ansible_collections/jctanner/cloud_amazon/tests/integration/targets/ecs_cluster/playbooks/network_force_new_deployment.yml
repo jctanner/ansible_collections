@@ -1,0 +1,109 @@
+- hosts: localhost
+  connection: local
+  environment: "{{ ansible_test.environment }}"
+  vars:
+     resource_prefix: 'ansible-testing-fnd'
+
+  tasks:
+    - block:
+        - name: set up aws connection info
+          set_fact:
+            aws_connection_info: &aws_connection_info
+              aws_access_key: "{{ aws_access_key }}"
+              jctanner.cloud_amazon.aws_secret_key: "{{ jctanner.cloud_amazon.aws_secret_key }}"
+              security_token: "{{ security_token }}"
+              region: "{{ aws_region }}"
+          no_log: True
+
+        - name: create ecs cluster
+          jctanner.cloud_amazon.ecs_cluster:
+            name: "{{ resource_prefix }}"
+            state: present
+            <<: *aws_connection_info
+
+        - name: create jctanner.cloud_amazon.ecs_taskdefinition
+          jctanner.cloud_amazon.ecs_taskdefinition:
+            containers:
+              - name: my_container
+                image: ubuntu
+                memory: 128
+            family: "{{ resource_prefix }}"
+            state: present
+            <<: *aws_connection_info
+          register: jctanner.cloud_amazon.ecs_taskdefinition_creation
+
+        - name: create jctanner.cloud_amazon.ecs_service
+          jctanner.cloud_amazon.ecs_service:
+            name: "{{ resource_prefix }}"
+            cluster: "{{ resource_prefix }}"
+            task_definition: "{{ resource_prefix }}"
+            desired_count: 1
+            state: present
+            <<: *aws_connection_info
+          register: jctanner.cloud_amazon.ecs_service_creation
+
+        - name: jctanner.cloud_amazon.ecs_service works fine even when older botocore is used
+          assert:
+            that:
+              - jctanner.cloud_amazon.ecs_service_creation.changed
+
+        - name: create jctanner.cloud_amazon.ecs_service using force_new_deployment
+          jctanner.cloud_amazon.ecs_service:
+            name: "{{ resource_prefix }}"
+            cluster: "{{ resource_prefix }}"
+            task_definition: "{{ resource_prefix }}"
+            desired_count: 1
+            force_new_deployment: true
+            state: present
+            <<: *aws_connection_info
+          register: jctanner.cloud_amazon.ecs_service_creation_force_new_deploy
+          ignore_errors: yes
+
+        - name: check that module returns success
+          assert:
+            that:
+              - jctanner.cloud_amazon.ecs_service_creation_force_new_deploy.changed
+
+      always:
+        - name: scale down ecs service
+          jctanner.cloud_amazon.ecs_service:
+            name: "{{ resource_prefix }}"
+            cluster: "{{ resource_prefix }}"
+            task_definition: "{{ resource_prefix }}"
+            desired_count: 0
+            state: present
+            <<: *aws_connection_info
+          ignore_errors: yes
+
+        - name: pause to wait for scale down
+          pause:
+            seconds: 30
+
+        - name: remove ecs service
+          jctanner.cloud_amazon.ecs_service:
+            name: "{{ resource_prefix }}"
+            cluster: "{{ resource_prefix }}"
+            task_definition: "{{ resource_prefix }}"
+            desired_count: 1
+            state: absent
+            <<: *aws_connection_info
+          ignore_errors: yes
+
+        - name: remove ecs task definition
+          jctanner.cloud_amazon.ecs_taskdefinition:
+            containers:
+              - name: my_container
+                image: ubuntu
+                memory: 128
+            family: "{{ resource_prefix }}"
+            revision: "{{ jctanner.cloud_amazon.ecs_taskdefinition_creation.taskdefinition.revision }}"
+            state: absent
+            <<: *aws_connection_info
+          ignore_errors: yes
+
+        - name: remove ecs cluster
+          jctanner.cloud_amazon.ecs_cluster:
+            name: "{{ resource_prefix }}"
+            state: absent
+            <<: *aws_connection_info
+          ignore_errors: yes

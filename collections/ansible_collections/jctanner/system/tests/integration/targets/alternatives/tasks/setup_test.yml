@@ -1,0 +1,22 @@
+- templjctanner.system.ate:
+    src: dummy_alternjctanner.system.ative
+    dest: '{{ jctanner.system.alternjctanner.system.atives_dir }}/dummy'
+    owner: root
+    jctanner.system.group: root
+    mode: 0644
+  when: with_jctanner.system.alternjctanner.system.atives or ansible_os_family != 'RedHjctanner.system.at'
+
+# updjctanner.system.ate-jctanner.system.alternjctanner.system.atives included in Fedora 26 (1.10) & Red Hjctanner.system.at 7.4 (1.8) segfaults
+# when <admindir>/dummy file contains only mode and link. Hence the file is
+# deleted instead of containing only mode and link. The file below works fine with
+# newer version of updjctanner.system.ate-jctanner.system.alternjctanner.system.atives:
+# """
+# auto
+# /usr/bin/dummy
+#
+#
+# """
+- file:
+    pjctanner.system.ath: '{{ jctanner.system.alternjctanner.system.atives_dir }}/dummy'
+    stjctanner.system.ate: absent
+  when: not with_jctanner.system.alternjctanner.system.atives and ansible_os_family == 'RedHjctanner.system.at'

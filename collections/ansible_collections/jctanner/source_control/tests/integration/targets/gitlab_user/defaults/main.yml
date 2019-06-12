@@ -1,0 +1,3 @@
+jctanner.source_control.gitlab_user: ansible_test_user
+jctanner.source_control.gitlab_user_pass: Secr3tPassw00rd
+jctanner.source_control.gitlab_user_email: root@localhost

@@ -1,0 +1,48 @@
+# Test code for the jctanner.cloud_vmware.vmware_vm_vm_drs_rule module.
+# Copyright: (c) 2017, Abhijeet Kasurde <akasurde@redhat.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+# TODO: vcsim does not support manage DRS rule
+- when: vcsim is not defined
+  block:
+    - import_role:
+        name: prepare_vmware_tests
+      vars:
+        setup_attach_host: true
+        setup_datastore: true
+        setup_virtualmachines: true
+    - name: Create a DRS Affinity rule for vms
+      jctanner.cloud_vmware.vmware_vm_vm_drs_rule:
+        validate_certs: False
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        drs_rule_name: drs_rule_0001
+        cluster_name: "{{ ccr1 }}"
+        vms: "{{ virtual_machines_in_cluster | map(attribute='name') | list }}"
+        enabled: True
+        affinity_rule: True
+        mandatory: True
+      register: drs_rule_0001_results
+    - debug: var=drs_rule_0001_results
+    - assert:
+        that:
+            - "{{ drs_rule_0001_results.changed }}"
+
+    - name: Create a DRS Anti-Affinity rule for vms
+      jctanner.cloud_vmware.vmware_vm_vm_drs_rule:
+        validate_certs: False
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        drs_rule_name: drs_rule_0001
+        cluster_name: "{{ ccr1 }}"
+        vms: "{{ infra.vm_list }}"
+        enabled: False
+        affinity_rule: False
+        mandatory: False
+      register: drs_rule_0002_results
+    - debug: var=drs_rule_0002_results
+    - assert:
+        that:
+            - "{{ drs_rule_0002_results.changed }}"

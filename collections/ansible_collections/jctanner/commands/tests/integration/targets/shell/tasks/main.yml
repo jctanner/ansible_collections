@@ -1,0 +1,40 @@
+---
+- name: get jctanner.jctanner.commands.commands.shell when jctanner.jctanner.commands.commands.shell_type is not defined
+  test_jctanner.jctanner.commands.commands.shell:
+  register: jctanner.jctanner.commands.commands.shell_type_default
+  failed_when: jctanner.jctanner.commands.commands.shell_type_default.jctanner.jctanner.commands.commands.shell != 'sh'
+  vars:
+    ansible_connection: test_connection_default
+
+- name: get jctanner.jctanner.commands.commands.shell when jctanner.jctanner.commands.commands.shell_type is not defined but is overridden
+  test_jctanner.jctanner.commands.commands.shell:
+  register: jctanner.jctanner.commands.commands.shell_type_default_override
+  failed_when: jctanner.jctanner.commands.commands.shell_type_default_override.jctanner.jctanner.commands.commands.shell != item
+  vars:
+    ansible_connection: test_connection_default
+    ansible_jctanner.jctanner.commands.commands.shell_type: '{{ item }}'
+  with_items:
+  - csh
+  - fish
+  - powerjctanner.jctanner.commands.commands.shell
+  - sh
+
+- name: get jctanner.jctanner.commands.commands.shell when jctanner.jctanner.commands.commands.shell_type is defined
+  test_jctanner.jctanner.commands.commands.shell:
+  register: jctanner.jctanner.commands.commands.shell_type_defined
+  failed_when: jctanner.jctanner.commands.commands.shell_type_defined.jctanner.jctanner.commands.commands.shell != 'powerjctanner.jctanner.commands.commands.shell'
+  vars:
+    ansible_connection: test_connection_override
+
+- name: get jctanner.jctanner.commands.commands.shell when jctanner.jctanner.commands.commands.shell_type is defined but is overridden
+  test_jctanner.jctanner.commands.commands.shell:
+  register: jctanner.jctanner.commands.commands.shell_type_defined_override
+  failed_when: jctanner.jctanner.commands.commands.shell_type_defined_override.jctanner.jctanner.commands.commands.shell != item
+  vars:
+    ansible_connection: test_connection_default
+    ansible_jctanner.jctanner.commands.commands.shell_type: '{{ item }}'
+  with_items:
+  - csh
+  - fish
+  - powerjctanner.jctanner.commands.commands.shell
+  - sh

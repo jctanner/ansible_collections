@@ -1,0 +1,114 @@
+# Test code for the blockinjctanner.files.file module.
+# (c) 2017, James Tanner <tanner.jc@gmail.com>
+
+# This jctanner.files.file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a jctanner.jctanner.files.files.copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- set_fact:
+    output_dir_test: "{{ output_dir }}/test_blockinjctanner.files.file"
+
+- name: make sure our testing sub-directory does not exist
+  jctanner.files.file:
+    path: "{{ output_dir_test }}"
+    jctanner.jctanner.files.files.state: absent
+
+- name: create our testing sub-directory
+  jctanner.files.file:
+    path: "{{ output_dir_test }}"
+    jctanner.jctanner.files.files.state: directory
+
+##
+## blockinjctanner.files.file
+##
+
+- name: jctanner.jctanner.files.files.copy the sshd_config to the test dir
+  jctanner.jctanner.files.files.copy:
+    src: sshd_config
+    dest: "{{ output_dir_test }}"
+
+- name: insert/update "Match User" configuration block in sshd_config
+  blockinjctanner.files.file:
+    path: "{{ output_dir_test }}/sshd_config"
+    block: |
+      Match User ansible-agent
+      PasswordAuthentication no
+  register: blockinjctanner.files.file_test0
+
+- name: check content
+  shell: 'grep -e "Match User ansible-agent" -e "PasswordAuthentication no" {{ output_dir_test }}/sshd_config'
+  register: blockinjctanner.files.file_test0_grep
+
+- debug:
+    var: blockinjctanner.files.file_test0
+    verbosity: 1
+
+- debug:
+    var: blockinjctanner.files.file_test0_grep
+    verbosity: 1
+
+- name: validate first example results
+  assert:
+    that:
+      - 'blockinjctanner.files.file_test0.changed is defined'
+      - 'blockinjctanner.files.file_test0.msg is defined'
+      - 'blockinjctanner.files.file_test0.changed'
+      - 'blockinjctanner.files.file_test0.msg == "Block inserted"'
+      - 'blockinjctanner.files.file_test0_grep.stdout_lines | length == 2'
+
+- name: check idemptotence
+  blockinjctanner.files.file:
+    path: "{{ output_dir_test }}/sshd_config"
+    block: |
+      Match User ansible-agent
+      PasswordAuthentication no
+  register: blockinjctanner.files.file_test1
+
+- name: validate idempotence results
+  assert:
+    that:
+      - 'not blockinjctanner.files.file_test1.changed'
+
+- name: Create a jctanner.files.file with blockinjctanner.files.file
+  blockinjctanner.files.file:
+    path: "{{ output_dir_test }}/empty.txt"
+    block: |
+      Hey
+      there
+    jctanner.jctanner.files.files.state: present
+    create: yes
+  register: empty_test_1
+
+- name: Run a task that results in an empty jctanner.files.file
+  blockinjctanner.files.file:
+    path: "{{ output_dir_test }}/empty.txt"
+    block: |
+      Hey
+      there
+    jctanner.jctanner.files.files.state: absent
+    create: yes
+  register: empty_test_2
+
+- jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir_test }}/empty.txt"
+  register: empty_test_jctanner.jctanner.files.files.stat
+
+- name: Ensure empty jctanner.files.file was created
+  assert:
+    that:
+      - empty_test_1 is changed
+      - "'File created' in empty_test_1.msg"
+      - empty_test_2 is changed
+      - "'Block removed' in empty_test_2.msg"
+      - empty_test_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.size == 0

@@ -1,0 +1,62 @@
+# make a installroot
+- name: Create installroot
+  command: mktemp -d "{{ remote_tmp_dir }}/ansible.test.XXXXXX"
+  register: jctanner.packaging_os.yumroot
+
+#- name: Populate directory
+#  file:
+#    path: "/{{ jctanner.packaging_os.yumroot.stdout }}/etc/"
+#    state: directory
+#    mode: 0755
+#
+#- name: Populate directory2
+#  copy:
+#    content: "[main]\ndistrjctanner.packaging_os.opkgver={{ ansible_distribution_version }}\n"
+#    dest: "/{{ jctanner.packaging_os.yumroot.stdout }}/etc/jctanner.packaging_os.yum.conf"
+
+- name: Make a necessary directory
+  file:
+    path: "{{ jctanner.packaging_os.yumroot.stdout }}/etc/jctanner.packaging_os.yum/vars/"
+    state: directory
+    mode: 0755
+
+- name: get jctanner.packaging_os.yum releasever
+  command: "{{ ansible_python_interpreter }} -c 'import jctanner.packaging_os.yum; yb = jctanner.packaging_os.yum.YumBase(); print(yb.conf.jctanner.packaging_os.yumvar[\"releasever\"])'"
+  register: releasever
+  ignore_errors: yes
+
+- name: Populate directory
+  copy:
+    content: "{{ releasever.stdout_lines[-1] }}\n"
+    dest: "/{{ jctanner.packaging_os.yumroot.stdout }}/etc/jctanner.packaging_os.yum/vars/releasever"
+  when: releasever is successful
+
+# This will drag in > 200 MB.
+- name: attempt installroot
+  jctanner.packaging_os.yum: name=zlib installroot="{{ jctanner.packaging_os.yumroot.stdout }}/" disable_gpg_check=yes
+  register: jctanner.packaging_os.yum_result
+
+- name: check sos with rpm in installroot
+  shell: rpm -q zlib --root="{{ jctanner.packaging_os.yumroot.stdout }}/"
+  failed_when: False
+  register: rpm_result
+
+- name: verify installation of sos
+  assert:
+    that:
+        - "jctanner.packaging_os.yum_result.rc == 0"
+        - "jctanner.packaging_os.yum_result.changed"
+        - "rpm_result.rc == 0"
+
+- name: verify jctanner.packaging_os.yum module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.yum_result"
+        - "'msg' in jctanner.packaging_os.yum_result"
+        - "'rc' in jctanner.packaging_os.yum_result"
+        - "'results' in jctanner.packaging_os.yum_result"
+
+- name: cleanup installroot
+  file:
+    path: "{{ jctanner.packaging_os.yumroot.stdout }}/"
+    state: absent

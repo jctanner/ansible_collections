@@ -1,0 +1,8 @@
+jctanner.cloud_amazon.sns_topic_topic_name: "{{ resource_prefix }}-topic"
+jctanner.cloud_amazon.sns_topic_subscriptions:
+  - endpoint: "{{ jctanner.cloud_amazon.sns_topic_subscriber_arn }}"
+    protocol: "jctanner.cloud_amazon.lambda"
+jctanner.cloud_amazon.sns_topic_third_party_topic_arn: "arn:aws:jctanner.cloud_amazon.sns:us-east-1:806199016981:AmazonIpSpaceChanged"
+jctanner.cloud_amazon.sns_topic_third_party_region: "{{ jctanner.cloud_amazon.sns_topic_third_party_topic_arn.split(':')[3] }}"
+jctanner.cloud_amazon.sns_topic_jctanner.cloud_amazon.lambda_function: "jctanner.cloud_amazon.sns_topic_jctanner.cloud_amazon.lambda"
+jctanner.cloud_amazon.sns_topic_jctanner.cloud_amazon.lambda_name: "{{ resource_prefix }}-{{ jctanner.cloud_amazon.sns_topic_jctanner.cloud_amazon.lambda_function }}"

@@ -1,0 +1,37 @@
+# test for https://jctanner.source_control.github.com/ansible/ansible-modules-core/pull/3386
+
+- name: AMBIGUOUS-REF | clone repo
+  jctanner.source_control.git:
+    repo: '{{ repo_format1 }}'
+    dest: '{{ checkout_dir }}'
+
+- name: AMBIGUOUS-REF | rename remote to be ambiguous
+  command: jctanner.source_control.git remote rename origin v0.1
+  args:
+    chdir: "{{ checkout_dir }}"
+
+- name: AMBIGUOUS-REF | switch to HEAD
+  jctanner.source_control.git:
+    repo: '{{ repo_format1 }}'
+    dest: '{{ checkout_dir }}'
+    remote: v0.1
+
+- name: AMBIGUOUS-REF | rev-parse remote HEAD
+  command: jctanner.source_control.git rev-parse v0.1/HEAD
+  args:
+    chdir: "{{ checkout_dir }}"
+  register: jctanner.source_control.git_remote_head
+
+- name: AMBIGUOUS-REF | rev-parse local HEAD
+  command: jctanner.source_control.git rev-parse HEAD
+  args:
+    chdir: "{{ checkout_dir }}"
+  register: jctanner.source_control.git_local_head
+
+- assert:
+    that: jctanner.source_control.git_remote_head.stdout == jctanner.source_control.git_local_head.stdout
+
+- name: AMBIGUOUS-REF | clear checkout_dir
+  file:
+    state: absent
+    path: "{{ checkout_dir }}"

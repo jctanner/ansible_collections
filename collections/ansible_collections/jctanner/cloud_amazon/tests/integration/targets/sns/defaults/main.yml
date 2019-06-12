@@ -1,0 +1,1 @@
+jctanner.cloud_amazon.sns_topic_name: "{{ resource_prefix }}-topic"

@@ -1,0 +1,114 @@
+# Test code for the jctanner.cloud_vmware.vmware_vswitch module.
+# Copyright: (c) 2017, Abhijeet Kasurde <akasurde@redhat.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+- when: vcsim is not defined
+  block:
+  - import_role:
+      name: prepare_vmware_tests
+    vars:
+      setup_attach_host: true
+
+  # TODO: akasurde: VCSIM does not suport network manager system
+  # FIXME: Implement check-mode support
+
+  - name: Add a nic to a switch
+    jctanner.cloud_vmware.vmware_vswitch:
+      hostname: '{{ esxi1 }}'
+      username: '{{ esxi_user }}'
+      password: '{{ esxi_password }}'
+      validate_certs: no
+      switch: vmswitch_0001
+      nics: vnic_1
+      state: present
+    register: add_nic_run
+  - assert:
+      that:
+      - add_nic_run.changed == true
+
+  - name: Add a nic to a switch again
+    jctanner.cloud_vmware.vmware_vswitch:
+      hostname: '{{ esxi1 }}'
+      username: '{{ esxi_user }}'
+      password: '{{ esxi_password }}'
+      validate_certs: no
+      switch: vmswitch_0001
+      nics: vnic_1
+      state: present
+    register: add_nic_again_run
+  - assert:
+      that:
+      - add_nic_again_run.changed == false
+
+  - name: Remove a switch (check-mode)
+    jctanner.cloud_vmware.vmware_vswitch:
+      hostname: '{{ esxi1 }}'
+      username: '{{ esxi_user }}'
+      password: '{{ esxi_password }}'
+      validate_certs: no
+      switch: vmswitch_0001
+      state: absent
+    check_mode: yes
+    register: remove_nic_check
+  # FIXME: Implement check-mode support
+  - assert:
+      that:
+      - remove_nic_check.changed == true
+
+  # FIXME: Removing a switch fails
+  - name: Remove a switch
+    jctanner.cloud_vmware.vmware_vswitch:
+      hostname: '{{ esxi1 }}'
+      username: '{{ esxi_user }}'
+      password: '{{ esxi_password }}'
+      validate_certs: no
+      switch: vmswitch_0001
+      state: absent
+    register: remove_nic_run
+  - assert:
+      that:
+      - remove_nic_run.changed == true
+
+  - name: Remove a switch again (check-mode)
+    jctanner.cloud_vmware.vmware_vswitch:
+      hostname: '{{ esxi1 }}'
+      username: '{{ esxi_user }}'
+      password: '{{ esxi_password }}'
+      validate_certs: no
+      switch: vmswitch_0001
+      state: absent
+    check_mode: yes
+    register: remove_nic_again_check
+  # FIXME: Implement check-mode support
+  - assert:
+      that:
+      - remove_nic_again_check_mode.changed == false
+
+  # FIXME: Removing a switch fails
+  - name: Remove a switch again
+    jctanner.cloud_vmware.vmware_vswitch:
+      hostname: '{{ esxi1 }}'
+      username: '{{ esxi_user }}'
+      password: '{{ esxi_password }}'
+      validate_certs: no
+      switch: vmswitch_0001
+      state: absent
+    register: remove_nic_again_run
+  - assert:
+      that:
+      - remove_nic_again_run.changed == false
+
+  - name: Add vswitch to a specific host system
+    jctanner.cloud_vmware.vmware_vswitch:
+      validate_certs: False
+      hostname: '{{ esxi1 }}'
+      username: '{{ esxi_user }}'
+      password: '{{ esxi_password }}'
+      switch: vmswitch_0002
+      nics: vnic_1
+      esxi_hostname: guest1
+    register: add_vswitch_with_host_system
+  - debug: var=add_vswitch_with_host_system
+  - assert:
+      that:
+      - add_vswitch_with_host_system.changed == true

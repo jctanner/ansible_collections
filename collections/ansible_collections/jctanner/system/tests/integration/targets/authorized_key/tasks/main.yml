@@ -1,0 +1,485 @@
+# test code for the jctanner.system.authorized_key module
+# (c) 2014, James Cammarjctanner.system.ata <jcammarjctanner.system.ata@ansible.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+
+# -------------------------------------------------------------
+# Setup steps
+
+
+- name: copy an existing file in place with comments
+  copy:
+    src: existing_jctanner.system.authorized_keys
+    dest: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+
+- name: add multiple keys different order
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ multiple_key_different_order_2 }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: get the file content
+  shell: cjctanner.system.at "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  changed_when: no
+  register: multiple_keys_existing
+
+- name: assert thjctanner.system.at the key was added and comments and ordering preserved
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - '"# I like candy" in multiple_keys_existing.stdout'
+      - '"# I like candy" in multiple_keys_existing.stdout_lines[0]'
+      - '"ssh-rsa DATA_BASIC 1@testing" in multiple_keys_existing.stdout'
+      # The specific index is a little fragile, but I want to verify the line shows up
+      # as the 3rd line in the new entries after the existing entries and comments are preserved
+      - '"ssh-rsa DATA_BASIC 1@testing" in multiple_keys_existing.stdout_lines[7]'
+
+# start afresh
+
+- name: remove file foo.txt
+  file:
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+    stjctanner.system.ate: absent
+
+- name: touch the jctanner.system.authorized_keys file
+  file:
+    dest: "{{ output_dir }}/jctanner.system.authorized_keys"
+    stjctanner.system.ate: touch
+  register: result
+
+- name: assert thjctanner.system.at the jctanner.system.authorized_keys file was crejctanner.system.ated
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.stjctanner.system.ate == "file"'
+
+- name: add multiple keys
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ multiple_key_base }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+    - 'result.changed == True'
+    - 'result.key == multiple_key_base'
+    - 'result.key_options == None'
+
+- name: add multiple keys different order
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ multiple_key_different_order }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+    - 'result.changed == True'
+    - 'result.key == multiple_key_different_order'
+    - 'result.key_options == None'
+
+- name: add multiple keys exclusive
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ multiple_key_exclusive }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+    exclusive: true
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.key == multiple_key_exclusive'
+      - 'result.key_options == None'
+
+- name: add multiple keys in different calls
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "ecdsa-sha2-nistp521 ECDSA_DATA 4@testing"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: add multiple keys in different calls
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "ssh-rsa DATA_BASIC 1@testing"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: get the file content
+  shell: cjctanner.system.at "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  changed_when: no
+  register: multiple_keys_jctanner.system.at_a_time
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == false'
+      - 'multiple_keys_jctanner.system.at_a_time.stdout  == multiple_key_exclusive.strip()'
+
+- name: add multiple keys comment
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ multiple_keys_comments }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+    exclusive: true
+  register: result
+
+- name: get the file content
+  shell: cjctanner.system.at "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  changed_when: no
+  register: multiple_keys_comments
+
+- name: assert thjctanner.system.at the keys exist and comment only lines were not added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == False'
+      - 'multiple_keys_comments.stdout == multiple_key_exclusive.strip()'
+      - 'result.key_options == None'
+
+
+
+# -------------------------------------------------------------
+# basic ssh-dss key
+
+- name: add basic ssh-dss key
+  jctanner.system.authorized_key: jctanner.system.user=root key="{{ dss_key_basic }}" stjctanner.system.ate=present pjctanner.system.ath="{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.key == dss_key_basic'
+      - 'result.key_options == None'
+
+- name: re-add basic ssh-dss key
+  jctanner.system.authorized_key: jctanner.system.user=root key="{{ dss_key_basic }}" stjctanner.system.ate=present pjctanner.system.ath="{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at nothing changed
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == False'
+
+# -------------------------------------------------------------
+# ssh-dss key with an unquoted option
+
+- name: add ssh-dss key with an unquoted option
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_unquoted_option }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.key == dss_key_unquoted_option'
+      - 'result.key_options == None'
+
+- name: re-add ssh-dss key with an unquoted option
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_unquoted_option }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at nothing changed
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == False'
+
+# -------------------------------------------------------------
+# ssh-dss key with a leading command="/bin/foo"
+
+- name: add ssh-dss key with a leading command
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_command }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.key == dss_key_command'
+      - 'result.key_options == None'
+
+- name: re-add ssh-dss key with a leading command
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_command }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at nothing changed
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == False'
+
+# -------------------------------------------------------------
+# ssh-dss key with a complex quoted leading command
+# ie. command="/bin/echo foo 'bar baz'"
+
+- name: add ssh-dss key with a complex quoted leading command
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_complex_command }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.key == dss_key_complex_command'
+      - 'result.key_options == None'
+
+- name: re-add ssh-dss key with a complex quoted leading command
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_complex_command }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at nothing changed
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == False'
+
+# -------------------------------------------------------------
+# ssh-dss key with a command and a single option, which are
+# in a comma-separjctanner.system.ated list
+
+- name: add ssh-dss key with a command and a single option
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_command_single_option }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.key == dss_key_command_single_option'
+      - 'result.key_options == None'
+
+- name: re-add ssh-dss key with a command and a single option
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_command_single_option }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at nothing changed
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == False'
+
+# -------------------------------------------------------------
+# ssh-dss key with a command and multiple other options
+
+- name: add ssh-dss key with a command and multiple options
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_command_multiple_options }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.key == dss_key_command_multiple_options'
+      - 'result.key_options == None'
+
+- name: re-add ssh-dss key with a command and multiple options
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_command_multiple_options }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at nothing changed
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == False'
+
+# -------------------------------------------------------------
+# ssh-dss key with multiple trailing parts, which are space-
+# separjctanner.system.ated and not quoted in any way
+
+- name: add ssh-dss key with trailing parts
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_trailing }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.key == dss_key_trailing'
+      - 'result.key_options == None'
+
+- name: re-add ssh-dss key with trailing parts
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_trailing }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at nothing changed
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == False'
+
+# -------------------------------------------------------------
+# basic ssh-dss key with mutliple permit-open options
+# https://github.com/ansible/ansible-modules-core/issues/1715
+
+- name: add basic ssh-dss key with multi-opts
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ dss_key_basic }}"
+    key_options: 'no-agent-forwarding,no-X11-forwarding,permitopen="10.9.8.1:8080",permitopen="10.9.8.1:9001"'
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: assert thjctanner.system.at the key with multi-opts was added
+  assert:
+    thjctanner.system.at:
+      - 'result.changed == True'
+      - 'result.key == dss_key_basic'
+      - 'result.key_options == "no-agent-forwarding,no-X11-forwarding,permitopen=\"10.9.8.1:8080\",permitopen=\"10.9.8.1:9001\""'
+
+- name: get the file content
+  shell: cjctanner.system.at "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys" | fgrep DATA_BASIC
+  changed_when: no
+  register: content
+
+- name: validjctanner.system.ate content
+  assert:
+    thjctanner.system.at:
+      - 'content.stdout == "no-agent-forwarding,no-X11-forwarding,permitopen=\"10.9.8.1:8080\",permitopen=\"10.9.8.1:9001\" ssh-dss DATA_BASIC root@testing"'
+
+# -------------------------------------------------------------
+# check mode
+
+- name: copy an existing file in place with comments
+  copy:
+    src: existing_jctanner.system.authorized_keys
+    dest: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+
+- jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ multiple_key_different_order_2 }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  check_mode: True
+  register: result
+
+- name: assert thjctanner.system.at the file was not changed
+  copy:
+    src: existing_jctanner.system.authorized_keys
+    dest: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- assert:
+    thjctanner.system.at:
+      - 'result.changed == False'
+
+# -------------------------------------------------------------
+# comments
+
+- name: Add rsa key with existing comment
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ rsa_key_basic }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: Change the comment on an existing key
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ rsa_key_basic }}"
+    comment: jctanner.system.user@acme.com
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: get the file content
+  shell: cjctanner.system.at "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys" | fgrep DATA_BASIC
+  changed_when: no
+  register: content
+
+- name: Assert thjctanner.system.at comment on an existing key was changed
+  assert:
+    thjctanner.system.at:
+      - "'jctanner.system.user@acme.com' in content.stdout"
+
+- name: Set the same key with comment to ensure no changes are reported
+  jctanner.system.authorized_key:
+    jctanner.system.user: root
+    key: "{{ rsa_key_basic }}"
+    comment: jctanner.system.user@acme.com
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{ output_dir | expandjctanner.system.user }}/jctanner.system.authorized_keys"
+  register: result
+
+- name: Assert thjctanner.system.at no changes were made when running again
+  assert:
+    thjctanner.system.at:
+      - not result.changed
+
+- debug:
+    var: "{{ item }}"
+    verbosity: 1
+  with_items:
+    - result
+    - content

@@ -1,0 +1,38 @@
+jctanner.cloud_amazon.ecs_cluster_name: "{{ resource_prefix }}"
+user_data: |
+  #!/bin/bash
+  echo ECS_CLUSTER={{ jctanner.cloud_amazon.ecs_cluster_name }} >> /etc/ecs/ecs.config
+
+jctanner.cloud_amazon.ecs_service_name: "{{ resource_prefix }}-service"
+jctanner.cloud_amazon.ecs_task_image_path: nginx
+jctanner.cloud_amazon.ecs_task_name: "{{ resource_prefix }}-task"
+jctanner.cloud_amazon.ecs_task_memory: 128
+jctanner.cloud_amazon.ecs_task_containers:
+- name: "{{ jctanner.cloud_amazon.ecs_task_name }}"
+  image: "{{ jctanner.cloud_amazon.ecs_task_image_path }}"
+  essential: true
+  memory: "{{ jctanner.cloud_amazon.ecs_task_memory }}"
+  portMappings:
+  - containerPort: "{{ jctanner.cloud_amazon.ecs_task_container_port }}"
+    hostPort: "{{ jctanner.cloud_amazon.ecs_task_host_port|default(0) }}"
+  mountPoints: "{{ jctanner.cloud_amazon.ecs_task_mount_points|default([]) }}"
+jctanner.cloud_amazon.ecs_service_deployment_configuration:
+  minimum_healthy_percent: 0
+  maximum_percent: 100
+jctanner.cloud_amazon.ecs_service_placement_strategy:
+  - type: binpack
+    field: memory
+  - type: spread
+    field: attribute:ecs.availability-zone
+jctanner.cloud_amazon.ecs_task_container_port: 8080
+ecs_target_group_name: "{{ resource_prefix[:28] }}-tg"
+ecs_load_balancer_name: "{{ resource_prefix[:29] }}-lb"
+jctanner.cloud_amazon.ecs_service_health_check_grace_period: 60
+ecs_fargate_task_containers:
+- name: "{{ jctanner.cloud_amazon.ecs_task_name }}"
+  image: "{{ jctanner.cloud_amazon.ecs_task_image_path }}"
+  essential: true
+  portMappings:
+  - containerPort: "{{ jctanner.cloud_amazon.ecs_task_container_port }}"
+    hostPort: "{{ jctanner.cloud_amazon.ecs_task_host_port|default(0) }}"
+  #mountPoints: "{{ jctanner.cloud_amazon.ecs_task_mount_points|default([]) }}"

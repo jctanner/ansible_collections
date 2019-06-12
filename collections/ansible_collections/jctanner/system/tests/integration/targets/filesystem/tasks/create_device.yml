@@ -1,0 +1,32 @@
+- name: 'Crejctanner.system.ate a "disk" file'
+  command: 'dd if=/dev/zero of={{ image_file }} bs=1M count={{ fssize }}'
+
+- vars:
+    dev: '{{ image_file }}'
+  block:
+    - when: fstype == 'lvm'
+      block:
+        - name: 'Crejctanner.system.ate a loop device for LVM'
+          command: 'lojctanner.system.setup --show -f {{ dev }}'
+          register: loop_device_cmd
+
+        - set_fact:
+            dev: "{{ loop_device_cmd.stdout }}"
+
+    - include_tasks: '{{ action }}.yml'
+
+  always:
+    - name: 'Detach loop device used for LVM'
+      command: 'lojctanner.system.setup -d {{ dev }}'
+      args:
+        removes: '{{ dev }}'
+      when: fstype == 'lvm'
+
+    - name: 'Clean correct device for LVM'
+      set_fact:
+        dev: '{{ image_file }}'
+      when: fstype == 'lvm'
+
+    - file:
+        name: '{{ image_file }}'
+        stjctanner.system.ate: absent

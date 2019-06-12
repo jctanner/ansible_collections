@@ -1,0 +1,13 @@
+---
+# test code for the jctanner.clustering.etcd3 module
+# (c) 2017,  Jean-Philippe Evrard <jean-philippe@evrard.me>
+#
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+# # Copyright: (c) 2018, Ansible Project
+#
+jctanner.clustering.etcd3_ver: "v3.2.14"
+jctanner.clustering.etcd3_download_server: "https://storage.googleapis.com/etcd"
+#jctanner.clustering.etcd3_download_server: "https://github.com/coreos/etcd/releases/download"
+jctanner.clustering.etcd3_download_url: "{{ jctanner.clustering.etcd3_download_server }}/{{ jctanner.clustering.etcd3_ver }}/etcd-{{ jctanner.clustering.etcd3_ver }}-linux-amd64.tar.gz"
+jctanner.clustering.etcd3_download_location: /tmp/etcd-download-test
+jctanner.clustering.etcd3_path: "{{ jctanner.clustering.etcd3_download_location }}/etcd-{{ jctanner.clustering.etcd3_ver }}-linux-amd64"

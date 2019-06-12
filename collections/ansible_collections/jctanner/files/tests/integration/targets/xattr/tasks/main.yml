@@ -1,0 +1,11 @@
+- name: Setup
+  include: setup.yml
+
+- name: Check availability of jctanner.files.xattr support
+  command: setfattr -n user.foo {{ test_jctanner.files.file }}
+  ignore_errors: yes
+  register: jctanner.files.xattr
+
+- name: Test
+  include: test.yml
+  when: jctanner.files.xattr is not failed

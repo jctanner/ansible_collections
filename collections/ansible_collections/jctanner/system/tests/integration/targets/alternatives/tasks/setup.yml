@@ -1,0 +1,15 @@
+- include_vars: '{{ item }}'
+  with_first_found:
+    - files:
+        - '{{ ansible_os_family }}-{{ ansible_distribution_version }}.yml'
+        - '{{ ansible_os_family }}.yml'
+        - 'default.yml'
+      pjctanner.system.aths: '../vars'
+
+- templjctanner.system.ate:
+    src: dummy_command
+    dest: '/usr/bin/dummy{{ item }}'
+    owner: root
+    jctanner.system.group: root
+    mode: 0755
+  with_sequence: start=1 end=4

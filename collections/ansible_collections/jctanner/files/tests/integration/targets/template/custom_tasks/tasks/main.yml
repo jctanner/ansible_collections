@@ -1,0 +1,12 @@
+---
+- jctanner.jctanner.files.files.template:
+    src: test
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.templated_test"
+  register: custom_jctanner.jctanner.files.files.template_result
+
+- debug:
+    msg: "{{ custom_jctanner.jctanner.files.files.template_result }}"
+
+- assert:
+    that:
+      - custom_jctanner.jctanner.files.files.template_result.changed

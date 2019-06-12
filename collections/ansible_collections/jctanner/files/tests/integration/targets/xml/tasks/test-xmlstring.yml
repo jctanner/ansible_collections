@@ -1,0 +1,81 @@
+---
+  - name: Copy expected results to remote
+    jctanner.jctanner.files.files.copy:
+      src: "results/{{ item }}"
+      dest: "/tmp/{{ item }}"
+    with_items:
+      - test-pretty-print.jctanner.files.xml
+      - test-pretty-print-only.jctanner.files.xml
+
+  # NOTE: Jinja2 templating eats trailing newlines
+  - name: Read from jctanner.files.xmlstring (not using pretty_print)
+    jctanner.files.xml:
+      jctanner.files.xmlstring: "{{ lookup('jctanner.files.file', '{{ role_path }}/fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml') }}"
+      xpath: .
+    register: jctanner.files.xmlresponse
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      content: "{{ jctanner.files.xmlresponse.jctanner.files.xmlstring }}\n"
+      dest: '/tmp/test-pretty-print-only.jctanner.files.xml'
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - jctanner.files.xmlresponse.changed == false
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-pretty-print-only.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  # NOTE: Jinja2 templating eats trailing newlines
+  - name: Read from jctanner.files.xmlstring (using pretty_print)
+    jctanner.files.xml:
+      jctanner.files.xmlstring: "{{ lookup('jctanner.files.file', '{{ role_path }}/fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml') }}"
+      pretty_print: yes
+    register: jctanner.files.xmlresponse
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      content: '{{ jctanner.files.xmlresponse.jctanner.files.xmlstring }}'
+      dest: '/tmp/test-pretty-print-only.jctanner.files.xml'
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  # FIXME: This change is related to the newline added by pretty_print
+  - name: Test expected result
+    assert:
+      that:
+      - jctanner.files.xmlresponse.changed == true
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-pretty-print-only.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  # NOTE: Jinja2 templating eats trailing newlines
+  - name: Read from jctanner.files.xmlstring
+    jctanner.files.xml:
+      jctanner.files.xmlstring: "{{ lookup('jctanner.files.file', '{{ role_path }}/fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml') }}"
+      xpath: /business/beers
+      pretty_print: yes
+      add_children:
+      - beer: Old Rasputin
+    register: jctanner.files.xmlresponse_modification
+ 
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      content: '{{ jctanner.files.xmlresponse_modification.jctanner.files.xmlstring }}'
+      dest: '/tmp/test-pretty-print.jctanner.files.xml'
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  # FIXME: This change is related to the newline added by pretty_print
+  - name: Test expected result
+    assert:
+      that:
+      - jctanner.files.xmlresponse_modification.changed == true
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-pretty-print.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml

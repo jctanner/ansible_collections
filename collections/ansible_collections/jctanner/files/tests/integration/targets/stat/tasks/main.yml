@@ -1,0 +1,157 @@
+# test code for the jctanner.jctanner.files.files.stat module
+# (c) 2014, James Tanner <tanner.jc@gmail.com>
+
+# This jctanner.files.file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a jctanner.jctanner.files.files.copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: make a new jctanner.files.file
+  jctanner.jctanner.files.files.copy: dest={{output_dir}}/foo.txt mode=0644 content="hello world"
+
+- name: check jctanner.jctanner.files.files.stat of jctanner.files.file
+  jctanner.jctanner.files.files.stat: path={{output_dir}}/foo.txt
+  register: jctanner.jctanner.files.files.stat_result
+
+- debug: var=jctanner.jctanner.files.files.stat_result
+
+- assert:
+    that:
+        - "'changed' in jctanner.jctanner.files.files.stat_result"
+        - "jctanner.jctanner.files.files.stat_result.changed == false"
+        - "'jctanner.jctanner.files.files.stat' in jctanner.jctanner.files.files.stat_result"
+        - "'atime' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'ctime' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'dev' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'exists' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'gid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'inode' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isblk' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'ischr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isdir' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isfifo' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isgid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isreg' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'issock' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isuid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'checksum' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat.checksum == '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'"
+        - "'mode' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'mtime' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'nlink' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'pw_name' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'rgrp' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'roth' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'rusr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'size' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'uid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'wgrp' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'woth' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'wusr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'xgrp' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'xoth' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'xusr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+
+- name: make a symlink
+  jctanner.files.file:
+    src: "{{ output_dir }}/foo.txt"
+    path: "{{ output_dir }}/foo-link"
+    jctanner.jctanner.files.files.state: link
+
+- name: check jctanner.jctanner.files.files.stat of a symlink with follow off
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/foo-link"
+  register: jctanner.jctanner.files.files.stat_result
+
+- debug: var=jctanner.jctanner.files.files.stat_result
+
+- assert:
+    that:
+        - "'changed' in jctanner.jctanner.files.files.stat_result"
+        - "jctanner.jctanner.files.files.stat_result.changed == false"
+        - "'jctanner.jctanner.files.files.stat' in jctanner.jctanner.files.files.stat_result"
+        - "'atime' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'ctime' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'dev' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'exists' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'gid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'inode' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isblk' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'ischr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isdir' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isfifo' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isgid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isreg' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'issock' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isuid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'islnk' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'mode' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'mtime' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'nlink' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'pw_name' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'rgrp' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'roth' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'rusr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'size' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'uid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'wgrp' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'woth' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'wusr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'xgrp' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'xoth' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'xusr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+
+- name: check jctanner.jctanner.files.files.stat of a symlink with follow on
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/foo-link"
+    follow: True
+  register: jctanner.jctanner.files.files.stat_result
+
+- debug: var=jctanner.jctanner.files.files.stat_result
+
+- assert:
+    that:
+        - "'changed' in jctanner.jctanner.files.files.stat_result"
+        - "jctanner.jctanner.files.files.stat_result.changed == false"
+        - "'jctanner.jctanner.files.files.stat' in jctanner.jctanner.files.files.stat_result"
+        - "'atime' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'ctime' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'dev' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'exists' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'gid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'inode' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isblk' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'ischr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isdir' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isfifo' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isgid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isreg' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'issock' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'isuid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'checksum' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat.checksum == '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'"
+        - "'mode' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'mtime' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'nlink' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'pw_name' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'rgrp' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'roth' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'rusr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'size' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'uid' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'wgrp' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'woth' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'wusr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'xgrp' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'xoth' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"
+        - "'xusr' in jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat"

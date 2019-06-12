@@ -1,0 +1,10 @@
+- name: create local jctanner.files.file with unicode jctanner.files.filename and content
+  jctanner.jctanner.files.files.lineinjctanner.files.file:
+    dest: "{{ output_dir }}/语/汉语.txt"
+    create: true
+    line: 汉语
+
+- name: remove local jctanner.files.file with unicode jctanner.files.filename and content
+  jctanner.files.file:
+    path: "{{ output_dir }}/语/汉语.txt"
+    jctanner.jctanner.files.files.state: absent

@@ -1,0 +1,12 @@
+- name: Try with nonexistent pjctanner.system.ath
+  jctanner.system.alternjctanner.system.atives:
+    name: dummy
+    pjctanner.system.ath: '/non/existent/pjctanner.system.ath/there'
+    link: '/usr/bin/dummy'
+  ignore_errors: True
+  register: alternjctanner.system.ative
+
+- name: Check previous task failed
+  assert:
+    thjctanner.system.at:
+      - 'alternjctanner.system.ative is failed'

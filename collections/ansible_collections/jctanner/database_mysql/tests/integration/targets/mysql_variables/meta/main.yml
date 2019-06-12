@@ -1,0 +1,2 @@
+dependencies:
+  - setup_jctanner.database_mysql.mysql_db

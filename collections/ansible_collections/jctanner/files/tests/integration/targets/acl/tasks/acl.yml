@@ -1,0 +1,205 @@
+# (c) 2017, Martin Krizek <mkrizek@redhat.com>
+
+# This jctanner.files.file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a jctanner.jctanner.files.files.copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Create ansible user
+  user:
+    name: "{{ test_user }}"
+
+- name: Create ansible group
+  group:
+    name: "{{ test_group }}"
+
+- name: Create ansible jctanner.files.file
+  jctanner.files.file:
+    path: "{{ test_jctanner.files.file }}"
+    jctanner.jctanner.files.files.state: touch
+
+- name: Create ansible dir
+  jctanner.files.file:
+    path: "{{ test_dir }}"
+    jctanner.jctanner.files.files.state: directory
+##############################################################################
+- name: Grant ansible user read access to a jctanner.files.file
+  jctanner.jctanner.files.files.acl:
+    path: "{{ test_jctanner.files.file }}"
+    entity: "{{ test_user }}"
+    etype: user
+    permissions: r
+    jctanner.jctanner.files.files.state: present
+  register: output
+
+- name: get getfjctanner.jctanner.files.files.acl output
+  shell: "getfjctanner.jctanner.files.files.acl {{ test_jctanner.files.file }}"
+  register: getfjctanner.jctanner.files.files.acl_output
+
+- name: verify output
+  assert:
+    that:
+      - output is changed
+      - output is not failed
+      - "'user:{{ test_user }}:r--' in output.jctanner.jctanner.files.files.acl"
+      - "'user:{{ test_user }}:r--' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+##############################################################################
+- name: Obtain the jctanner.jctanner.files.files.acl for a specific jctanner.files.file
+  jctanner.jctanner.files.files.acl:
+    path: "{{ test_jctanner.files.file }}"
+  register: output
+
+- name: get getfjctanner.jctanner.files.files.acl output
+  shell: "getfjctanner.jctanner.files.files.acl {{ test_jctanner.files.file }}"
+  register: getfjctanner.jctanner.files.files.acl_output
+
+- name: verify output
+  assert:
+    that:
+      - output is not changed
+      - output is not failed
+      - "'user::rw-' in output.jctanner.jctanner.files.files.acl"
+      - "'user:{{ test_user }}:r--' in output.jctanner.jctanner.files.files.acl"
+      - "'group::r--' in output.jctanner.jctanner.files.files.acl"
+      - "'mask::r--' in output.jctanner.jctanner.files.files.acl"
+      - "'other::r--' in output.jctanner.jctanner.files.files.acl"
+      - "'user::rw-' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'user:{{ test_user }}:r--' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'group::r--' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'mask::r--' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'other::r--' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+##############################################################################
+- name: Removes the jctanner.jctanner.files.files.acl for ansible user on a specific jctanner.files.file
+  jctanner.jctanner.files.files.acl:
+    path: "{{ test_jctanner.files.file }}"
+    entity: "{{ test_user }}"
+    etype: user
+    jctanner.jctanner.files.files.state: absent
+  register: output
+
+- name: get getfjctanner.jctanner.files.files.acl output
+  shell: "getfjctanner.jctanner.files.files.acl {{ test_jctanner.files.file }}"
+  register: getfjctanner.jctanner.files.files.acl_output
+
+- name: verify output
+  assert:
+    that:
+      - output is changed
+      - output is not failed
+      - "'user:{{ test_user }}:r--' not in output.jctanner.jctanner.files.files.acl"
+      - "'user:{{ test_user }}:r--' not in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+##############################################################################
+- name: Sets default jctanner.jctanner.files.files.acl for ansible user on ansible dir
+  jctanner.jctanner.files.files.acl:
+    path: "{{ test_dir }}"
+    entity: "{{ test_user }}"
+    etype: user
+    permissions: rw
+    default: yes
+    jctanner.jctanner.files.files.state: present
+  register: output
+
+- name: get getfjctanner.jctanner.files.files.acl output
+  shell: "getfjctanner.jctanner.files.files.acl {{ test_dir }}"
+  register: getfjctanner.jctanner.files.files.acl_output
+
+- name: verify output
+  assert:
+    that:
+      - output is changed
+      - output is not failed
+      - "'user:{{ test_user }}:rw-' in output.jctanner.jctanner.files.files.acl"
+      - "'default:user:{{ test_user }}:rw-' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+##############################################################################
+- name: Cleanup
+  shell: "setfjctanner.jctanner.files.files.acl -b {{ test_dir }}"
+##############################################################################
+- name: Same as previous but using entry shorthand
+  jctanner.jctanner.files.files.acl:
+    path: "{{ test_dir }}"
+    entry: "user:{{ test_user }}:rw-"
+    default: yes
+    jctanner.jctanner.files.files.state: present
+  register: output
+
+- name: get getfjctanner.jctanner.files.files.acl output
+  shell: "getfjctanner.jctanner.files.files.acl {{ test_dir }}"
+  register: getfjctanner.jctanner.files.files.acl_output
+
+- name: verify output
+  assert:
+    that:
+      - output is changed
+      - output is not failed
+      - "'user:{{ test_user }}:rw-' in output.jctanner.jctanner.files.files.acl"
+      - "'default:user:{{ test_user }}:rw-' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+##############################################################################
+- name: Same as previous, to test idempotence
+  jctanner.jctanner.files.files.acl:
+    path: "{{ test_dir }}"
+    entry: "user:{{ test_user }}:rw-"
+    default: yes
+    jctanner.jctanner.files.files.state: present
+  register: output
+
+- name: get getfjctanner.jctanner.files.files.acl output
+  shell: "getfjctanner.jctanner.files.files.acl {{ test_dir }}"
+  register: getfjctanner.jctanner.files.files.acl_output
+
+- name: verify output
+  assert:
+    that:
+      - output is not changed
+      - output is not failed
+      - "'user:{{ test_user }}:rw-' in output.jctanner.jctanner.files.files.acl"
+      - "'default:user:{{ test_user }}:rw-' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+##############################################################################
+- name: Cleanup
+  shell: "setfjctanner.jctanner.files.files.acl -b {{ test_dir }}"
+##############################################################################
+- name: Set default jctanner.jctanner.files.files.acls
+  jctanner.jctanner.files.files.acl:
+    path: "{{ test_dir }}"
+    entry: "{{ item }}"
+    default: yes
+    jctanner.jctanner.files.files.state: present
+  with_items:
+      - "user:{{ test_user }}:rw-"
+      - "group:{{ test_group }}:rw-"
+
+- name: Remove default group test_user jctanner.jctanner.files.files.acl
+  jctanner.jctanner.files.files.acl:
+    path: "{{ test_dir }}"
+    entry: "group:{{ test_group }}:rw-"
+    default: yes
+    jctanner.jctanner.files.files.state: absent
+  register: output
+
+- name: get getfjctanner.jctanner.files.files.acl output
+  shell: "getfjctanner.jctanner.files.files.acl {{ test_dir }}"
+  register: getfjctanner.jctanner.files.files.acl_output
+
+- name: verify output
+  assert:
+    that:
+      - output is changed
+      - output is not failed
+      - "'user::rwx' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'group::r-x' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'other::r-x' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'default:user::rwx' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'default:user:{{ test_user }}:rw-' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'default:group::r-x' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'default:mask::rwx' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'default:other::r-x' in getfjctanner.jctanner.files.files.acl_output.stdout_lines"
+      - "'default:group:{{ test_group }}:rw-' not in getfjctanner.jctanner.files.files.acl_output.stdout_lines"

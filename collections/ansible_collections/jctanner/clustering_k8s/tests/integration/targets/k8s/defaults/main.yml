@@ -1,0 +1,32 @@
+recreate_crd_default_merge_expectation: recreate_crd is not failed
+
+jctanner.clustering_k8s.k8s_pod_metadata:
+  labels:
+    app: "{{ jctanner.clustering_k8s.k8s_pod_name }}"
+
+jctanner.clustering_k8s.k8s_pod_spec:
+  containers:
+    - image: "{{ jctanner.clustering_k8s.k8s_pod_image }}"
+      imagePullPolicy: Always
+      name: "{{ jctanner.clustering_k8s.k8s_pod_name }}"
+      command: "{{ jctanner.clustering_k8s.k8s_pod_command }}"
+      readinessProbe:
+        initialDelaySeconds: 15
+        exec:
+          command:
+            - /bin/true
+      resources:
+        limits:
+          cpu: "100m"
+          memory: "100Mi"
+      ports: "{{ jctanner.clustering_k8s.k8s_pod_ports }}"
+
+jctanner.clustering_k8s.k8s_pod_command: []
+
+jctanner.clustering_k8s.k8s_pod_ports: []
+
+jctanner.clustering_k8s.k8s_pod_template:
+  metadata: "{{ jctanner.clustering_k8s.k8s_pod_metadata }}"
+  spec: "{{ jctanner.clustering_k8s.k8s_pod_spec }}"
+
+jctanner.clustering_k8s.k8s_openshift: yes

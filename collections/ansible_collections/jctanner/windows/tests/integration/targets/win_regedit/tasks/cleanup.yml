@@ -1,0 +1,18 @@
+---
+- name: load HKLM:\ANSIBLE with test hive
+  jctanner.windows.win_command: reg.exe load HKLM\ANSIBLE C:\Users\Default\NTUSER.dat
+  failed_when: false
+
+- name: make sure testing keys are removed before test
+  jctanner.windows.win_regedit:
+    path: '{{item}}'
+    delete_key: yes
+    state: absent
+  with_items:
+  - '{{test_jctanner.windows.win_regedit_local_key}}'
+  - '{{test_jctanner.windows.win_regedit_classes_key}}'
+  - '{{test_jctanner.windows.win_regedit_hive_key}}'
+
+- name: ensure HKLM:\ANSIBLE is unloaded
+  jctanner.windows.win_command: reg.exe unload HKLM\ANSIBLE
+  failed_when: false

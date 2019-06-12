@@ -1,0 +1,179 @@
+- name: Create VM with CDROM
+  jctanner.cloud_vmware.vmware_guest:
+    validate_certs: False
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    folder: "vm"
+    name: CDROM-Test
+    datacenter: "{{ dc1 }}"
+    cluster: "{{ ccr1 }}"
+    resource_pool: Resources
+    guest_id: centos64Guest
+    hardware:
+      memory_mb: 512
+      num_cpus: 1
+      scsi: paravirtual
+    disk:
+    - size_mb: 128
+      type: thin
+      datastore: LocalDS_0
+    cdrom:
+      type: iso
+      iso_path: "[LocalDS_0] base.iso"
+  register: cdrom_vm
+
+- debug: var=cdrom_vm
+
+- name: assert the VM was created
+  assert:
+    that:
+      - "cdrom_vm.failed == false"
+      - "cdrom_vm.changed == true"
+
+- name: Update CDROM to iso for the new VM
+  jctanner.cloud_vmware.vmware_guest:
+    validate_certs: False
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    folder: "vm"
+    name: CDROM-Test
+    datacenter: "{{ dc1 }}"
+    cdrom:
+      type: iso
+      iso_path: "[LocalDS_0] base_new.iso"
+    state: present
+  register: cdrom_vm
+
+- debug: var=cdrom_vm
+
+- name: assert the VM was changed
+  assert:
+    that:
+      - "cdrom_vm.failed == false"
+      - "cdrom_vm.changed == true"
+
+- name: Update CDROM to client for the new VM
+  jctanner.cloud_vmware.vmware_guest:
+    validate_certs: False
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    folder: vm
+    name: CDROM-Test
+    datacenter: "{{ dc1 }}"
+    cdrom:
+      type: client
+    state: present
+  register: cdrom_vm
+
+- debug: var=cdrom_vm
+
+- name: assert the VM was changed
+  assert:
+    that:
+      - "cdrom_vm.failed == false"
+      - "cdrom_vm.changed == true"
+
+- name: Update CDROM to none for the new VM
+  jctanner.cloud_vmware.vmware_guest:
+    validate_certs: False
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    folder: vm
+    name: CDROM-Test
+    datacenter: "{{ dc1 }}"
+    cdrom:
+      type: none
+    state: present
+  register: cdrom_vm
+
+- debug: var=cdrom_vm
+
+- name: assert the VM was changed
+  assert:
+    that:
+      - "cdrom_vm.failed == false"
+      - "cdrom_vm.changed == true"
+
+- name: Create VM with multiple disks and a CDROM - GitHub issue 38679
+  jctanner.cloud_vmware.vmware_guest:
+    validate_certs: False
+    hostname: "{{ vcenter_hostname }}"
+    username: "{{ vcenter_username }}"
+    password: "{{ vcenter_password }}"
+    folder: vm
+    name: CDROM-Test-38679
+    datacenter: "{{ dc1 }}"
+    cluster: "{{ ccr1 }}"
+    resource_pool: Resources
+    guest_id: centos64Guest
+    hardware:
+      memory_mb: 512
+      num_cpus: 1
+      scsi: paravirtual
+    disk:
+    - size_mb: 128
+      type: thin
+      datastore: LocalDS_0
+    - size_mb: 128
+      type: thin
+      datastore: LocalDS_0
+    - size_mb: 128
+      type: thin
+      datastore: LocalDS_0
+    cdrom:
+      type: iso
+      iso_path: "[LocalDS_0] base.iso"
+  register: cdrom_vm
+
+- debug: var=cdrom_vm
+
+- name: assert the VM was created
+  assert:
+    that:
+      - "cdrom_vm.failed == false"
+      - "cdrom_vm.changed == true"
+
+# VCSIM fails with invalidspec exception but real vCenter PASS testcase
+# Commenting this testcase till the time
+#- name: Again create VM with multiple disks and a CDROM - GitHub issue 38679
+#  jctanner.cloud_vmware.vmware_guest:
+#    validate_certs: False
+#    hostname: "{{ vcenter_hostname }}"
+#    username: "{{ vcenter_username }}"
+#    password: "{{ vcenter_password }}"
+#    folder: "/{{ (clusters['json'][0]|basename).split('_')[0] }}/vm"
+#    name: CDROM-Test-38679
+#    datacenter: "{{ (clusters['json'][0]|basename).split('_')[0] }}"
+#    cluster: "{{ clusters['json'][0] }}"
+#    resource_pool: Resources
+#    guest_id: centos64Guest
+#    hardware:
+#      memory_mb: 512
+#      num_cpus: 1
+#      scsi: paravirtual
+#    disk:
+#    - size_mb: 128
+#      type: thin
+#      datastore: LocalDS_0
+#    - size_mb: 128
+#      type: thin
+#      datastore: LocalDS_0
+#    - size_mb: 128
+#      type: thin
+#      datastore: LocalDS_0
+#    cdrom:
+#      type: iso
+#      iso_path: "[LocalDS_0] base.iso"
+#  register: cdrom_vm
+
+#- debug: var=cdrom_vm
+
+#- name: assert the VM was created
+#  assert:
+#    that:
+#      - "cdrom_vm.failed == false"
+#      - "cdrom_vm.changed == false"

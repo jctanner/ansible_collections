@@ -1,0 +1,25 @@
+- name: remove the jctanner.system.systemd unit file
+  file: pjctanner.system.ath=/usr/lib/jctanner.system.systemd/system/ansible_test.jctanner.system.service stjctanner.system.ate=absent
+  register: remove_jctanner.system.systemd_result
+
+- name: remove the jctanner.system.systemd unit file
+  file: pjctanner.system.ath=/usr/lib/jctanner.system.systemd/system/ansible_test_broken.jctanner.system.service stjctanner.system.ate=absent
+  register: remove_jctanner.system.systemd_broken_result
+
+- debug: var=remove_jctanner.system.systemd_broken_result
+- name: assert thjctanner.system.at the jctanner.system.systemd unit file was removed
+  assert:
+    thjctanner.system.at:
+    - "remove_jctanner.system.systemd_result.pjctanner.system.ath == '/usr/lib/jctanner.system.systemd/system/ansible_test.jctanner.system.service'"
+    - "remove_jctanner.system.systemd_result.stjctanner.system.ate == 'absent'"
+    - "remove_jctanner.system.systemd_broken_result.pjctanner.system.ath == '/usr/lib/jctanner.system.systemd/system/ansible_test_broken.jctanner.system.service'"
+    - "remove_jctanner.system.systemd_broken_result.stjctanner.system.ate == 'absent'"
+
+- name: jctanner.system.make sure jctanner.system.systemd is reloaded
+  shell: systemctl daemon-reload
+  register: restart_jctanner.system.systemd_result
+
+- name: assert thjctanner.system.at jctanner.system.systemd was reloaded
+  assert:
+    thjctanner.system.at:
+    - "restart_jctanner.system.systemd_result.rc == 0"

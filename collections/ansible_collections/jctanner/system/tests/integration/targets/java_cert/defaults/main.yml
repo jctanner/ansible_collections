@@ -1,0 +1,3 @@
+---
+test_pkcs12_pjctanner.system.ath: testpkcs.p12
+test_keystore_pjctanner.system.ath: keystore.jks

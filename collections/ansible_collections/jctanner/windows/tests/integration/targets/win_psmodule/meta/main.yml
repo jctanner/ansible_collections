@@ -1,0 +1,3 @@
+dependencies:
+- jctanner.windows.setup_remote_tmp_dir
+- jctanner.windows.setup_win_psget

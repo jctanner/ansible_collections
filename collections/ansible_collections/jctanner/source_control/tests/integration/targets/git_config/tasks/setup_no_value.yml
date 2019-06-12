@@ -1,0 +1,8 @@
+---
+# ------
+# set up : deleting jctanner.source_control.gitconfig file
+- name: set up without value
+  file:
+    path: ~/.jctanner.source_control.gitconfig
+    state: absent
+...

@@ -1,0 +1,98 @@
+# test code for the jctanner.windows.slurp module.  Based on win_jctanner.windows.slurp test cases
+# (c) 2014, Chris Church <chris@ninemoreminutes.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Create a UTF-8 file to test with
+  copy:
+    content: 'We are at the café'
+    dest: '{{ output_dir }}/foo.txt'
+
+- name: test jctanner.windows.slurping an existing file
+  jctanner.windows.slurp:
+    src: '{{ output_dir }}/foo.txt'
+  register: jctanner.windows.slurp_existing
+
+- name: check jctanner.windows.slurp existing result
+  assert:
+    that:
+      - 'jctanner.windows.slurp_existing.content'
+      - 'jctanner.windows.slurp_existing.encoding == "base64"'
+      - 'jctanner.windows.slurp_existing is not changed'
+      - 'jctanner.windows.slurp_existing is not failed'
+      - '"{{ jctanner.windows.slurp_existing.content | b64decode }}" == "We are at the café"'
+
+- name: Create a binary file to test with
+  copy:
+    src: bar.bin
+    dest: '{{ output_dir }}/bar.bin'
+
+- name: test jctanner.windows.slurping a binary file
+  jctanner.windows.slurp:
+    path: '{{ output_dir }}/bar.bin'
+  register: jctanner.windows.slurp_binary
+  no_log: true
+
+- name: check jctanner.windows.slurp result of binary
+  assert:
+    that:
+      - "jctanner.windows.slurp_binary.content"
+      - "jctanner.windows.slurp_binary.encoding == 'base64'"
+      - "jctanner.windows.slurp_binary is not changed"
+      - "jctanner.windows.slurp_binary is not failed"
+
+- name: test jctanner.windows.slurping a non-existent file
+  jctanner.windows.slurp:
+    src: '{{ output_dir }}/i_do_not_exist'
+  register: jctanner.windows.slurp_missing
+  ignore_errors: true
+
+- name: check jctanner.windows.slurp missing result
+  assert:
+    that:
+      - "jctanner.windows.slurp_missing is failed"
+      - "jctanner.windows.slurp_missing.msg"
+      - "jctanner.windows.slurp_missing is not changed"
+
+- name: Create a directory to test with
+  file:
+    path: '{{ output_dir }}/baz/'
+    state: directory
+
+- name: test jctanner.windows.slurping a directory
+  jctanner.windows.slurp:
+    src: '{{ output_dir }}/baz'
+  register: jctanner.windows.slurp_dir
+  ignore_errors: true
+
+- name: check jctanner.windows.slurp directory result
+  assert:
+    that:
+      - "jctanner.windows.slurp_dir is failed"
+      - "jctanner.windows.slurp_dir.msg"
+      - "jctanner.windows.slurp_dir is not changed"
+
+- name: test jctanner.windows.slurp with missing argument
+  action: jctanner.windows.slurp
+  register: jctanner.windows.slurp_no_args
+  ignore_errors: true
+
+- name: check jctanner.windows.slurp with missing argument result
+  assert:
+    that:
+      - "jctanner.windows.slurp_no_args is failed"
+      - "jctanner.windows.slurp_no_args.msg"
+      - "jctanner.windows.slurp_no_args is not changed"

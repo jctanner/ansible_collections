@@ -1,0 +1,67 @@
+- name: Set attributes
+  jctanner.files.xattr:
+    path: "{{ test_jctanner.files.file }}"
+    key: user.foo
+    value: bar
+  register: jctanner.files.xattr_set_result
+
+- name: Get attributes
+  jctanner.files.xattr:
+    path: "{{ test_jctanner.files.file }}"
+  register: jctanner.files.xattr_get_all_result
+
+- name: Get specific attribute
+  jctanner.files.xattr:
+    path: "{{ test_jctanner.files.file }}"
+    key: foo
+  register: jctanner.files.xattr_get_specific_result
+
+- assert:
+    that:
+    - "jctanner.files.xattr_set_result.changed"
+    - "jctanner.files.xattr_get_all_result['jctanner.files.xattr']['user.foo'] == 'bar'"
+    - "not jctanner.files.xattr_get_all_result.changed"
+    - "jctanner.files.xattr_get_specific_result['jctanner.files.xattr']['user.foo'] == 'bar'"
+    - "not jctanner.files.xattr_get_specific_result.changed"
+
+- name: Set attribute again
+  jctanner.files.xattr:
+    path: "{{ test_jctanner.files.file }}"
+    namespace: user
+    key: foo
+    value: bar
+  register: jctanner.files.xattr_set_again_result
+
+- assert:
+    that:
+    - "not jctanner.files.xattr_set_again_result.changed"
+
+- name: Unset attribute
+  jctanner.files.xattr:
+    path: "{{ test_jctanner.files.file }}"
+    key: foo
+    jctanner.jctanner.files.files.state: absent
+  register: jctanner.files.xattr_unset_result
+
+- name: Get attributes
+  jctanner.files.xattr:
+    path: "{{ test_jctanner.files.file }}"
+  register: jctanner.files.xattr_get_after_unset_result
+
+- assert:
+    that:
+    - "jctanner.files.xattr_unset_result.changed"
+    - "jctanner.files.xattr_get_after_unset_result['jctanner.files.xattr'] == {}"
+    - "not jctanner.files.xattr_get_after_unset_result.changed"
+
+- name: Unset attribute again
+  jctanner.files.xattr:
+    path: "{{ test_jctanner.files.file }}"
+    namespace: user
+    key: foo
+    jctanner.jctanner.files.files.state: absent
+  register: jctanner.files.xattr_unset_result
+
+- assert:
+    that:
+    - "not jctanner.files.xattr_set_again_result.changed"

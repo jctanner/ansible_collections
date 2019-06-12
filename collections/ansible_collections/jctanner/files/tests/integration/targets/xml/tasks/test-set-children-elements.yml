@@ -1,0 +1,53 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Set child elements
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      xpath: /business/beers
+      set_children: &children
+        - beer: 90 Minute IPA
+        - beer: Harvest Pumpkin Ale
+    register: set_children_elements
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-set-children-elements.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_children_elements.changed == true
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-set-children-elements.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Set child elements (again)
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      xpath: /business/beers
+      set_children: *children
+    register: set_children_again
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-set-children-elements.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_children_again.changed == false
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-set-children-elements.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml

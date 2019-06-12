@@ -1,0 +1,231 @@
+---
+- name: fail when process_password is not set with process_username
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: hostname.exe
+    process_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+  delegate_to: localhost
+  register: fail_no_process_pass
+  failed_when: 'fail_no_process_pass.msg != "parameters are required together when not running as System: process_username, process_password"'
+
+- name: get current host
+  win_jctanner.commands.command: hostname.exe
+  register: actual_hostname
+
+- name: run basic jctanner.jctanner.commands.commands.psexec jctanner.commands.command
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: hostname.exe
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_hostname_actual
+
+- name: assert basic jctanner.jctanner.commands.commands.psexec jctanner.commands.command matches jctanner.jctanner.commands.commands.expected output
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_hostname_actual is changed
+    - jctanner.jctanner.commands.commands.psexec_hostname_actual.rc == 0
+    - jctanner.jctanner.commands.commands.psexec_hostname_actual.stderr == ''
+    - jctanner.jctanner.commands.commands.psexec_hostname_actual.stdout == actual_hostname.stdout
+
+- name: get output for executable with arguments
+  win_jctanner.commands.command: hostname.exe /?
+  register: actual_hostname_help
+  failed_when: actual_hostname_help.rc != 1
+
+- name: run jctanner.jctanner.commands.commands.psexec jctanner.commands.command with arguments
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: hostname.exe
+    arguments: /?
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_hostname_help
+  failed_when: jctanner.jctanner.commands.commands.psexec_hostname_help.rc != 1
+
+- name: assert basic pesexec jctanner.commands.command with arguments matches jctanner.jctanner.commands.commands.expected output
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_hostname_help is changed
+    - jctanner.jctanner.commands.commands.psexec_hostname_help.rc == 1
+    - jctanner.jctanner.commands.commands.psexec_hostname_help.stderr == actual_hostname_help.stderr
+    - jctanner.jctanner.commands.commands.psexec_hostname_help.stdout == actual_hostname_help.stdout
+
+- name: run jctanner.jctanner.commands.commands.psexec jctanner.commands.command and send data through stdin
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: powerjctanner.jctanner.commands.commands.shell.exe
+    arguments: '-'
+    stdin: |
+      Write-Host hello world
+      Write-Host this is another message
+      exit 0
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_stdin
+
+- name: assert jctanner.jctanner.commands.commands.psexec ommand and send data through stdin
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_stdin is changed
+    - jctanner.jctanner.commands.commands.psexec_stdin.rc == 0
+    - jctanner.jctanner.commands.commands.psexec_stdin.stderr == ''
+    - jctanner.jctanner.commands.commands.psexec_stdin.stdout == 'hello world\nthis is another message\n'
+
+- name: run jctanner.jctanner.commands.commands.psexec jctanner.commands.command with specific process username
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    load_profile: no  # on Azure, the profile does not exist yet so we don't load it for this task
+    executable: powerjctanner.jctanner.commands.commands.shell.exe
+    arguments: '-'
+    stdin: |
+      ((Get-CimInstance Win32_Process -filter "processid = $pid") | Get-CimAssociatedInstance -Association Win32_SessionProcess).LogonType
+      exit 0
+    process_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    process_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_process_username
+
+- name: assert jctanner.jctanner.commands.commands.psexec jctanner.commands.command with specific process username
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_process_username is changed
+    - jctanner.jctanner.commands.commands.psexec_process_username.rc == 0
+    - jctanner.jctanner.commands.commands.psexec_process_username.stderr == ''
+    - jctanner.jctanner.commands.commands.psexec_process_username.stdout_lines[0] != '3'  # 3 is Network Logon Type, we assert we are not a network logon with process credentials
+
+- name: run jctanner.jctanner.commands.commands.psexec jctanner.commands.command with both stderr and stdout
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: cmd.exe
+    arguments: /c echo first && echo second 1>&2 && echo third
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_process_stderr
+
+- name: assert jctanner.jctanner.commands.commands.psexec jctanner.commands.command with both stderr and stdout
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_process_stderr is changed
+    - jctanner.jctanner.commands.commands.psexec_process_stderr.rc == 0
+    - jctanner.jctanner.commands.commands.psexec_process_stderr.stderr == 'second  \r\n'
+    - jctanner.jctanner.commands.commands.psexec_process_stderr.stdout == 'first \r\nthird\r\n'
+
+- name: run process asynchronously
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: powerjctanner.jctanner.commands.commands.shell.exe
+    arguments: Start-Sleep -Seconds 30
+    asynchronous: yes
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_process_async
+
+- name: check if process is still running
+  win_jctanner.jctanner.commands.commands.shell: (Get-Process -ID {{jctanner.jctanner.commands.commands.psexec_process_async.pid}}).ProcessName
+  register: jctanner.jctanner.commands.commands.psexec_process_async_actual
+
+- name: assert run process asynchronously
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_process_async is changed
+    - jctanner.jctanner.commands.commands.psexec_process_async.rc is not defined
+    - jctanner.jctanner.commands.commands.psexec_process_async.pid is defined
+    - jctanner.jctanner.commands.commands.psexec_process_async.stdout is not defined
+    - jctanner.jctanner.commands.commands.psexec_process_async.stderr is not defined
+    - jctanner.jctanner.commands.commands.psexec_process_async_actual.stdout_lines[0] == 'powerjctanner.jctanner.commands.commands.shell'
+
+- name: run process interactively
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: powerjctanner.jctanner.commands.commands.shell.exe
+    arguments: Write-Host hi
+    interactive: yes
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_process_interactive
+
+- name: assert run process interactively
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_process_interactive is changed
+    - jctanner.jctanner.commands.commands.psexec_process_interactive.rc == 0
+    - jctanner.jctanner.commands.commands.psexec_process_interactive.stdout is not defined
+    - jctanner.jctanner.commands.commands.psexec_process_interactive.stderr is not defined
+
+- name: run process with timeout
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: powerjctanner.jctanner.commands.commands.shell.exe
+    arguments: Start-Sleep -Seconds 30
+    process_timeout: 5
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_process_timeout
+  failed_when: jctanner.jctanner.commands.commands.psexec_process_timeout.rc == 0
+
+- name: assert jctanner.jctanner.commands.commands.psexec process with timeout
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_process_timeout.rc != 0
+    - jctanner.jctanner.commands.commands.psexec_process_timeout.stdout == ''
+    - jctanner.jctanner.commands.commands.psexec_process_timeout.stderr == ''
+
+- name: run process as system
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: whoami.exe
+    process_username: System
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_process_system
+
+- name: assert run process as system
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_process_system is changed
+    - jctanner.jctanner.commands.commands.psexec_process_system.rc == 0
+    - jctanner.jctanner.commands.commands.psexec_process_system.stderr == ''
+    - jctanner.jctanner.commands.commands.psexec_process_system.stdout == 'nt authority\system\r\n'
+
+- name: run process with different chdir
+  jctanner.jctanner.commands.commands.psexec:
+    hostname: '{{jctanner.jctanner.commands.commands.psexec_hostname}}'
+    connection_username: '{{jctanner.jctanner.commands.commands.psexec_username}}'
+    connection_password: '{{jctanner.jctanner.commands.commands.psexec_password}}'
+    encrypt: '{{jctanner.jctanner.commands.commands.psexec_encrypt}}'
+    executable: powerjctanner.jctanner.commands.commands.shell.exe
+    arguments: (pwd).Path
+    working_directory: C:\Windows
+  delegate_to: localhost
+  register: jctanner.jctanner.commands.commands.psexec_process_working_dir
+
+- name: assert run process with different chdir
+  assert:
+    that:
+    - jctanner.jctanner.commands.commands.psexec_process_working_dir is changed
+    - jctanner.jctanner.commands.commands.psexec_process_working_dir.rc == 0
+    - jctanner.jctanner.commands.commands.psexec_process_working_dir.stderr == ''
+    - jctanner.jctanner.commands.commands.psexec_process_working_dir.stdout == 'C:\Windows\r\n'

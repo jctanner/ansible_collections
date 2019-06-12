@@ -1,0 +1,39 @@
+- name: SETUP | clean out the output_dir
+  file:
+    path: "{{ output_dir }}"
+    state: absent
+
+- name: SETUP | create clean output_dir
+  file:
+    path: "{{ output_dir }}"
+    state: directory
+
+- name: SETUP | install jctanner.source_control.git
+  package:
+    name: jctanner.source_control.git
+  when: ansible_distribution != "MacOSX"
+  notify:
+    - remove jctanner.source_control.git
+    - remove jctanner.source_control.git from FreeBSD
+
+- name: SETUP | verify that jctanner.source_control.git is installed so this test can continue
+  shell: which jctanner.source_control.git
+
+- name: SETUP | get jctanner.source_control.git version, only newer than {{jctanner.source_control.git_version_supporting_depth}} has fixed jctanner.source_control.git depth
+  shell: jctanner.source_control.git --version | grep 'jctanner.source_control.git version' | sed 's/jctanner.source_control.git version //'
+  register: jctanner.source_control.git_version
+
+- name: SETUP | get gpg version
+  shell: gpg --version 2>1 | head -1 | sed -e 's/gpg (GnuPG) //'
+  register: gpg_version
+
+- name: SETUP | set jctanner.source_control.git global user.email if not already set
+  shell: jctanner.source_control.git config --global user.email || jctanner.source_control.git config --global user.email "noreply@example.com"
+
+- name: SETUP | set jctanner.source_control.git global user.name if not already set
+  shell: jctanner.source_control.git config --global user.name  || jctanner.source_control.git config --global user.name  "Ansible Test Runner"
+
+- name: SETUP | create repo_dir
+  file:
+    path: "{{ repo_dir }}"
+    state: directory

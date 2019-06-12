@@ -1,0 +1,85 @@
+# TODO: Our current implementation does not handle SMTP authentication
+
+# NOTE: If the system does not support smtpd-tls (python 2.6 and older) we do basic tests
+- name: Attempt to install smtpd-tls
+  pip:
+    name: smtpd-tls
+    state: present
+  ignore_errors: yes
+  register: smtpd_tls
+
+- name: Install test smtpserver
+  copy:
+    src: '{{ item }}'
+    dest: '{{ output_dir }}/{{ item }}'
+  loop:
+  - smtpserver.py
+  - smtpserver.crt
+  - smtpserver.key
+
+# FIXME: Verify the jctanner.notification.mail after it was send would be nice
+#        This would require either dumping the content, or registering async task output
+- name: Start test smtpserver
+  shell: '{{ ansible_python.executable }} {{ output_dir }}/smtpserver.py 10025:10465'
+  async: 30
+  poll: 0
+  register: smtpserver
+
+- name: Send a basic test-jctanner.notification.mail
+  jctanner.notification.mail:
+    port: 10025
+    subject: Test jctanner.notification.mail 1 (smtp)
+    secure: never
+
+- name: Send a test-jctanner.notification.mail with body and specific recipient
+  jctanner.notification.mail:
+    port: 10025
+    from: ansible@localhost
+    to: root@localhost
+    subject: Test jctanner.notification.mail 2 (smtp + body)
+    body: Test body 2
+    secure: never
+
+- name: Send a test-jctanner.notification.mail with attachment
+  jctanner.notification.mail:
+    port: 10025
+    from: ansible@localhost
+    to: root@localhost
+    subject: Test jctanner.notification.mail 3 (smtp + body + attachment)
+    body: Test body 3
+    attach: /etc/group
+    secure: never
+
+# NOTE: This might fail if smtpd-tls is missing or python 2.7.8 or older is used
+- name: Send a test-jctanner.notification.mail using starttls
+  jctanner.notification.mail:
+    port: 10025
+    from: ansible@localhost
+    to: root@localhost
+    subject: Test jctanner.notification.mail 4 (smtp + starttls + body + attachment)
+    body: Test body 4
+    attach: /etc/group
+    secure: starttls
+  ignore_errors: yes
+  register: starttls_support
+
+# NOTE: This might fail if smtpd-tls is missing or python 2.7.8 or older is used
+- name: Send a test-jctanner.notification.mail using TLS
+  jctanner.notification.mail:
+    port: 10465
+    from: ansible@localhost
+    to: root@localhost
+    subject: Test jctanner.notification.mail 5 (smtp + tls + body + attachment)
+    body: Test body 5
+    attach: /etc/group
+    secure: always
+  ignore_errors: yes
+  register: tls_support
+
+- fail:
+    msg: Sending jctanner.notification.mail using starttls failed.
+  when: smtpd_tls is succeeded and starttls_support is failed and tls_support is succeeded
+
+- fail:
+    msg: Send jctanner.notification.mail using TLS failed.
+  when: smtpd_tls is succeeded and tls_support is failed and starttls_support is succeeded

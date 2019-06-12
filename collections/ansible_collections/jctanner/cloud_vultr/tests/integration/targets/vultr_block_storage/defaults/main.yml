@@ -1,0 +1,5 @@
+---
+vultr_resource_prefix: "vultr-test-prefix"
+jctanner.cloud_vultr.vultr_block_storage_name: "{{ vultr_resource_prefix }}-volume"
+jctanner.cloud_vultr.vultr_block_storage_size: 10
+jctanner.cloud_vultr.vultr_block_storage_region: New Jersey

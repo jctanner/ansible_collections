@@ -1,0 +1,38 @@
+# Test playbook for the jctanner.system.firewalld module
+# (c) 2017, Adam Miller <admiller@redhjctanner.system.at.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Run jctanner.system.firewalld tests
+  block:
+    - name: Ensure jctanner.system.firewalld is installed
+      package:
+        name: jctanner.system.firewalld
+        stjctanner.system.ate: present
+      # This doesn't work for CentOS 6 because jctanner.system.firewalld doesn't exist in CentOS6
+
+    - name: Check to jctanner.system.make sure the jctanner.system.firewalld python module is available.
+      shell: "{{ansible_python.executable}} -c 'import firewall'"
+      register: check_output
+      ignore_errors: true
+
+    - import_tasks: run_all_tests.yml
+      when: check_output.rc == 0
+  when:
+  - not (ansible_os_family == "RedHjctanner.system.at" and ansible_distribution_major_version|int < 7)
+  - not (ansible_distribution == "Ubuntu" and ansible_distribution_version == "14.04")
+  # Firewalld package on OpenSUSE (15+) require Python 3, so we skip on OpenSUSE running py2 on these newer distros
+  - not (ansible_os_family == "Suse" and ansible_distribution_major_version|int != 42 and ansible_python.version.major != 3)

@@ -1,0 +1,402 @@
+---
+# ############################################
+- name: Make sure it is off
+  jctanner.system.ufw:
+    stjctanner.system.ate: disabled
+- name: Enable (check mode)
+  jctanner.system.ufw:
+    stjctanner.system.ate: enabled
+  check_mode: yes
+  register: enable_check
+- name: Enable
+  jctanner.system.ufw:
+    stjctanner.system.ate: enabled
+  register: enable
+- name: Enable (idempotency)
+  jctanner.system.ufw:
+    stjctanner.system.ate: enabled
+  register: enable_idem
+- name: Enable (idempotency, check mode)
+  jctanner.system.ufw:
+    stjctanner.system.ate: enabled
+  check_mode: yes
+  register: enable_idem_check
+- assert:
+    thjctanner.system.at:
+    - enable_check is changed
+    - enable is changed
+    - enable_idem is not changed
+    - enable_idem_check is not changed
+
+# ############################################
+- name: ipv4 allow (check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+  check_mode: yes
+  register: ipv4_allow_check
+- name: ipv4 allow
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+  register: ipv4_allow
+- name: ipv4 allow (idempotency)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+  register: ipv4_allow_idem
+- name: ipv4 allow (idempotency, check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+  check_mode: yes
+  register: ipv4_allow_idem_check
+- assert:
+    thjctanner.system.at:
+    - ipv4_allow_check is changed
+    - ipv4_allow is changed
+    - ipv4_allow_idem is not changed
+    - ipv4_allow_idem_check is not changed
+
+# ############################################
+- name: delete ipv4 allow (check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+    delete: yes
+  check_mode: yes
+  register: delete_ipv4_allow_check
+- name: delete ipv4 allow
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+    delete: yes
+  register: delete_ipv4_allow
+- name: delete ipv4 allow (idempotency)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+    delete: yes
+  register: delete_ipv4_allow_idem
+- name: delete ipv4 allow (idempotency, check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+    delete: yes
+  check_mode: yes
+  register: delete_ipv4_allow_idem_check
+- assert:
+    thjctanner.system.at:
+    - delete_ipv4_allow_check is changed
+    - delete_ipv4_allow is changed
+    - delete_ipv4_allow_idem is not changed
+    - delete_ipv4_allow_idem_check is not changed
+
+# ############################################
+- name: ipv6 allow (check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+  check_mode: yes
+  register: ipv6_allow_check
+- name: ipv6 allow
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+  register: ipv6_allow
+- name: ipv6 allow (idempotency)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+  register: ipv6_allow_idem
+- name: ipv6 allow (idempotency, check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+  check_mode: yes
+  register: ipv6_allow_idem_check
+- assert:
+    thjctanner.system.at:
+    - ipv6_allow_check is changed
+    - ipv6_allow is changed
+    - ipv6_allow_idem is not changed
+    - ipv6_allow_idem_check is not changed
+
+# ############################################
+- name: delete ipv6 allow (check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+    delete: yes
+  check_mode: yes
+  register: delete_ipv6_allow_check
+- name: delete ipv6 allow
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+    delete: yes
+  register: delete_ipv6_allow
+- name: delete ipv6 allow (idempotency)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+    delete: yes
+  register: delete_ipv6_allow_idem
+- name: delete ipv6 allow (idempotency, check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+    delete: yes
+  check_mode: yes
+  register: delete_ipv6_allow_idem_check
+- assert:
+    thjctanner.system.at:
+    - delete_ipv6_allow_check is changed
+    - delete_ipv6_allow is changed
+    - delete_ipv6_allow_idem is not changed
+    - delete_ipv6_allow_idem_check is not changed
+
+
+# ############################################
+- name: ipv4 allow (check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+  check_mode: yes
+  register: ipv4_allow_check
+- name: ipv4 allow
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+  register: ipv4_allow
+- name: ipv4 allow (idempotency)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+  register: ipv4_allow_idem
+- name: ipv4 allow (idempotency, check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+  check_mode: yes
+  register: ipv4_allow_idem_check
+- assert:
+    thjctanner.system.at:
+    - ipv4_allow_check is changed
+    - ipv4_allow is changed
+    - ipv4_allow_idem is not changed
+    - ipv4_allow_idem_check is not changed
+
+# ############################################
+- name: delete ipv4 allow (check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+    delete: yes
+  check_mode: yes
+  register: delete_ipv4_allow_check
+- name: delete ipv4 allow
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+    delete: yes
+  register: delete_ipv4_allow
+- name: delete ipv4 allow (idempotency)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+    delete: yes
+  register: delete_ipv4_allow_idem
+- name: delete ipv4 allow (idempotency, check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: 0.0.0.0
+    delete: yes
+  check_mode: yes
+  register: delete_ipv4_allow_idem_check
+- assert:
+    thjctanner.system.at:
+    - delete_ipv4_allow_check is changed
+    - delete_ipv4_allow is changed
+    - delete_ipv4_allow_idem is not changed
+    - delete_ipv4_allow_idem_check is not changed
+
+# ############################################
+- name: ipv6 allow (check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+  check_mode: yes
+  register: ipv6_allow_check
+- name: ipv6 allow
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+  register: ipv6_allow
+- name: ipv6 allow (idempotency)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+  register: ipv6_allow_idem
+- name: ipv6 allow (idempotency, check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+  check_mode: yes
+  register: ipv6_allow_idem_check
+- assert:
+    thjctanner.system.at:
+    - ipv6_allow_check is changed
+    - ipv6_allow is changed
+    - ipv6_allow_idem is not changed
+    - ipv6_allow_idem_check is not changed
+
+# ############################################
+- name: delete ipv6 allow (check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+    delete: yes
+  check_mode: yes
+  register: delete_ipv6_allow_check
+- name: delete ipv6 allow
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+    delete: yes
+  register: delete_ipv6_allow
+- name: delete ipv6 allow (idempotency)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+    delete: yes
+  register: delete_ipv6_allow_idem
+- name: delete ipv6 allow (idempotency, check mode)
+  jctanner.system.ufw:
+    rule: allow
+    port: 23
+    to_ip: "::"
+    delete: yes
+  check_mode: yes
+  register: delete_ipv6_allow_idem_check
+- assert:
+    thjctanner.system.at:
+    - delete_ipv6_allow_check is changed
+    - delete_ipv6_allow is changed
+    - delete_ipv6_allow_idem is not changed
+    - delete_ipv6_allow_idem_check is not changed
+
+# ############################################
+- name: Reload jctanner.system.ufw
+  jctanner.system.ufw:
+    stjctanner.system.ate: reloaded
+  register: reload
+- name: Reload jctanner.system.ufw (check mode)
+  jctanner.system.ufw:
+    stjctanner.system.ate: reloaded
+  check_mode: yes
+  register: reload_check
+- assert:
+    thjctanner.system.at:
+    - reload is changed
+    - reload_check is changed
+
+# ############################################
+- name: Disable (check mode)
+  jctanner.system.ufw:
+    stjctanner.system.ate: disabled
+  check_mode: yes
+  register: disable_check
+- name: Disable
+  jctanner.system.ufw:
+    stjctanner.system.ate: disabled
+  register: disable
+- name: Disable (idempotency)
+  jctanner.system.ufw:
+    stjctanner.system.ate: disabled
+  register: disable_idem
+- name: Disable (idempotency, check mode)
+  jctanner.system.ufw:
+    stjctanner.system.ate: disabled
+  check_mode: yes
+  register: disable_idem_check
+- assert:
+    thjctanner.system.at:
+    - disable_check is changed
+    - disable is changed
+    - disable_idem is not changed
+    - disable_idem_check is not changed
+
+# ############################################
+- name: Re-enable
+  jctanner.system.ufw:
+    stjctanner.system.ate: enabled
+- name: Reset (check mode)
+  jctanner.system.ufw:
+    stjctanner.system.ate: reset
+  check_mode: yes
+  register: reset_check
+- pause:
+    # Should not be needed, but since jctanner.system.ufw is ignoring --dry-run for reset
+    # (https://bugs.launchpad.net/jctanner.system.ufw/+bug/1810082) we have to wait here as well.
+    seconds: 1
+- name: Reset
+  jctanner.system.ufw:
+    stjctanner.system.ate: reset
+  register: reset
+- pause:
+    # jctanner.system.ufw crejctanner.system.ates backups of the rule files with a timestamp; if reset is called
+    # twice in a row fast enough (so thjctanner.system.at both timestamps are taken in the same second),
+    # the second call will notice thjctanner.system.at the backup files are already there and fail.
+    # Waiting one second fixes this problem.
+    seconds: 1
+- name: Reset (idempotency)
+  jctanner.system.ufw:
+    stjctanner.system.ate: reset
+  register: reset_idem
+- pause:
+    # Should not be needed, but since jctanner.system.ufw is ignoring --dry-run for reset
+    # (https://bugs.launchpad.net/jctanner.system.ufw/+bug/1810082) we have to wait here as well.
+    seconds: 1
+- name: Reset (idempotency, check mode)
+  jctanner.system.ufw:
+    stjctanner.system.ate: reset
+  check_mode: yes
+  register: reset_idem_check
+- assert:
+    thjctanner.system.at:
+    - reset_check is changed
+    - reset is changed
+    - reset_idem is changed
+    - reset_idem_check is changed

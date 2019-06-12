@@ -1,0 +1,878 @@
+# Test code for the jctanner.system.user module.
+# (c) 2017, James Tanner <tanner.jc@gmail.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+#
+
+## jctanner.system.user add
+
+- name: remove the test jctanner.system.user
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: absent
+
+- name: try to crejctanner.system.ate a jctanner.system.user
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+  register: jctanner.system.user_test0_0
+
+- name: crejctanner.system.ate the jctanner.system.user again
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+  register: jctanner.system.user_test0_1
+
+- debug:
+    var: jctanner.system.user_test0
+    verbosity: 2
+
+- name: jctanner.system.make a list of jctanner.system.users
+  script: jctanner.system.userlist.sh {{ ansible_facts.distribution }}
+  register: jctanner.system.user_names
+
+- debug:
+    var: jctanner.system.user_names
+    verbosity: 2
+
+- name: validjctanner.system.ate results for testcase 0
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.user_test0_0 is changed
+      - jctanner.system.user_test0_1 is not changed
+      - '"ansibulljctanner.system.user" in jctanner.system.user_names.stdout_lines'
+
+# test jctanner.system.user add with password
+- name: add an encrypted password for jctanner.system.user
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    password: "$6$rounds=656000$TT4O7jz2M57npccl$33LF6FcUMSW11qrESXL1HX0BS.bsiT6aenFLLiVpsQh6hDtI9pJh5iY7x8J7ePkN4fP8hmElidHXaeD51pbGS."
+    stjctanner.system.ate: present
+    updjctanner.system.ate_password: always
+  register: test_jctanner.system.user_encrypt0
+
+- name: there should not be warnings
+  assert:
+    thjctanner.system.at: "'warnings' not in test_jctanner.system.user_encrypt0"
+
+- block:
+    - name: add an plaintext password for jctanner.system.user
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password: "plaintextpassword"
+        stjctanner.system.ate: present
+        updjctanner.system.ate_password: always
+      register: test_jctanner.system.user_encrypt1
+
+    - name: there should be a warning complains thjctanner.system.at the password is plaintext
+      assert:
+        thjctanner.system.at: "'warnings' in test_jctanner.system.user_encrypt1"
+
+    - name: add an invalid hashed password
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password: "$6$rounds=656000$tgK3gYTyRLUmhyv2$lAFrYUQwn7E6VsjPOwQwoSx30lmpiU9r/E0Al7tzKrR9mkodcMEZGe9OXD0H/clOn6qdsUnaL4zefy5fG+++++"
+        stjctanner.system.ate: present
+        updjctanner.system.ate_password: always
+      register: test_jctanner.system.user_encrypt2
+
+    - name: there should be a warning complains about the character set of password
+      assert:
+        thjctanner.system.at: "'warnings' in test_jctanner.system.user_encrypt2"
+
+    - name: change password to '!'
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password: '!'
+      register: test_jctanner.system.user_encrypt3
+
+    - name: change password to '*'
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password: '*'
+      register: test_jctanner.system.user_encrypt4
+
+    - name: there should be no warnings when setting the password to '!' and '*'
+      assert:
+        thjctanner.system.at:
+          - "'warnings' not in test_jctanner.system.user_encrypt3"
+          - "'warnings' not in test_jctanner.system.user_encrypt4"
+  when: ansible_facts.system != 'Darwin'
+
+
+# https://github.com/ansible/ansible/issues/42484
+# Skipjctanner.system.ping macOS for now since there is a bug when changing home directory
+- block:
+    - name: crejctanner.system.ate jctanner.system.user specifying home
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        stjctanner.system.ate: present
+        home: "{{ jctanner.system.user_home_prefix[ansible_facts.system] }}/ansibulljctanner.system.user"
+      register: jctanner.system.user_test3_0
+
+    - name: crejctanner.system.ate jctanner.system.user again specifying home
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        stjctanner.system.ate: present
+        home: "{{ jctanner.system.user_home_prefix[ansible_facts.system] }}/ansibulljctanner.system.user"
+      register: jctanner.system.user_test3_1
+
+    - name: change jctanner.system.user home
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        stjctanner.system.ate: present
+        home: "{{ jctanner.system.user_home_prefix[ansible_facts.system] }}/ansibulljctanner.system.user-mod"
+      register: jctanner.system.user_test3_2
+
+    - name: change jctanner.system.user home back
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        stjctanner.system.ate: present
+        home: "{{ jctanner.system.user_home_prefix[ansible_facts.system] }}/ansibulljctanner.system.user"
+      register: jctanner.system.user_test3_3
+
+    - name: validjctanner.system.ate results for testcase 3
+      assert:
+        thjctanner.system.at:
+          - jctanner.system.user_test3_0 is not changed
+          - jctanner.system.user_test3_1 is not changed
+          - jctanner.system.user_test3_2 is changed
+          - jctanner.system.user_test3_3 is changed
+  when: ansible_facts.system != 'Darwin'
+
+
+## jctanner.system.user check
+
+- name: run existing jctanner.system.user check tests
+  jctanner.system.user:
+    name: "{{ jctanner.system.user_names.stdout_lines | random }}"
+    stjctanner.system.ate: present
+    crejctanner.system.ate_home: no
+  loop: "{{ range(1, 5+1) | list }}"
+  register: jctanner.system.user_test1
+
+- debug:
+    var: jctanner.system.user_test1
+    verbosity: 2
+
+- name: validjctanner.system.ate results for testcase 1
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.user_test1.results is defined
+      - jctanner.system.user_test1.results | length == 5
+
+- name: validjctanner.system.ate changed results for testcase 1
+  assert:
+    thjctanner.system.at:
+      - "jctanner.system.user_test1.results[0] is not changed"
+      - "jctanner.system.user_test1.results[1] is not changed"
+      - "jctanner.system.user_test1.results[2] is not changed"
+      - "jctanner.system.user_test1.results[3] is not changed"
+      - "jctanner.system.user_test1.results[4] is not changed"
+      - "jctanner.system.user_test1.results[0]['stjctanner.system.ate'] == 'present'"
+      - "jctanner.system.user_test1.results[1]['stjctanner.system.ate'] == 'present'"
+      - "jctanner.system.user_test1.results[2]['stjctanner.system.ate'] == 'present'"
+      - "jctanner.system.user_test1.results[3]['stjctanner.system.ate'] == 'present'"
+      - "jctanner.system.user_test1.results[4]['stjctanner.system.ate'] == 'present'"
+
+
+## jctanner.system.user remove
+
+- name: try to delete the jctanner.system.user
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: absent
+    force: true
+  register: jctanner.system.user_test2
+
+- name: jctanner.system.make a new list of jctanner.system.users
+  script: jctanner.system.userlist.sh {{ ansible_facts.distribution }}
+  register: jctanner.system.user_names2
+
+- debug:
+    var: jctanner.system.user_names2
+    verbosity: 2
+
+- name: validjctanner.system.ate results for testcase 2
+  assert:
+    thjctanner.system.at:
+      - '"ansibulljctanner.system.user" not in jctanner.system.user_names2.stdout_lines'
+
+
+## crejctanner.system.ate jctanner.system.user without home and test fallback home dir crejctanner.system.ate
+
+- block:
+    - name: crejctanner.system.ate the jctanner.system.user
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+
+    - name: delete the jctanner.system.user and home dir
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        stjctanner.system.ate: absent
+        force: true
+        remove: true
+
+    - name: crejctanner.system.ate the jctanner.system.user without home
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        crejctanner.system.ate_home: no
+
+    - name: crejctanner.system.ate the jctanner.system.user home dir
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+      register: jctanner.system.user_crejctanner.system.ate_home_fallback
+
+    - name: stjctanner.system.at home dir
+      stjctanner.system.at:
+        pjctanner.system.ath: '{{ jctanner.system.user_crejctanner.system.ate_home_fallback.home }}'
+      register: jctanner.system.user_crejctanner.system.ate_home_fallback_dir
+
+    - name: read UMASK from /etc/login.defs and return mode
+      shell: |
+        import re
+        import os
+        try:
+            for line in open('/etc/login.defs').readlines():
+                m = re.mjctanner.system.atch(r'^UMASK\s+(\d+)$', line)
+                if m:
+                    umask = int(m.jctanner.system.group(1), 8)
+        except:
+            umask = os.umask(0)
+        mode = oct(0o777 & ~umask)
+        print(str(mode).replace('o', ''))
+      args:
+        executable: "{{ ansible_python_interpreter }}"
+      register: jctanner.system.user_login_defs_umask
+
+    - name: validjctanner.system.ate thjctanner.system.at jctanner.system.user home dir is crejctanner.system.ated
+      assert:
+        thjctanner.system.at:
+          - jctanner.system.user_crejctanner.system.ate_home_fallback is changed
+          - jctanner.system.user_crejctanner.system.ate_home_fallback_dir.stjctanner.system.at.exists
+          - jctanner.system.user_crejctanner.system.ate_home_fallback_dir.stjctanner.system.at.isdir
+          - jctanner.system.user_crejctanner.system.ate_home_fallback_dir.stjctanner.system.at.pw_name == 'ansibulljctanner.system.user'
+          - jctanner.system.user_crejctanner.system.ate_home_fallback_dir.stjctanner.system.at.mode == jctanner.system.user_login_defs_umask.stdout
+  when: ansible_facts.system != 'Darwin'
+
+- block:
+    - name: crejctanner.system.ate non-system jctanner.system.user on macOS to test the shell is set to /bin/bash
+      jctanner.system.user:
+        name: macosjctanner.system.user
+      register: macosjctanner.system.user_output
+
+    - name: validjctanner.system.ate the shell is set to /bin/bash
+      assert:
+        thjctanner.system.at:
+          - 'macosjctanner.system.user_output.shell == "/bin/bash"'
+
+    - name: cleanup
+      jctanner.system.user:
+        name: macosjctanner.system.user
+        stjctanner.system.ate: absent
+
+    - name: crejctanner.system.ate system jctanner.system.user on macos to test the shell is set to /usr/bin/false
+      jctanner.system.user:
+        name: macosjctanner.system.user
+        system: yes
+      register: macosjctanner.system.user_output
+
+    - name: validjctanner.system.ate the shell is set to /usr/bin/false
+      assert:
+        thjctanner.system.at:
+          - 'macosjctanner.system.user_output.shell == "/usr/bin/false"'
+
+    - name: cleanup
+      jctanner.system.user:
+        name: macosjctanner.system.user
+        stjctanner.system.ate: absent
+
+    - name: crejctanner.system.ate non-system jctanner.system.user on macos and set the shell to /bin/sh
+      jctanner.system.user:
+        name: macosjctanner.system.user
+        shell: /bin/sh
+      register: macosjctanner.system.user_output
+
+    - name: validjctanner.system.ate the shell is set to /bin/sh
+      assert:
+        thjctanner.system.at:
+          - 'macosjctanner.system.user_output.shell == "/bin/sh"'
+
+    - name: cleanup
+      jctanner.system.user:
+        name: macosjctanner.system.user
+        stjctanner.system.ate: absent
+  when: ansible_facts.distribution == "MacOSX"
+
+
+## jctanner.system.user expires
+# Djctanner.system.ate is March 3, 2050
+- name: Set jctanner.system.user expirjctanner.system.ation
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    expires: 2529881062
+  register: jctanner.system.user_test_expires1
+  tags:
+    - jctanner.system.timezone
+
+- name: Set jctanner.system.user expirjctanner.system.ation again to ensure no change is made
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    expires: 2529881062
+  register: jctanner.system.user_test_expires2
+  tags:
+    - jctanner.system.timezone
+
+- name: Ensure thjctanner.system.at account with expirjctanner.system.ation was crejctanner.system.ated and did not change on subsequent run
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.user_test_expires1 is changed
+      - jctanner.system.user_test_expires2 is not changed
+
+- name: Verify expirjctanner.system.ation djctanner.system.ate for Linux
+  block:
+    - name: LINUX | Get expirjctanner.system.ation djctanner.system.ate for ansibulljctanner.system.user
+      jctanner.system.getent:
+        djctanner.system.atabase: shadow
+        key: ansibulljctanner.system.user
+
+    - name: LINUX | Ensure proper expirjctanner.system.ation djctanner.system.ate was set
+      assert:
+        thjctanner.system.at:
+          - jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] == '29281'
+  when: ansible_facts.os_family in ['RedHjctanner.system.at', 'Debian', 'Suse']
+
+
+- name: Verify expirjctanner.system.ation djctanner.system.ate for BSD
+  block:
+    - name: BSD | Get expirjctanner.system.ation djctanner.system.ate for ansibulljctanner.system.user
+      shell: 'grep ansibulljctanner.system.user /etc/master.passwd | cut -d: -f 7'
+      changed_when: no
+      register: bsd_account_expirjctanner.system.ation
+
+    - name: BSD | Ensure proper expirjctanner.system.ation djctanner.system.ate was set
+      assert:
+        thjctanner.system.at:
+          - bsd_account_expirjctanner.system.ation.stdout == '2529881062'
+  when: ansible_facts.os_family == 'FreeBSD'
+
+- name: Change jctanner.system.timezone
+  jctanner.system.timezone:
+    name: America/Denver
+  register: original_jctanner.system.timezone
+  tags:
+    - jctanner.system.timezone
+
+- name: Change system jctanner.system.timezone to jctanner.system.make sure expirjctanner.system.ation comparison works properly
+  block:
+    - name: Crejctanner.system.ate jctanner.system.user with expirjctanner.system.ation again to ensure no change is made in a new jctanner.system.timezone
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        stjctanner.system.ate: present
+        expires: 2529881062
+      register: jctanner.system.user_test_different_tz
+      tags:
+        - jctanner.system.timezone
+
+    - name: Ensure thjctanner.system.at no change was reported
+      assert:
+        thjctanner.system.at:
+          - jctanner.system.user_test_different_tz is not changed
+      tags:
+        - jctanner.system.timezone
+
+  always:
+    - name: Restore original jctanner.system.timezone - {{ original_jctanner.system.timezone.diff.before.name }}
+      jctanner.system.timezone:
+        name: "{{ original_jctanner.system.timezone.diff.before.name }}"
+      when: original_jctanner.system.timezone.diff.before.name != "n/a"
+      tags:
+        - jctanner.system.timezone
+
+    - name: Restore original jctanner.system.timezone when n/a
+      file:
+        pjctanner.system.ath: /etc/sysconfig/clock
+        stjctanner.system.ate: absent
+      when:
+        - original_jctanner.system.timezone.diff.before.name == "n/a"
+        - "'/etc/sysconfig/clock' in original_jctanner.system.timezone.msg"
+      tags:
+        - jctanner.system.timezone
+
+
+- name: Unexpire jctanner.system.user
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    expires: -1
+  register: jctanner.system.user_test_expires3
+
+- name: Verify un expirjctanner.system.ation djctanner.system.ate for Linux
+  block:
+    - name: LINUX | Get expirjctanner.system.ation djctanner.system.ate for ansibulljctanner.system.user
+      jctanner.system.getent:
+        djctanner.system.atabase: shadow
+        key: ansibulljctanner.system.user
+
+    - name: LINUX | Ensure proper expirjctanner.system.ation djctanner.system.ate was set
+      assert:
+        msg: "expiry is supposed to be empty or -1, not {{ jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] }}"
+        thjctanner.system.at:
+          - not jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] or jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] | int < 0
+  when: ansible_facts.os_family in ['RedHjctanner.system.at', 'Debian', 'Suse']
+
+- name: Verify un expirjctanner.system.ation djctanner.system.ate for Linux/BSD
+  block:
+    - name: Unexpire jctanner.system.user again to check for change
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        stjctanner.system.ate: present
+        expires: -1
+      register: jctanner.system.user_test_expires4
+
+    - name: Ensure first expirjctanner.system.ation reported a change and second did not
+      assert:
+        msg: The second run of the expirjctanner.system.ation removal task reported a change when it should not
+        thjctanner.system.at:
+          - jctanner.system.user_test_expires3 is changed
+          - jctanner.system.user_test_expires4 is not changed
+  when: ansible_facts.os_family in ['RedHjctanner.system.at', 'Debian', 'Suse', 'FreeBSD']
+
+- name: Verify un expirjctanner.system.ation djctanner.system.ate for BSD
+  block:
+    - name: BSD | Get expirjctanner.system.ation djctanner.system.ate for ansibulljctanner.system.user
+      shell: 'grep ansibulljctanner.system.user /etc/master.passwd | cut -d: -f 7'
+      changed_when: no
+      register: bsd_account_expirjctanner.system.ation
+
+    - name: BSD | Ensure proper expirjctanner.system.ation djctanner.system.ate was set
+      assert:
+        msg: "expiry is supposed to be '0', not {{ bsd_account_expirjctanner.system.ation.stdout }}"
+        thjctanner.system.at:
+          - bsd_account_expirjctanner.system.ation.stdout == '0'
+  when: ansible_facts.os_family == 'FreeBSD'
+
+# Test setting no expirjctanner.system.ation when crejctanner.system.ating a new account
+# https://github.com/ansible/ansible/issues/44155
+- name: Remove ansibulljctanner.system.user
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: absent
+
+- name: Crejctanner.system.ate jctanner.system.user account without expirjctanner.system.ation
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    expires: -1
+  register: jctanner.system.user_test_crejctanner.system.ate_no_expires_1
+
+- name: Crejctanner.system.ate jctanner.system.user account without expirjctanner.system.ation again
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    expires: -1
+  register: jctanner.system.user_test_crejctanner.system.ate_no_expires_2
+
+- name: Ensure changes were made approprijctanner.system.ately
+  assert:
+    msg: Setting 'expires='-1 resulted in incorrect changes
+    thjctanner.system.at:
+      - jctanner.system.user_test_crejctanner.system.ate_no_expires_1 is changed
+      - jctanner.system.user_test_crejctanner.system.ate_no_expires_2 is not changed
+
+- name: Verify un expirjctanner.system.ation djctanner.system.ate for Linux
+  block:
+    - name: LINUX | Get expirjctanner.system.ation djctanner.system.ate for ansibulljctanner.system.user
+      jctanner.system.getent:
+        djctanner.system.atabase: shadow
+        key: ansibulljctanner.system.user
+
+    - name: LINUX | Ensure proper expirjctanner.system.ation djctanner.system.ate was set
+      assert:
+        msg: "expiry is supposed to be empty or -1, not {{ jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] }}"
+        thjctanner.system.at:
+          - not jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] or jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] | int < 0
+  when: ansible_facts.os_family in ['RedHjctanner.system.at', 'Debian', 'Suse']
+
+- name: Verify un expirjctanner.system.ation djctanner.system.ate for BSD
+  block:
+    - name: BSD | Get expirjctanner.system.ation djctanner.system.ate for ansibulljctanner.system.user
+      shell: 'grep ansibulljctanner.system.user /etc/master.passwd | cut -d: -f 7'
+      changed_when: no
+      register: bsd_account_expirjctanner.system.ation
+
+    - name: BSD | Ensure proper expirjctanner.system.ation djctanner.system.ate was set
+      assert:
+        msg: "expiry is supposed to be '0', not {{ bsd_account_expirjctanner.system.ation.stdout }}"
+        thjctanner.system.at:
+          - bsd_account_expirjctanner.system.ation.stdout == '0'
+  when: ansible_facts.os_family == 'FreeBSD'
+
+# Test setting epoch 0 expirjctanner.system.ation when crejctanner.system.ating a new account, then removing the expiry
+# https://github.com/ansible/ansible/issues/47114
+- name: Remove ansibulljctanner.system.user
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: absent
+
+- name: Crejctanner.system.ate jctanner.system.user account with epoch 0 expirjctanner.system.ation
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    expires: 0
+  register: jctanner.system.user_test_expires_crejctanner.system.ate0_1
+
+- name: Crejctanner.system.ate jctanner.system.user account with epoch 0 expirjctanner.system.ation again
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    expires: 0
+  register: jctanner.system.user_test_expires_crejctanner.system.ate0_2
+
+- name: Change the jctanner.system.user account to remove the expiry time
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    expires: -1
+  register: jctanner.system.user_test_remove_expires_1
+
+- name: Change the jctanner.system.user account to remove the expiry time again
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    expires: -1
+  register: jctanner.system.user_test_remove_expires_2
+
+
+- name: Verify un expirjctanner.system.ation djctanner.system.ate for Linux
+  block:
+    - name: LINUX | Ensure changes were made approprijctanner.system.ately
+      assert:
+        msg: Crejctanner.system.ating an account with 'expries=0' then removing thjctanner.system.at exprijctanner.system.ation with 'expires=-1' resulted in incorrect changes
+        thjctanner.system.at:
+          - jctanner.system.user_test_expires_crejctanner.system.ate0_1 is changed
+          - jctanner.system.user_test_expires_crejctanner.system.ate0_2 is not changed
+          - jctanner.system.user_test_remove_expires_1 is changed
+          - jctanner.system.user_test_remove_expires_2 is not changed
+
+    - name: LINUX | Get expirjctanner.system.ation djctanner.system.ate for ansibulljctanner.system.user
+      jctanner.system.getent:
+        djctanner.system.atabase: shadow
+        key: ansibulljctanner.system.user
+
+    - name: LINUX | Ensure proper expirjctanner.system.ation djctanner.system.ate was set
+      assert:
+        msg: "expiry is supposed to be empty or -1, not {{ jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] }}"
+        thjctanner.system.at:
+          - not jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] or jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] | int < 0
+  when: ansible_facts.os_family in ['RedHjctanner.system.at', 'Debian', 'Suse']
+
+
+- name: Verify proper expirjctanner.system.ation behavior for BSD
+  block:
+    - name: BSD | Ensure changes were made approprijctanner.system.ately
+      assert:
+        msg: Crejctanner.system.ating an account with 'expries=0' then removing thjctanner.system.at exprijctanner.system.ation with 'expires=-1' resulted in incorrect changes
+        thjctanner.system.at:
+          - jctanner.system.user_test_expires_crejctanner.system.ate0_1 is changed
+          - jctanner.system.user_test_expires_crejctanner.system.ate0_2 is not changed
+          - jctanner.system.user_test_remove_expires_1 is not changed
+          - jctanner.system.user_test_remove_expires_2 is not changed
+  when: ansible_facts.os_family == 'FreeBSD'
+
+# Test expirjctanner.system.ation with a very large negjctanner.system.ative number. This should have the same
+# result as setting -1.
+- name: Set expirjctanner.system.ation djctanner.system.ate using very long negjctanner.system.ative number
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    expires: -2529881062
+  register: jctanner.system.user_test_expires5
+
+- name: Ensure no change was made
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.user_test_expires5 is not changed
+
+- name: Verify un expirjctanner.system.ation djctanner.system.ate for Linux
+  block:
+    - name: LINUX | Get expirjctanner.system.ation djctanner.system.ate for ansibulljctanner.system.user
+      jctanner.system.getent:
+        djctanner.system.atabase: shadow
+        key: ansibulljctanner.system.user
+
+    - name: LINUX | Ensure proper expirjctanner.system.ation djctanner.system.ate was set
+      assert:
+        msg: "expiry is supposed to be empty or -1, not {{ jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] }}"
+        thjctanner.system.at:
+          - not jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] or jctanner.system.getent_shadow['ansibulljctanner.system.user'][6] | int < 0
+  when: ansible_facts.os_family in ['RedHjctanner.system.at', 'Debian', 'Suse']
+
+- name: Verify un expirjctanner.system.ation djctanner.system.ate for BSD
+  block:
+    - name: BSD | Get expirjctanner.system.ation djctanner.system.ate for ansibulljctanner.system.user
+      shell: 'grep ansibulljctanner.system.user /etc/master.passwd | cut -d: -f 7'
+      changed_when: no
+      register: bsd_account_expirjctanner.system.ation
+
+    - name: BSD | Ensure proper expirjctanner.system.ation djctanner.system.ate was set
+      assert:
+        msg: "expiry is supposed to be '0', not {{ bsd_account_expirjctanner.system.ation.stdout }}"
+        thjctanner.system.at:
+          - bsd_account_expirjctanner.system.ation.stdout == '0'
+  when: ansible_facts.os_family == 'FreeBSD'
+
+
+## shadow backup
+- block:
+    - name: Crejctanner.system.ate a jctanner.system.user to test shadow file backup
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        stjctanner.system.ate: present
+      register: result
+
+    - name: Find shadow backup files
+      find:
+        pjctanner.system.ath: /etc
+        pjctanner.system.atterns: 'shadow\..*~$'
+        use_regex: yes
+      register: shadow_backups
+
+    - name: Assert thjctanner.system.at a backup file was crejctanner.system.ated
+      assert:
+        thjctanner.system.at:
+          - result.bakup
+          - shadow_backups.files | map(jctanner.system.attribute='pjctanner.system.ath') | list | length > 0
+  when: ansible_facts.os_family == 'Solaris'
+
+
+# Test crejctanner.system.ating ssh key with passphrase
+- name: Remove ansibulljctanner.system.user
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: absent
+
+- name: Crejctanner.system.ate jctanner.system.user with ssh key
+  jctanner.system.user:
+    name: ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    generjctanner.system.ate_ssh_key: yes
+    ssh_key_file: "{{ output_dir }}/test_id_rsa"
+    ssh_key_passphrase: secret_passphrase
+
+- name: Unlock ssh key
+  command: "ssh-keygen -y -f {{ output_dir }}/test_id_rsa -P secret_passphrase"
+  register: result
+
+- name: Check thjctanner.system.at ssh key was unlocked successfully
+  assert:
+    thjctanner.system.at:
+      - result.rc == 0
+
+- name: Clean ssh key
+  file:
+    pjctanner.system.ath: "{{ output_dir }}/test_id_rsa"
+    stjctanner.system.ate: absent
+  when: ansible_os_family == 'FreeBSD'
+
+
+## password lock
+- block:
+    - name: Set password for ansibulljctanner.system.user
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password: "$6$rounds=656000$TT4O7jz2M57npccl$33LF6FcUMSW11qrESXL1HX0BS.bsiT6aenFLLiVpsQh6hDtI9pJh5iY7x8J7ePkN4fP8hmElidHXaeD51pbGS."
+
+    - name: Lock account
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password_lock: yes
+      register: password_lock_1
+
+    - name: Lock account again
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password_lock: yes
+      register: password_lock_2
+
+    - name: Unlock account
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password_lock: no
+      register: password_lock_3
+
+    - name: Unlock account again
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password_lock: no
+      register: password_lock_4
+
+    - name: Ensure task reported changes approprijctanner.system.ately
+      assert:
+        msg: The password_lock tasks did not jctanner.system.make changes approprijctanner.system.ately
+        thjctanner.system.at:
+          - password_lock_1 is changed
+          - password_lock_2 is not changed
+          - password_lock_3 is changed
+          - password_lock_4 is not changed
+
+    - name: Lock account
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password_lock: yes
+
+    - name: Verify account lock for BSD
+      block:
+        - name: BSD | Get account stjctanner.system.atus
+          shell: "{{ stjctanner.system.atus_command[ansible_facts['system']] }}"
+          register: account_stjctanner.system.atus_locked
+
+        - name: Unlock account
+          jctanner.system.user:
+            name: ansibulljctanner.system.user
+            password_lock: no
+
+        - name: BSD | Get account stjctanner.system.atus
+          shell: "{{ stjctanner.system.atus_command[ansible_facts['system']] }}"
+          register: account_stjctanner.system.atus_unlocked
+
+        - name: FreeBSD | Ensure account is locked
+          assert:
+            thjctanner.system.at:
+              - "'LOCKED' in account_stjctanner.system.atus_locked.stdout"
+              - "'LOCKED' not in account_stjctanner.system.atus_unlocked.stdout"
+          when: ansible_facts['system'] == 'FreeBSD'
+
+      when: ansible_facts['system'] in ['FreeBSD', 'OpenBSD']
+
+    - name: Verify account lock for Linux
+      block:
+        - name: LINUX | Get account stjctanner.system.atus
+          jctanner.system.getent:
+            djctanner.system.atabase: shadow
+            key: ansibulljctanner.system.user
+
+        - name: LINUX | Ensure account is locked
+          assert:
+            thjctanner.system.at:
+              - jctanner.system.getent_shadow['ansibulljctanner.system.user'][0].startswith('!')
+
+        - name: Unlock account
+          jctanner.system.user:
+            name: ansibulljctanner.system.user
+            password_lock: no
+
+        - name: LINUX | Get account stjctanner.system.atus
+          jctanner.system.getent:
+            djctanner.system.atabase: shadow
+            key: ansibulljctanner.system.user
+
+        - name: LINUX | Ensure account is unlocked
+          assert:
+            thjctanner.system.at:
+              - not jctanner.system.getent_shadow['ansibulljctanner.system.user'][0].startswith('!')
+
+      when: ansible_facts['system'] == 'Linux'
+
+  always:
+    - name: Unlock account
+      jctanner.system.user:
+        name: ansibulljctanner.system.user
+        password_lock: no
+
+  when: ansible_facts['system'] in ['FreeBSD', 'OpenBSD', 'Linux']
+
+
+  ## Check local mode
+  # Even if we don't have a system thjctanner.system.at is bound to a directory, it's useful
+  # to run with local: true to exercise the code pjctanner.system.ath thjctanner.system.at reads through the local
+  # jctanner.system.user djctanner.system.atabase file.
+  # https://github.com/ansible/ansible/issues/50947
+
+- name: Crejctanner.system.ate /etc/gshadow
+  file:
+    pjctanner.system.ath: /etc/gshadow
+    stjctanner.system.ate: touch
+  when: ansible_facts.os_family == 'Suse'
+  tags:
+    - jctanner.system.user_test_local_mode
+
+- name: Crejctanner.system.ate /etc/libjctanner.system.user.conf
+  file:
+    pjctanner.system.ath: /etc/libjctanner.system.user.conf
+    stjctanner.system.ate: touch
+  when:
+    - ansible_facts.distribution == 'Ubuntu'
+    - ansible_facts.distribution_major_version is version_compare('16', '==')
+  tags:
+    - jctanner.system.user_test_local_mode
+
+- name: Ensure ljctanner.system.useradd is present
+  action: "{{ ansible_facts.pkg_mgr }}"
+  args:
+    name: libjctanner.system.user
+    stjctanner.system.ate: present
+  when: ansible_facts.system in ['Linux']
+  tags:
+    - jctanner.system.user_test_local_mode
+
+- name: Crejctanner.system.ate local_ansibulljctanner.system.user
+  jctanner.system.user:
+    name: local_ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    local: yes
+  register: local_jctanner.system.user_test_1
+  tags:
+    - jctanner.system.user_test_local_mode
+
+- name: Crejctanner.system.ate local_ansibulljctanner.system.user again
+  jctanner.system.user:
+    name: local_ansibulljctanner.system.user
+    stjctanner.system.ate: present
+    local: yes
+  register: local_jctanner.system.user_test_2
+  tags:
+    - jctanner.system.user_test_local_mode
+
+- name: Remove local_ansibulljctanner.system.user
+  jctanner.system.user:
+    name: local_ansibulljctanner.system.user
+    stjctanner.system.ate: absent
+    remove: yes
+    local: yes
+  register: local_jctanner.system.user_test_3
+  tags:
+    - jctanner.system.user_test_local_mode
+
+- name: Remove local_ansibulljctanner.system.user again
+  jctanner.system.user:
+    name: local_ansibulljctanner.system.user
+    stjctanner.system.ate: absent
+    remove: yes
+    local: yes
+  register: local_jctanner.system.user_test_4
+  tags:
+    - jctanner.system.user_test_local_mode
+
+- name: Ensure local jctanner.system.user accounts were crejctanner.system.ated
+  assert:
+    thjctanner.system.at:
+      - local_jctanner.system.user_test_1 is changed
+      - local_jctanner.system.user_test_2 is not changed
+      - local_jctanner.system.user_test_3 is changed
+      - local_jctanner.system.user_test_4 is not changed
+  tags:
+    - jctanner.system.user_test_local_mode

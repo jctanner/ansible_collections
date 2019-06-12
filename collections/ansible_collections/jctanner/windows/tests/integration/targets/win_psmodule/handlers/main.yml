@@ -1,0 +1,34 @@
+---
+- name: re-add PSGallery repository
+  jctanner.windows.win_shell: Register-PSRepository -Default -InstallationPolicy Untrusted
+
+- name: remove registered repos
+  jctanner.windows.win_psrepository:
+    name: '{{ item }}'
+    state: absent
+  loop:
+  - PSRepo 1
+  - PSRepo 2
+
+- name: remove CA cert from trusted root store
+  jctanner.windows.win_certificate_store:
+    thumbprint: '{{ ca_cert_import.thumbprints[0] }}'
+    store_location: LocalMachine
+    store_name: Root
+    state: absent
+
+- name: remove signing key from trusted publisher store
+  jctanner.windows.win_certificate_store:
+    thumbprint: '{{ sign_cert_import.thumbprints[0] }}'
+    store_location: LocalMachine
+    store_name: TrustedPublisher
+    state: absent
+
+- name: remove test packages
+  jctanner.windows.win_psmodule:
+    name: '{{ item }}'
+    state: absent
+  loop:
+  - ansible-test1
+  - ansible-test2
+  - ansible-clobber

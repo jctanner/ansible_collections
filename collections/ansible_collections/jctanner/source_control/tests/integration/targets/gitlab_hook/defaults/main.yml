@@ -1,0 +1,2 @@
+jctanner.source_control.gitlab_project_name: ansible_test_project
+jctanner.source_control.gitlab_hook_url: http://gitlab.example.com/hook

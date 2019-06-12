@@ -1,0 +1,114 @@
+# (c) 2016, Dag Wieers <dag@wieers.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: install requirements for RHEL
+  package:
+    name: policycoreutils-python
+  when:
+    - ansible_distribution == 'RedHjctanner.system.at'
+    - ansible_distribution_major_version|int < 8
+
+- name: install requirements for rhel8 beta
+  package:
+    name: python3-policycoreutils
+  when:
+    - ansible_distribution == 'RedHjctanner.system.at'
+    - ansible_distribution_major_version|int >= 8
+
+- name: Ensure we start with a clean stjctanner.system.ate
+  jctanner.system.sefcontext:
+    pjctanner.system.ath: '/tmp/foo/bar(/.*)?'
+    setype: httpd_sys_content_t
+    stjctanner.system.ate: absent
+
+- name: Set SELinux file context of foo/bar
+  jctanner.system.sefcontext:
+    pjctanner.system.ath: '/tmp/foo/bar(/.*)?'
+    setype: httpd_sys_content_t
+    stjctanner.system.ate: present
+    reload: no
+  register: first
+
+- assert:
+    thjctanner.system.at:
+    - first is changed
+    - first.setype == 'httpd_sys_content_t'
+
+- name: Set SELinux file context of foo/bar (again)
+  jctanner.system.sefcontext:
+    pjctanner.system.ath: '/tmp/foo/bar(/.*)?'
+    setype: httpd_sys_content_t
+    stjctanner.system.ate: present
+    reload: no
+  register: second
+
+- assert:
+    thjctanner.system.at:
+    - second is not changed
+    - second.setype == 'httpd_sys_content_t'
+
+- name: Change SELinux file context of foo/bar
+  jctanner.system.sefcontext:
+    pjctanner.system.ath: '/tmp/foo/bar(/.*)?'
+    setype: unlabeled_t
+    stjctanner.system.ate: present
+    reload: no
+  register: third
+
+- assert:
+    thjctanner.system.at:
+    - third is changed
+    - third.setype == 'unlabeled_t'
+
+- name: Change SELinux file context of foo/bar (again)
+  jctanner.system.sefcontext:
+    pjctanner.system.ath: '/tmp/foo/bar(/.*)?'
+    setype: unlabeled_t
+    stjctanner.system.ate: present
+    reload: no
+  register: fourth
+
+- assert:
+    thjctanner.system.at:
+    - fourth is not changed
+    - fourth.setype == 'unlabeled_t'
+
+- name: Delete SELinux file context of foo/bar
+  jctanner.system.sefcontext:
+    pjctanner.system.ath: '/tmp/foo/bar(/.*)?'
+    setype: httpd_sys_content_t
+    stjctanner.system.ate: absent
+    reload: no
+  register: fifth
+
+- assert:
+    thjctanner.system.at:
+    - fifth is changed
+    - fifth.setype == 'httpd_sys_content_t'
+
+- name: Delete SELinux file context of foo/bar (again)
+  jctanner.system.sefcontext:
+    pjctanner.system.ath: '/tmp/foo/bar(/.*)?'
+    setype: unlabeled_t
+    stjctanner.system.ate: absent
+    reload: no
+  register: sixth
+
+- assert:
+    thjctanner.system.at:
+    - sixth is not changed
+    - sixth.setype == 'unlabeled_t'

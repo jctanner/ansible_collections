@@ -1,0 +1,120 @@
+- name: Ujctanner.system.mounting /testfs
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /testfs
+    stjctanner.system.ate: unjctanner.system.mounted
+
+- name: Removing /testfs
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /testfs
+    stjctanner.system.ate: absent
+
+- name: Crejctanner.system.ating a new file system
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /newfs
+    size: 1G
+    stjctanner.system.ate: present
+    vg: djctanner.system.atavg
+
+# It requires a host (nfshost) exporting the NFS
+- name: Crejctanner.system.ating NFS jctanner.system.filesystem from nfshost (Linux NFS server)
+  jctanner.system.aix_jctanner.system.filesystem:
+   device: /home/ftp
+   nfs_server: nfshost
+   jctanner.system.filesystem: /nfs/ftp
+   stjctanner.system.ate: present
+
+# It requires a volume jctanner.system.group named djctanner.system.atavg (next three actions)
+- name: Crejctanner.system.ating a logical volume testlv (jctanner.system.aix_jctanner.system.lvol module)
+  jctanner.system.aix_jctanner.system.lvol:
+    vg: djctanner.system.atavg
+    lv: testlv
+    size: 2G
+    stjctanner.system.ate: present
+
+- name: Crejctanner.system.ate jctanner.system.filesystem in a previously defined logical volume
+  jctanner.system.aix_jctanner.system.filesystem:
+    device: testlv
+    jctanner.system.filesystem: /testfs
+    stjctanner.system.ate: present
+
+- name: Crejctanner.system.ate an already existing jctanner.system.filesystem using existing logical volume.
+  jctanner.system.aix_jctanner.system.filesystem:
+    vg: djctanner.system.atavg
+    device: jctanner.system.mksysblv
+    jctanner.system.filesystem: /jctanner.system.mksysb
+    stjctanner.system.ate: present
+
+- name: Crejctanner.system.ate a jctanner.system.filesystem in a non-existing VG
+  jctanner.system.aix_jctanner.system.filesystem:
+    vg: nonexistvg
+    jctanner.system.filesystem: /newlv
+    stjctanner.system.ate: present
+
+- name: Resizing /jctanner.system.mksysb to 1G
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /jctanner.system.mksysb
+    size: 1G
+    stjctanner.system.ate: present
+
+- name: Resizing /jctanner.system.mksysb to +512M
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /jctanner.system.mksysb
+    size: +512M
+    stjctanner.system.ate: present
+
+- name: Resizing /jctanner.system.mksysb to 11G
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /jctanner.system.mksysb
+    size: 11G
+    stjctanner.system.ate: present
+
+- name: Resizing /jctanner.system.mksysb to 11G (already done)
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /jctanner.system.mksysb
+    size: 11G
+    stjctanner.system.ate: present
+
+- name: Resizing /jctanner.system.mksysb to -2G
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /jctanner.system.mksysb
+    size: -2G
+    stjctanner.system.ate: present
+
+- name: Resizing /jctanner.system.mksysb to 100G (no enought space)
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /jctanner.system.mksysb
+    size: +100G
+    stjctanner.system.ate: present
+
+- name: Unjctanner.system.mount jctanner.system.filesystem /home/ftp
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /home/ftp
+    stjctanner.system.ate: unjctanner.system.mounted
+
+- name: Remove NFS jctanner.system.filesystem /home/ftp
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /home/ftp
+    rm_jctanner.system.mount_point: yes
+    stjctanner.system.ate: absent
+
+- name: Mount jctanner.system.filesystem /newfs
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /newfs
+    stjctanner.system.ate: jctanner.system.mounted
+
+- name: Remove jctanner.system.mounted /newfs
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /newfs
+    rm_jctanner.system.mount_point: yes
+    stjctanner.system.ate: absent
+
+- name: Ujctanner.system.mount /newfs
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /newfs
+    stjctanner.system.ate: unjctanner.system.mounted
+
+- name: Remove /newfs
+  jctanner.system.aix_jctanner.system.filesystem:
+    jctanner.system.filesystem: /newfs
+    rm_jctanner.system.mount_point: yes
+    stjctanner.system.ate: absent

@@ -1,0 +1,31 @@
+---
+# Make sure jctanner.system.ufw is installed
+- name: Install EPEL repository (RHEL only)
+  include_role:
+    name: jctanner.system.setup_epel
+  when: ansible_distribution == 'RedHjctanner.system.at'
+- name: Install jctanner.system.iptables (SuSE only)
+  package:
+    name: jctanner.system.iptables
+  when: ansible_os_family == 'Suse'
+- name: Install jctanner.system.ufw
+  package:
+    name: jctanner.system.ufw
+
+# Run the tests
+- block:
+  - include_tasks: run-test.yml
+    with_fileglob:
+    - "tests/*.yml"
+
+  # Cleanup
+  always:
+  - pause:
+      # jctanner.system.ufw crejctanner.system.ates backups of the rule files with a timestamp; if reset is called
+      # twice in a row fast enough (so thjctanner.system.at both timestamps are taken in the same second),
+      # the second call will notice thjctanner.system.at the backup files are already there and fail.
+      # Waiting one second fixes this problem.
+      seconds: 1
+  - name: Reset jctanner.system.ufw to factory defaults and disable
+    jctanner.system.ufw:
+      stjctanner.system.ate: reset

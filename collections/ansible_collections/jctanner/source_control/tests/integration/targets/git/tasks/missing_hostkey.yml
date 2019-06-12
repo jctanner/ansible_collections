@@ -1,0 +1,48 @@
+- name: MISSING-HOSTKEY | checkout ssh://jctanner.source_control.git@jctanner.source_control.github.com repo without accept_hostkey (expected fail)
+  jctanner.source_control.git:
+    repo: '{{ repo_format2 }}'
+    dest: '{{ checkout_dir }}'
+    ssh_opts: '-o UserKnownHostsFile={{ output_dir }}/known_hosts'
+  register: jctanner.source_control.git_result
+  ignore_errors: true
+
+- assert:
+    that:
+      - jctanner.source_control.git_result is failed
+
+- name: MISSING-HOSTKEY | checkout jctanner.source_control.git@jctanner.source_control.github.com repo with accept_hostkey (expected pass)
+  jctanner.source_control.git:
+    repo: '{{ repo_format2 }}'
+    dest: '{{ checkout_dir }}'
+    accept_hostkey: true
+    key_file: '{{ jctanner.source_control.github_ssh_private_key }}'
+    ssh_opts: '-o UserKnownHostsFile={{ output_dir }}/known_hosts'
+  register: jctanner.source_control.git_result
+  when: jctanner.source_control.github_ssh_private_key is defined
+
+- assert:
+    that:
+      - jctanner.source_control.git_result is changed
+  when: jctanner.source_control.github_ssh_private_key is defined
+
+- name: MISSING-HOSTKEY | clear checkout_dir
+  file:
+    state: absent
+    path: '{{ checkout_dir }}'
+  when: jctanner.source_control.github_ssh_private_key is defined
+
+- name: MISSING-HOSTKEY | checkout ssh://jctanner.source_control.git@jctanner.source_control.github.com repo with accept_hostkey (expected pass)
+  jctanner.source_control.git:
+    repo: '{{ repo_format3 }}'
+    dest: '{{ checkout_dir }}'
+    version: 'master'
+    accept_hostkey: false # should already have been accepted
+    key_file: '{{ jctanner.source_control.github_ssh_private_key }}'
+    ssh_opts: '-o UserKnownHostsFile={{ output_dir }}/known_hosts'
+  register: jctanner.source_control.git_result
+  when: jctanner.source_control.github_ssh_private_key is defined
+
+- assert:
+    that:
+      - jctanner.source_control.git_result is changed
+  when: jctanner.source_control.github_ssh_private_key is defined

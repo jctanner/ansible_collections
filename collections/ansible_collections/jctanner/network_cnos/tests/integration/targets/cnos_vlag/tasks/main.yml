@@ -1,0 +1,51 @@
+# This contain sample template execution tasks
+---
+- name: Test Vlag  - enable
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}'
+  with_items: "{{test_vlag_data1}}"
+- name: Test Vlag - autorecovery
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}'
+  with_items: "{{test_vlag_data2}}"
+- name: Test Vlag - config-consistency
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}'
+  with_items: "{{test_vlag_data3}}"
+- name: Test Vlag - isl
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}'
+  with_items: "{{test_vlag_data4}}"
+- name: Test Vlag  - mac-address-table
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}'
+  with_items: "{{test_vlag_data5}}"
+- name: Test Vlag - peer-gateway
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}'
+  with_items: "{{test_vlag_data6}}"
+- name: Test Vlag - priority
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}'
+  with_items: "{{test_vlag_data7}}"
+- name: Test Vlag - startup-delay
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}'
+  with_items: "{{test_vlag_data8}}"
+- name: Test Vlag  - tier-id
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}'
+  with_items: "{{test_vlag_data9}}"
+- name: Test Vlag - vrrp
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}'
+  with_items: "{{test_vlag_data10}}"
+- name: Test Vlag - instance
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}' vlagArg3='{{item.vlagArg3}}'
+  with_items: "{{test_vlag_data11}}"
+- name: Test Vlag - instance2
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}'
+  with_items: "{{test_vlag_data12}}"
+- name: Test Vlag  - keepalive-attempts
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}' vlagArg3='{{item.vlagArg3}}'
+  with_items: "{{test_vlag_data13}}"
+- name: Test Vlag - keepalive-interval
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}' vlagArg3='{{item.vlagArg3}}'
+  with_items: "{{test_vlag_data14}}"
+- name: Test Vlag - retry-interval
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}' vlagArg3='{{item.vlagArg3}}'
+  with_items: "{{test_vlag_data15}}"
+- name: Test Vlag - peer ip
+  jctanner.network_cnos.cnos_vlag:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_vlag_{{ inventory_hostname }}_output.txt vlagArg1='{{item.vlagArg1}}' vlagArg2='{{item.vlagArg2}}' vlagArg3='{{item.vlagArg3}}'
+  with_items: "{{test_vlag_data16}}"
+# Completed file

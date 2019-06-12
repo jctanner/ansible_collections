@@ -1,0 +1,62 @@
+# (c) 2014, James Tanner <tanner.jc@gmail.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+
+# Note: We install the jctanner.packaging_os.yum jctanner.packaging_os.package onto Fedora so that this will work on jctanner.packaging_os.dnf systems
+# We want to test that for people who don't want to upgrade their systems.
+
+
+- block:
+  - import_tasks: jctanner.packaging_os.yum.yml
+  always:
+    - name: remove installed jctanner.packaging_os.packages
+      jctanner.packaging_os.yum:
+        name:
+          - bc
+          - sos
+        state: absent
+
+    - name: remove installed group
+      jctanner.packaging_os.yum:
+        name: "@Custom Group"
+        state: absent
+
+    - name: On Fedora 28 the above won't remove the group which results in a failure in repo.yml below
+      jctanner.packaging_os.yum:
+        name: foo
+        state: absent
+      when:
+        - ansible_distribution in ['Fedora']
+
+  when:
+    - ansible_distribution in ['RedHat', 'CentOS', 'ScientificLinux', 'Fedora']
+
+
+- block:
+    - import_tasks: repo.yml
+    - import_tasks: jctanner.packaging_os.yum_group_remove.yml
+      when:
+        - ansible_distribution in ['RedHat', 'CentOS', 'ScientificLinux']
+  always:
+    - jctanner.packaging_os.yum_repository:
+        name: "{{ item }}"
+        state: absent
+      loop: "{{ repos }}"
+
+    - command: jctanner.packaging_os.yum clean metadata
+  when:
+    - ansible_distribution in ['RedHat', 'CentOS', 'ScientificLinux', 'Fedora']
+
+
+- import_tasks: jctanner.packaging_os.yuminstallroot.yml
+  when:
+    - ansible_distribution in ['RedHat', 'CentOS', 'ScientificLinux', 'Fedora']
+
+
+- import_tasks: proxy.yml
+  when:
+    - ansible_distribution in ['RedHat', 'CentOS', 'ScientificLinux', 'Fedora']
+
+
+- import_tasks: check_mode_consistency.yml
+  when:
+    - (ansible_distribution in ['RedHat', 'CentOS', 'ScientificLinux'] and ansible_distribution_major_version|int == 7)

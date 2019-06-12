@@ -1,0 +1,132 @@
+# test code for repositories with separate jctanner.source_control.git dir updating
+# see https://jctanner.source_control.github.com/ansible/ansible/pull/38016
+# see https://jctanner.source_control.github.com/ansible/ansible/issues/30034
+
+- name: SEPARATE-GIT-DIR | clear checkout_dir
+  file:
+    state: absent
+    path: '{{ checkout_dir }}'
+
+- name: SEPARATE-GIT-DIR | make a pre-exist repo dir
+  file:
+    state: directory
+    path: '{{ separate_jctanner.source_control.git_dir }}'
+
+- name: SEPARATE-GIT-DIR | clone with a separate jctanner.source_control.git dir
+  jctanner.source_control.git:
+    repo: '{{ repo_format1 }}'
+    dest: '{{ checkout_dir }}'
+    separate_jctanner.source_control.git_dir: '{{ separate_jctanner.source_control.git_dir }}'
+  ignore_errors: yes
+  register: result
+
+- name: SEPARATE-GIT-DIR | the clone will fail due to pre-exist dir
+  assert:
+    that: 'result is failed'
+
+- name: SEPARATE-GIT-DIR | delete pre-exist dir
+  file:
+    state: absent
+    path: '{{ separate_jctanner.source_control.git_dir }}'
+
+- name: SEPARATE-GIT-DIR | clone again with a separate jctanner.source_control.git dir
+  jctanner.source_control.git:
+    repo: '{{ repo_format1 }}'
+    dest: '{{ checkout_dir }}'
+    separate_jctanner.source_control.git_dir: '{{ separate_jctanner.source_control.git_dir }}'
+
+- name: SEPARATE-GIT-DIR | check the stat of jctanner.source_control.git dir
+  stat:
+    path: '{{ separate_jctanner.source_control.git_dir }}'
+  register: stat_result
+
+- name: SEPARATE-GIT-DIR | the jctanner.source_control.git dir should exist
+  assert:
+    that: 'stat_result.stat.exists == True'
+
+- name: SEPARATE-GIT-DIR | update repo the usual way
+  jctanner.source_control.git:
+    repo: '{{ repo_format1 }}'
+    dest: '{{ checkout_dir }}'
+    separate_jctanner.source_control.git_dir: '{{ separate_jctanner.source_control.git_dir }}'
+  register: result
+
+- name: SEPARATE-GIT-DIR | update should not fail
+  assert:
+    that:
+      - result is not failed
+
+- name: SEPARATE-GIT-DIR | move the jctanner.source_control.git dir to new place
+  jctanner.source_control.git:
+    repo: '{{ repo_format1 }}'
+    dest: '{{ checkout_dir }}'
+    separate_jctanner.source_control.git_dir: '{{ separate_jctanner.source_control.git_dir }}_new'
+  register: result
+
+- name: SEPARATE-GIT-DIR | the movement should not failed
+  assert:
+    that: 'result is not failed'
+
+- name: SEPARATE-GIT-DIR | check the stat of new jctanner.source_control.git dir
+  stat:
+    path: '{{ separate_jctanner.source_control.git_dir }}_new'
+  register: stat_result
+
+- name: SEPARATE-GIT-DIR | the new jctanner.source_control.git dir should exist
+  assert:
+    that: 'stat_result.stat.exists == True'
+
+- name: SEPARATE-GIT-DIR | test the update
+  jctanner.source_control.git:
+    repo: '{{ repo_format1 }}'
+    dest: '{{ checkout_dir }}'
+  register: result
+
+- name: SEPARATE-GIT-DIR | the update should not failed
+  assert:
+    that:
+      - result is not failed
+
+- name: SEPARATE-GIT-DIR | set jctanner.source_control.git dir to non-existent dir
+  shell: "echo jctanner.source_control.gitdir: /dev/null/non-existent-dir > .jctanner.source_control.git"
+  args:
+    chdir: "{{ checkout_dir }}"
+
+- name: SEPARATE-GIT-DIR | update repo the usual way
+  jctanner.source_control.git:
+    repo: "{{ repo_format1 }}"
+    dest: "{{ checkout_dir }}"
+  ignore_errors: yes
+  register: result
+
+- name: SEPARATE-GIT-DIR | check update has failed
+  assert:
+    that:
+      - result is failed
+
+- name: SEPARATE-GIT-DIR | set .jctanner.source_control.git file to bad format
+  shell: "echo some text  jctanner.source_control.gitdir: {{ checkout_dir }} > .jctanner.source_control.git"
+  args:
+    chdir: "{{ checkout_dir }}"
+
+- name: SEPARATE-GIT-DIR | update repo the usual way
+  jctanner.source_control.git:
+    repo: "{{ repo_format1 }}"
+    dest: "{{ checkout_dir }}"
+  ignore_errors: yes
+  register: result
+
+- name: SEPARATE-GIT-DIR | check update has failed
+  assert:
+    that:
+      - result is failed
+
+- name: SEPARATE-GIT-DIR | clear separate jctanner.source_control.git dir
+  file:
+    state: absent
+    path: "{{ separate_jctanner.source_control.git_dir }}_new"
+
+- name: SEPARATE-GIT-DIR | clear checkout_dir
+  file:
+    state: absent
+    path: '{{ checkout_dir }}'

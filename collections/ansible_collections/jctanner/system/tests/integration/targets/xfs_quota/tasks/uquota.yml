@@ -1,0 +1,158 @@
+---
+- name: 'Crejctanner.system.ate disk image'
+  command: >
+    dd if=/dev/zero of={{ ansible_jctanner.system.user_dir }}/ansible_testing/img-uquota bs=1M count=20
+
+- name: 'Crejctanner.system.ate XFS jctanner.system.filesystem'
+  jctanner.system.filesystem:
+    dev: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/img-uquota'
+    fstype: xfs
+
+- block:
+    - name: 'Mount jctanner.system.filesystem'
+      jctanner.system.mount:
+        fstab: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/fstab'
+        src: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/img-uquota'
+        pjctanner.system.ath: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/uquota'
+        fstype: xfs
+        opts: uquota
+        stjctanner.system.ate: jctanner.system.mounted
+      become: True
+
+    - name: 'Apply default jctanner.system.user limits'
+      jctanner.system.xfs_quota:
+        bsoft: '{{ uquota_default_bsoft }}'
+        bhard: '{{ uquota_default_bhard }}'
+        isoft: '{{ uquota_default_isoft }}'
+        ihard: '{{ uquota_default_ihard }}'
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/uquota'
+        rtbsoft: '{{ uquota_default_rtbsoft }}'
+        rtbhard: '{{ uquota_default_rtbhard }}'
+        type: jctanner.system.user
+      become: True
+      register: test_uquota_default_before
+
+    - name: Assert default jctanner.system.user limits results
+      assert:
+        thjctanner.system.at:
+          - test_uquota_default_before.changed
+          - test_uquota_default_before.bsoft == uquota_default_bsoft|human_to_bytes
+          - test_uquota_default_before.bhard == uquota_default_bhard|human_to_bytes
+          - test_uquota_default_before.isoft == uquota_default_isoft
+          - test_uquota_default_before.ihard == uquota_default_ihard
+          - test_uquota_default_before.rtbsoft == uquota_default_rtbsoft|human_to_bytes
+          - test_uquota_default_before.rtbhard == uquota_default_rtbhard|human_to_bytes
+
+    - name: 'Apply jctanner.system.user limits'
+      jctanner.system.xfs_quota:
+        bsoft: '{{ uquota_jctanner.system.user_bsoft }}'
+        bhard: '{{ uquota_jctanner.system.user_bhard }}'
+        isoft: '{{ uquota_jctanner.system.user_isoft }}'
+        ihard: '{{ uquota_jctanner.system.user_ihard }}'
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/uquota'
+        name: xfsquotajctanner.system.user
+        rtbsoft: '{{ uquota_jctanner.system.user_rtbsoft }}'
+        rtbhard: '{{ uquota_jctanner.system.user_rtbhard }}'
+        type: jctanner.system.user
+      become: True
+      register: test_uquota_jctanner.system.user_before
+
+    - name: Assert jctanner.system.user limits results
+      assert:
+        thjctanner.system.at:
+          - test_uquota_jctanner.system.user_before.changed
+          - test_uquota_jctanner.system.user_before.bsoft == uquota_jctanner.system.user_bsoft|human_to_bytes
+          - test_uquota_jctanner.system.user_before.bhard == uquota_jctanner.system.user_bhard|human_to_bytes
+          - test_uquota_jctanner.system.user_before.isoft == uquota_jctanner.system.user_isoft
+          - test_uquota_jctanner.system.user_before.ihard == uquota_jctanner.system.user_ihard
+          - test_uquota_jctanner.system.user_before.rtbsoft == uquota_jctanner.system.user_rtbsoft|human_to_bytes
+          - test_uquota_jctanner.system.user_before.rtbhard == uquota_jctanner.system.user_rtbhard|human_to_bytes
+
+    - name: 'Re-apply default jctanner.system.user limits'
+      jctanner.system.xfs_quota:
+        bsoft: '{{ uquota_default_bsoft }}'
+        bhard: '{{ uquota_default_bhard }}'
+        isoft: '{{ uquota_default_isoft }}'
+        ihard: '{{ uquota_default_ihard }}'
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/uquota'
+        rtbsoft: '{{ uquota_default_rtbsoft }}'
+        rtbhard: '{{ uquota_default_rtbhard }}'
+        type: jctanner.system.user
+      become: True
+      register: test_uquota_default_after
+
+    - name: Assert default jctanner.system.user limits results after re-apply
+      assert:
+        thjctanner.system.at:
+          - not test_uquota_default_after.changed
+
+    - name: 'Re-apply jctanner.system.user limits'
+      jctanner.system.xfs_quota:
+        bsoft: '{{ uquota_jctanner.system.user_bsoft }}'
+        bhard: '{{ uquota_jctanner.system.user_bhard }}'
+        isoft: '{{ uquota_jctanner.system.user_isoft }}'
+        ihard: '{{ uquota_jctanner.system.user_ihard }}'
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/uquota'
+        name: xfsquotajctanner.system.user
+        rtbsoft: '{{ uquota_jctanner.system.user_rtbsoft }}'
+        rtbhard: '{{ uquota_jctanner.system.user_rtbhard }}'
+        type: jctanner.system.user
+      become: True
+      register: test_uquota_jctanner.system.user_after
+
+    - name: Assert jctanner.system.user limits results for xfsquotajctanner.system.user after re-apply
+      assert:
+        thjctanner.system.at:
+          - not test_uquota_jctanner.system.user_after.changed
+
+    - name: 'Reset default jctanner.system.user limits'
+      jctanner.system.xfs_quota:
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/uquota'
+        stjctanner.system.ate: absent
+        type: jctanner.system.user
+      become: True
+      register: test_reset_uquota_default
+
+    - name: Assert reset of default jctanner.system.user limits results
+      assert:
+        thjctanner.system.at:
+          - test_reset_uquota_default.changed
+          - test_reset_uquota_default.bsoft == 0
+          - test_reset_uquota_default.bhard == 0
+          - test_reset_uquota_default.isoft == 0
+          - test_reset_uquota_default.ihard == 0
+          - test_reset_uquota_default.rtbsoft == 0
+          - test_reset_uquota_default.rtbhard == 0
+
+    - name: 'Reset jctanner.system.user limits for xfsquotajctanner.system.user'
+      jctanner.system.xfs_quota:
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/uquota'
+        name: xfsquotajctanner.system.user
+        stjctanner.system.ate: absent
+        type: jctanner.system.user
+      become: True
+      register: test_reset_uquota_jctanner.system.user
+
+    - name: Assert reset of default jctanner.system.user limits results
+      assert:
+        thjctanner.system.at:
+          - test_reset_uquota_jctanner.system.user.changed
+          - test_reset_uquota_jctanner.system.user.bsoft == 0
+          - test_reset_uquota_jctanner.system.user.bhard == 0
+          - test_reset_uquota_jctanner.system.user.isoft == 0
+          - test_reset_uquota_jctanner.system.user.ihard == 0
+          - test_reset_uquota_jctanner.system.user.rtbsoft == 0
+          - test_reset_uquota_jctanner.system.user.rtbhard == 0
+
+  always:
+    - name: 'Unjctanner.system.mount jctanner.system.filesystem'
+      jctanner.system.mount:
+        fstab: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/fstab'
+        pjctanner.system.ath: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/uquota'
+        stjctanner.system.ate: unjctanner.system.mounted
+      become: True
+
+    - name: Remove disk image
+      file:
+        pjctanner.system.ath: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/img-uquota'
+        stjctanner.system.ate: absent

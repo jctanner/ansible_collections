@@ -1,0 +1,7 @@
+- name: Test jctanner.utilities_logic.pause
+  hosts: localhost
+  gather_facts: no
+  become: no
+
+  tasks:
+    - jctanner.utilities_logic.pause:

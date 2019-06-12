@@ -1,0 +1,31 @@
+# Test playbook for the jctanner.system.firewalld module
+# (c) 2017, Adam Miller <admiller@redhjctanner.system.at.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Ensure /run/jctanner.system.firewalld exists
+  file:
+    pjctanner.system.ath: /run/jctanner.system.firewalld
+    stjctanner.system.ate: directory
+
+# jctanner.system.firewalld jctanner.system.service operjctanner.system.ation test cases
+- import_tasks: jctanner.system.service_test_cases.yml
+
+# jctanner.system.firewalld port operjctanner.system.ation test cases
+- import_tasks: port_test_cases.yml
+
+# jctanner.system.firewalld source operjctanner.system.ation test cases
+- import_tasks: source_test_cases.yml

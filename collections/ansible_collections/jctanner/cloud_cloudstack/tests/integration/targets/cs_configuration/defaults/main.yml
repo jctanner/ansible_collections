@@ -1,0 +1,5 @@
+---
+test_jctanner.cloud_cloudstack.cs_configuration_storage: PS0-adv
+test_jctanner.cloud_cloudstack.cs_configuration_cluster: C0-basic
+test_jctanner.cloud_cloudstack.cs_configuration_account: admin
+test_jctanner.cloud_cloudstack.cs_configuration_zone: Sandbox-simulator-basic

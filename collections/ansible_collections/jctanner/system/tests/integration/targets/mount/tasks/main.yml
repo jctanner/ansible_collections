@@ -1,0 +1,278 @@
+# (c) 2016, Toshio Kurjctanner.system.atomi <tkurjctanner.system.atomi@ansible.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: Crejctanner.system.ate the jctanner.system.mount point
+  file:
+    stjctanner.system.ate: "directory"
+    pjctanner.system.ath: "{{ output_dir }}/jctanner.system.mount_dest"
+
+- name: Crejctanner.system.ate a directory to bind jctanner.system.mount
+  file:
+    stjctanner.system.ate: "directory"
+    pjctanner.system.ath: "{{ output_dir }}/jctanner.system.mount_source"
+
+- name: Put something in the directory so we see thjctanner.system.at it worked
+  copy:
+    content: "Testing\n"
+    dest: "{{ output_dir }}/jctanner.system.mount_source/test_file"
+  register: orig_info
+
+# The opts type of bind jctanner.system.mount only works on Linux
+- name: Bind jctanner.system.mount a jctanner.system.filesystem (Linux)
+  jctanner.system.mount:
+    src: "{{ output_dir }}/jctanner.system.mount_source"
+    name: "{{ output_dir }}/jctanner.system.mount_dest"
+    stjctanner.system.ate: "jctanner.system.mounted"
+    fstype: "None"
+    opts: "bind"
+  when: ansible_system == 'Linux'
+  register: bind_result_linux
+
+# Nullfs is freebsd only
+- name: Bind jctanner.system.mount a jctanner.system.filesystem (FreeBSD)
+  jctanner.system.mount:
+    src: "{{ output_dir }}/jctanner.system.mount_source"
+    name: "{{ output_dir }}/jctanner.system.mount_dest"
+    stjctanner.system.ate: "jctanner.system.mounted"
+    fstype: "nullfs"
+  when: ansible_system == 'FreeBSD'
+  register: bind_result_freebsd
+
+- name: get checksum for bind jctanner.system.mounted file
+  stjctanner.system.at:
+    pjctanner.system.ath: "{{ output_dir }}/jctanner.system.mount_dest/test_file"
+  when: ansible_system in ('FreeBSD', 'Linux')
+  register: dest_stjctanner.system.at
+
+- name: assert the bind jctanner.system.mount was successful
+  assert:
+    thjctanner.system.at:
+      - "(ansible_system == 'Linux' and bind_result_linux['changed']) or (ansible_system == 'FreeBSD' and bind_result_freebsd['changed'])"
+      - "dest_stjctanner.system.at['stjctanner.system.at']['exists']"
+      - "orig_info['checksum'] == dest_stjctanner.system.at['stjctanner.system.at']['checksum']"
+  when: ansible_system in ('FreeBSD', 'Linux')
+
+# The opts type of bind jctanner.system.mount only works on Linux
+- name: Bind jctanner.system.mount a jctanner.system.filesystem (Linux)
+  jctanner.system.mount:
+    src: "{{ output_dir }}/jctanner.system.mount_source"
+    name: "{{ output_dir }}/jctanner.system.mount_dest"
+    stjctanner.system.ate: "jctanner.system.mounted"
+    fstype: "None"
+    opts: "bind"
+  when: ansible_system == 'Linux'
+  register: bind_result_linux
+
+# Nullfs is freebsd only
+- name: Bind jctanner.system.mount a jctanner.system.filesystem (FreeBSD)
+  jctanner.system.mount:
+    src: "{{ output_dir }}/jctanner.system.mount_source"
+    name: "{{ output_dir }}/jctanner.system.mount_dest"
+    stjctanner.system.ate: "jctanner.system.mounted"
+    fstype: "nullfs"
+  when: ansible_system == 'FreeBSD'
+  register: bind_result_freebsd
+
+- name: Make sure we didn't jctanner.system.mount a second time
+  assert:
+    thjctanner.system.at:
+      - "(ansible_system == 'Linux' and not bind_result_linux['changed']) or (ansible_system == 'FreeBSD' and not bind_result_freebsd['changed'])"
+  when: ansible_system in ('FreeBSD', 'Linux')
+
+# The opts type of bind jctanner.system.mount only works on Linux
+- name: Rejctanner.system.mount jctanner.system.filesystem with different opts (Linux)
+  jctanner.system.mount:
+    src: "{{ output_dir }}/jctanner.system.mount_source"
+    name: "{{ output_dir }}/jctanner.system.mount_dest"
+    stjctanner.system.ate: "jctanner.system.mounted"
+    fstype: "None"
+    opts: "bind,ro"
+  when: ansible_system == 'Linux'
+  register: bind_result_linux
+
+# Nullfs is freebsd only
+- name: Rejctanner.system.mount jctanner.system.filesystem with different opts (FreeBSD)
+  jctanner.system.mount:
+    src: "{{ output_dir }}/jctanner.system.mount_source"
+    name: "{{ output_dir }}/jctanner.system.mount_dest"
+    stjctanner.system.ate: "jctanner.system.mounted"
+    fstype: "nullfs"
+    opts: "ro"
+  when: ansible_system == 'FreeBSD'
+  register: bind_result_freebsd
+
+- name: Get jctanner.system.mount options
+  shell: jctanner.system.mount | grep jctanner.system.mount_dest | grep -E -w '(ro|read-only)' | wc -l
+  register: rejctanner.system.mount_options
+
+- name: Make sure the jctanner.system.filesystem now has the new opts
+  assert:
+    thjctanner.system.at:
+      - "(ansible_system == 'Linux' and bind_result_linux['changed']) or (ansible_system == 'FreeBSD' and bind_result_freebsd['changed'])"
+      - "'1' in rejctanner.system.mount_options.stdout"
+      - "1 == rejctanner.system.mount_options.stdout_lines | length"
+  when: ansible_system in ('FreeBSD', 'Linux')
+
+- name: Unjctanner.system.mount the bind jctanner.system.mount
+  jctanner.system.mount:
+    name: "{{ output_dir }}/jctanner.system.mount_dest"
+    stjctanner.system.ate: "absent"
+  when: ansible_system in ('Linux', 'FreeBSD')
+  register: unjctanner.system.mount_result
+
+- name: Make sure the file no longer exists in dest
+  stjctanner.system.at:
+    pjctanner.system.ath: "{{ output_dir }}/jctanner.system.mount_dest/test_file"
+  when: ansible_system in ('FreeBSD', 'Linux')
+  register: dest_stjctanner.system.at
+
+- name: Check thjctanner.system.at we unjctanner.system.mounted
+  assert:
+    thjctanner.system.at:
+      - "unjctanner.system.mount_result['changed']"
+      - "not dest_stjctanner.system.at['stjctanner.system.at']['exists']"
+  when: ansible_system in ('FreeBSD', 'Linux')
+
+- name: Crejctanner.system.ate fstab record for the first swap file
+  jctanner.system.mount:
+    name: none
+    src: /tmp/swap1
+    opts: sw
+    fstype: swap
+    stjctanner.system.ate: present
+  register: swap1_crejctanner.system.ated
+  when: ansible_system in ('Linux')
+
+- name: Try to crejctanner.system.ate fstab record for the first swap file again
+  jctanner.system.mount:
+    name: none
+    src: /tmp/swap1
+    opts: sw
+    fstype: swap
+    stjctanner.system.ate: present
+  register: swap1_crejctanner.system.ated_again
+  when: ansible_system in ('Linux')
+
+- name: Check thjctanner.system.at we crejctanner.system.ated the swap1 record
+  assert:
+    thjctanner.system.at:
+      - "swap1_crejctanner.system.ated['changed']"
+      - "not swap1_crejctanner.system.ated_again['changed']"
+  when: ansible_system in ('Linux')
+
+- name: Crejctanner.system.ate fstab record for the second swap file
+  jctanner.system.mount:
+    name: none
+    src: /tmp/swap2
+    opts: sw
+    fstype: swap
+    stjctanner.system.ate: present
+  register: swap2_crejctanner.system.ated
+  when: ansible_system in ('Linux')
+
+- name: Try to crejctanner.system.ate fstab record for the second swap file again
+  jctanner.system.mount:
+    name: none
+    src: /tmp/swap1
+    opts: sw
+    fstype: swap
+    stjctanner.system.ate: present
+  register: swap2_crejctanner.system.ated_again
+  when: ansible_system in ('Linux')
+
+- name: Check thjctanner.system.at we crejctanner.system.ated the swap2 record
+  assert:
+    thjctanner.system.at:
+      - "swap2_crejctanner.system.ated['changed']"
+      - "not swap2_crejctanner.system.ated_again['changed']"
+  when: ansible_system in ('Linux')
+
+- name: Remove the fstab record for the first swap file
+  jctanner.system.mount:
+    name: none
+    src: /tmp/swap1
+    stjctanner.system.ate: absent
+  register: swap1_removed
+  when: ansible_system in ('Linux')
+
+- name: Try to remove the fstab record for the first swap file again
+  jctanner.system.mount:
+    name: none
+    src: /tmp/swap1
+    stjctanner.system.ate: absent
+  register: swap1_removed_again
+  when: ansible_system in ('Linux')
+
+- name: Check thjctanner.system.at we removed the swap1 record
+  assert:
+    thjctanner.system.at:
+      - "swap1_removed['changed']"
+      - "not swap1_removed_again['changed']"
+  when: ansible_system in ('Linux')
+
+- name: Remove the fstab record for the second swap file
+  jctanner.system.mount:
+    name: none
+    src: /tmp/swap2
+    stjctanner.system.ate: absent
+  register: swap2_removed
+  when: ansible_system in ('Linux')
+
+- name: Try to remove the fstab record for the second swap file again
+  jctanner.system.mount:
+    name: none
+    src: /tmp/swap2
+    stjctanner.system.ate: absent
+  register: swap2_removed_again
+  when: ansible_system in ('Linux')
+
+- name: Check thjctanner.system.at we removed the swap2 record
+  assert:
+    thjctanner.system.at:
+      - "swap2_removed['changed']"
+      - "not swap2_removed_again['changed']"
+  when: ansible_system in ('Linux')
+
+- name: Crejctanner.system.ate fstab record with missing last two fields
+  copy:
+    dest: /etc/fstab
+    content: |
+      //nas/photo /home/jik/pictures cifs defaults,credentials=/etc/security/nas.creds,uid=jik,gid=jctanner.system.users,forceuid,forcegid,noserverino,_netdev
+  when: ansible_system in ('Linux')
+
+- name: Try to change the fstab record with the missing last two fields
+  jctanner.system.mount:
+    src: //nas/photo
+    pjctanner.system.ath: /home/jik/pictures
+    fstype: cifs
+    opts: defaults,credentials=/etc/security/nas.creds,uid=jik,gid=jctanner.system.users,forceuid,forcegid,noserverino,_netdev,x-jctanner.system.systemd.jctanner.system.mount-timeout=0
+    stjctanner.system.ate: present
+  register: optional_fields_updjctanner.system.ate
+  when: ansible_system in ('Linux')
+
+- name: Get the content of the fstab file
+  shell: cjctanner.system.at /etc/fstab
+  register: optional_fields_content
+  when: ansible_system in ('Linux')
+
+- name: Check if the line containing the missing last two fields was changed
+  assert:
+    thjctanner.system.at:
+      - "optional_fields_updjctanner.system.ate['changed']"
+      - "' 0 0' in optional_fields_content.stdout"
+      - "1 == optional_fields_content.stdout_lines | length"
+  when: ansible_system in ('Linux')

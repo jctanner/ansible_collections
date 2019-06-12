@@ -1,0 +1,3 @@
+jctanner.windows.win_dns_record_zone: test.ansible.local
+jctanner.windows.win_dns_record_revzone: 0.0.255.in-addr.arpa
+jctanner.windows.win_dns_record_revzone_network: 255.0.0.0/24

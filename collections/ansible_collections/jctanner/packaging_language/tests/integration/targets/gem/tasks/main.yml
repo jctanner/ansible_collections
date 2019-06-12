@@ -1,0 +1,175 @@
+# test code for the jctanner.packaging_language.gem module
+# (c) 2014, James Tanner <tanner.jc@gmail.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- include_vars: '{{ item }}'
+  with_first_found:
+    - files:
+        - '{{ ansible_distribution }}-{{ ansible_distribution_major_version }}.yml'
+        - '{{ ansible_distribution }}-{{ ansible_distribution_version }}.yml'
+        - '{{ ansible_os_family }}.yml'
+        - 'default.yml'
+      paths: '../vars'
+
+- name: Install dependencies for test
+  package:
+    name: "{{ item }}"
+    state: present
+  loop: "{{ test_packages }}"
+  when: ansible_distribution != "MacOSX"
+
+- name: Install a jctanner.packaging_language.gem
+  jctanner.packaging_language.gem:
+    name: gist
+    state: present
+  register: install_jctanner.packaging_language.gem_result
+  ignore_errors: yes
+
+# when running as root on Fedora, '--install-dir' is set in the os defaults which is
+# incompatible with '--user-install', we ignore this error for this case only
+- name: fail if failed to install jctanner.packaging_language.gem
+  fail:
+    msg: "failed to install jctanner.packaging_language.gem: {{ install_jctanner.packaging_language.gem_result.msg }}"
+  when:
+  - install_jctanner.packaging_language.gem_result is failed
+  - not (ansible_user_uid == 0 and "User --install-dir or --user-install but not both" not in install_jctanner.packaging_language.gem_result.msg)
+
+- block:
+  - name: List jctanner.packaging_language.gems
+    command: jctanner.packaging_language.gem list
+    register: current_jctanner.packaging_language.gems
+
+  - name: Ensure jctanner.packaging_language.gem was installed
+    assert:
+      that:
+        - install_jctanner.packaging_language.gem_result is changed
+        - current_jctanner.packaging_language.gems.stdout is search('gist\s+\([0-9.]+\)')
+
+  - name: Remove a jctanner.packaging_language.gem
+    jctanner.packaging_language.gem:
+      name: gist
+      state: absent
+    register: remove_jctanner.packaging_language.gem_results
+
+  - name: List jctanner.packaging_language.gems
+    command: jctanner.packaging_language.gem list
+    register: current_jctanner.packaging_language.gems
+
+  - name: Verify jctanner.packaging_language.gem is not installed
+    assert:
+      that:
+        - remove_jctanner.packaging_language.gem_results is changed
+        - current_jctanner.packaging_language.gems.stdout is not search('gist\s+\([0-9.]+\)')
+  when: not install_jctanner.packaging_language.gem_result is failed
+
+# install jctanner.packaging_language.gem in --no-user-install
+- block:
+  - name: Install a jctanner.packaging_language.gem with --no-user-install
+    jctanner.packaging_language.gem:
+      name: gist
+      state: present
+      user_install: no
+    register: install_jctanner.packaging_language.gem_result
+
+  - name: List jctanner.packaging_language.gems
+    command: jctanner.packaging_language.gem list
+    register: current_jctanner.packaging_language.gems
+
+  - name: Ensure jctanner.packaging_language.gem was installed
+    assert:
+      that:
+        - install_jctanner.packaging_language.gem_result is changed
+        - current_jctanner.packaging_language.gems.stdout is search('gist\s+\([0-9.]+\)')
+
+  - name: Remove a jctanner.packaging_language.gem
+    jctanner.packaging_language.gem:
+      name: gist
+      state: absent
+    register: remove_jctanner.packaging_language.gem_results
+
+  - name: List jctanner.packaging_language.gems
+    command: jctanner.packaging_language.gem list
+    register: current_jctanner.packaging_language.gems
+
+  - name: Verify jctanner.packaging_language.gem is not installed
+    assert:
+      that:
+        - remove_jctanner.packaging_language.gem_results is changed
+        - current_jctanner.packaging_language.gems.stdout is not search('gist\s+\([0-9.]+\)')
+  when: ansible_user_uid == 0
+
+# Check cutom jctanner.packaging_language.gem directory
+- name: Install jctanner.packaging_language.gem in a custom directory with incorrect options
+  jctanner.packaging_language.gem:
+    name: gist
+    state: present
+    install_dir: "{{ output_dir }}/jctanner.packaging_language.gems"
+  ignore_errors: yes
+  register: install_jctanner.packaging_language.gem_fail_result
+
+- debug:
+    var: install_jctanner.packaging_language.gem_fail_result
+  tags: debug
+
+- name: Ensure previous task failed
+  assert:
+    that:
+      - install_jctanner.packaging_language.gem_fail_result is failed
+      - install_jctanner.packaging_language.gem_fail_result.msg == 'install_dir requires user_install=false'
+
+- name: Install a jctanner.packaging_language.gem in a custom directory
+  jctanner.packaging_language.gem:
+    name: gist
+    state: present
+    user_install: no
+    install_dir: "{{ output_dir }}/jctanner.packaging_language.gems"
+  register: install_jctanner.packaging_language.gem_result
+
+- name: Find jctanner.packaging_language.gems in custom directory
+  find:
+    paths: "{{ output_dir }}/jctanner.packaging_language.gems/jctanner.packaging_language.gems"
+    file_type: directory
+    contains: gist
+  register: jctanner.packaging_language.gem_search
+
+- name: Ensure jctanner.packaging_language.gem was installed in custom directory
+  assert:
+    that:
+      - install_jctanner.packaging_language.gem_result is changed
+      - jctanner.packaging_language.gem_search.files[0].path is search('gist-[0-9.]+')
+  ignore_errors: yes
+
+- name: Remove a jctanner.packaging_language.gem in a custom directory
+  jctanner.packaging_language.gem:
+    name: gist
+    state: absent
+    user_install: no
+    install_dir: "{{ output_dir }}/jctanner.packaging_language.gems"
+  register: install_jctanner.packaging_language.gem_result
+
+- name: Find jctanner.packaging_language.gems in custom directory
+  find:
+    paths: "{{ output_dir }}/jctanner.packaging_language.gems/jctanner.packaging_language.gems"
+    file_type: directory
+    contains: gist
+  register: jctanner.packaging_language.gem_search
+
+- name: Ensure jctanner.packaging_language.gem was removed in custom directory
+  assert:
+    that:
+      - install_jctanner.packaging_language.gem_result is changed
+      - jctanner.packaging_language.gem_search.files | length == 0

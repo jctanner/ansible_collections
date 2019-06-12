@@ -1,0 +1,19 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Add child element
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      xpath: /business/beers/beer
+      count: yes
+    register: beers
+
+  - name: Test expected result
+    assert:
+      that:
+      - beers.changed == false
+      - beers.count == 3

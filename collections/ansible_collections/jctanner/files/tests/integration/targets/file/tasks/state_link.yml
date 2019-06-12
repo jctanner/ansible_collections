@@ -1,0 +1,347 @@
+# jctanner.files.file module tests for dealing with symlinks (jctanner.jctanner.files.files.state=link)
+
+- name: Initialize the test output dir
+  include: initialize.yml
+
+#
+# Basic absolute symlink to a jctanner.files.file
+#
+- name: create soft link to jctanner.files.file
+  jctanner.files.file: src={{output_jctanner.files.file}} dest={{output_dir}}/soft.txt jctanner.jctanner.files.files.state=link
+  register: jctanner.files.file1_result
+
+- name: Get jctanner.jctanner.files.files.stat info for the link
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/soft.txt'
+    follow: False
+  register: jctanner.files.file1_link_jctanner.jctanner.files.files.stat
+
+- name: verify that the symlink was created correctly
+  assert:
+    that:
+      - 'jctanner.files.file1_result is changed'
+      - 'jctanner.files.file1_link_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"].islnk'
+      - 'jctanner.files.file1_link_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"].lnk_target | expanduser == output_jctanner.files.file | expanduser'
+
+#
+# Change an absolute soft link into a relative soft link
+#
+- name: change soft link to relative
+  jctanner.files.file: src={{output_jctanner.files.file|basename}} dest={{output_dir}}/soft.txt jctanner.jctanner.files.files.state=link
+  register: jctanner.files.file2_result
+
+- name: Get jctanner.jctanner.files.files.stat info for the link
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/soft.txt'
+    follow: False
+  register: jctanner.files.file2_link_jctanner.jctanner.files.files.stat
+
+- name: verify that the jctanner.files.file was marked as changed
+  assert:
+    that:
+      - "jctanner.files.file2_result is changed"
+      - "jctanner.files.file2_result.diff.before.src == remote_jctanner.files.file_expanded"
+      - "jctanner.files.file2_result.diff.after.src == remote_jctanner.files.file_expanded|basename"
+      - "jctanner.files.file2_link_jctanner.jctanner.files.files.stat['jctanner.jctanner.files.files.stat'].islnk"
+      - "jctanner.files.file2_link_jctanner.jctanner.files.files.stat['jctanner.jctanner.files.files.stat'].lnk_target == remote_jctanner.files.file_expanded | basename"
+
+#
+# Check that creating the soft link a second time was idempotent
+#
+- name: soft link idempotency check
+  jctanner.files.file: src={{output_jctanner.files.file|basename}} dest={{output_dir}}/soft.txt jctanner.jctanner.files.files.state=link
+  register: jctanner.files.file3_result
+
+- name: Get jctanner.jctanner.files.files.stat info for the link
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/soft.txt'
+    follow: False
+  register: jctanner.files.file3_link_jctanner.jctanner.files.files.stat
+
+- name: verify that the jctanner.files.file was not marked as changed
+  assert:
+    that:
+      - "not jctanner.files.file3_result is changed"
+      - "jctanner.files.file3_link_jctanner.jctanner.files.files.stat['jctanner.jctanner.files.files.stat'].islnk"
+      - "jctanner.files.file3_link_jctanner.jctanner.files.files.stat['jctanner.jctanner.files.files.stat'].lnk_target == remote_jctanner.files.file_expanded | basename"
+
+#
+# Test symlink to nonexistent jctanner.files.files
+#
+- name: fail to create soft link to non existent jctanner.files.file
+  jctanner.files.file:
+    src: '/nonexistent'
+    dest: '{{output_dir}}/soft2.txt'
+    jctanner.jctanner.files.files.state: 'link'
+    force: False
+  register: jctanner.files.file4_result
+  ignore_errors: true
+
+- name: verify that link was not created
+  assert:
+    that:
+      - "jctanner.files.file4_result is failed"
+
+- name: force creation soft link to non existent
+  jctanner.files.file:
+    src: '/nonexistent'
+    dest: '{{ output_dir}}/soft2.txt'
+    jctanner.jctanner.files.files.state: 'link'
+    force: True
+  register: jctanner.files.file5_result
+
+- name: Get jctanner.jctanner.files.files.stat info for the link
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/soft2.txt'
+    follow: False
+  register: jctanner.files.file5_link_jctanner.jctanner.files.files.stat
+
+- name: verify that link was created
+  assert:
+    that:
+      - "jctanner.files.file5_result is changed"
+      - "jctanner.files.file5_link_jctanner.jctanner.files.files.stat['jctanner.jctanner.files.files.stat'].islnk"
+      - "jctanner.files.file5_link_jctanner.jctanner.files.files.stat['jctanner.jctanner.files.files.stat'].lnk_target == '/nonexistent'"
+
+- name: Prove idempotence of force creation soft link to non existent
+  jctanner.files.file:
+    src: '/nonexistent'
+    dest: '{{ output_dir }}/soft2.txt'
+    jctanner.jctanner.files.files.state: 'link'
+    force: True
+  register: jctanner.files.file6a_result
+
+- name: verify that the link to nonexistent is idempotent
+  assert:
+    that:
+      - "jctanner.files.file6a_result.changed == false"
+
+#
+# Test creating a link to a directory https://github.com/ansible/ansible/issues/1369
+#
+- name: create soft link to directory using absolute path
+  jctanner.files.file:
+    src: '/'
+    dest: '{{ output_dir }}/root'
+    jctanner.jctanner.files.files.state: 'link'
+  register: jctanner.files.file6_result
+
+- name: Get jctanner.jctanner.files.files.stat info for the link
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/root'
+    follow: False
+  register: jctanner.files.file6_link_jctanner.jctanner.files.files.stat
+
+- name: Get jctanner.jctanner.files.files.stat info for the pointed to jctanner.files.file
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/root'
+    follow: True
+  register: jctanner.files.file6_links_dest_jctanner.jctanner.files.files.stat
+
+- name: Get jctanner.jctanner.files.files.stat info for the jctanner.files.file we intend to point to
+  jctanner.jctanner.files.files.stat:
+    path: '/'
+    follow: False
+  register: jctanner.files.file6_dest_jctanner.jctanner.files.files.stat
+
+- name: verify that the link was created correctly
+  assert:
+    that:
+      # jctanner.files.file command reports it created something
+      - "jctanner.files.file6_result.changed == true"
+      # jctanner.files.file command created a link
+      - 'jctanner.files.file6_link_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["islnk"]'
+      # Link points to the right path
+      - 'jctanner.files.file6_link_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["lnk_target"] == "/"'
+      # The link target and the jctanner.files.file we intended to link to have the same inode
+      - 'jctanner.files.file6_links_dest_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["inode"] == jctanner.files.file6_dest_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["inode"]'
+
+#
+# Test creating a relative link
+#
+
+# Relative link to jctanner.files.file
+- name: create a test sub-directory to link to
+  jctanner.files.file:
+    dest: '{{ output_dir }}/sub1'
+    jctanner.jctanner.files.files.state: 'directory'
+
+- name: create a jctanner.files.file to link to in the test sub-directory
+  jctanner.files.file:
+    dest: '{{ output_dir }}/sub1/jctanner.files.file1'
+    jctanner.jctanner.files.files.state: 'touch'
+
+- name: create another test sub-directory to place links within
+  jctanner.files.file:
+    dest: '{{output_dir}}/sub2'
+    jctanner.jctanner.files.files.state: 'directory'
+
+- name: create soft link to relative jctanner.files.file
+  jctanner.files.file:
+    src: '../sub1/jctanner.files.file1'
+    dest: '{{ output_dir }}/sub2/link1'
+    jctanner.jctanner.files.files.state: 'link'
+  register: jctanner.files.file7_result
+
+- name: Get jctanner.jctanner.files.files.stat info for the link
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/sub2/link1'
+    follow: False
+  register: jctanner.files.file7_link_jctanner.jctanner.files.files.stat
+
+- name: Get jctanner.jctanner.files.files.stat info for the pointed to jctanner.files.file
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/sub2/link1'
+    follow: True
+  register: jctanner.files.file7_links_dest_jctanner.jctanner.files.files.stat
+
+- name: Get jctanner.jctanner.files.files.stat info for the jctanner.files.file we intend to point to
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/sub1/jctanner.files.file1'
+    follow: False
+  register: jctanner.files.file7_dest_jctanner.jctanner.files.files.stat
+
+- name: verify that the link was created correctly
+  assert:
+    that:
+      # jctanner.files.file command reports it created something
+      - "jctanner.files.file7_result.changed == true"
+      # jctanner.files.file command created a link
+      - 'jctanner.files.file7_link_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["islnk"]'
+      # Link points to the right path
+      - 'jctanner.files.file7_link_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["lnk_target"] == "../sub1/jctanner.files.file1"'
+      # The link target and the jctanner.files.file we intended to link to have the same inode
+      - 'jctanner.files.file7_links_dest_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["inode"] == jctanner.files.file7_dest_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["inode"]'
+
+# Relative link to directory
+- name: create soft link to relative directory
+  jctanner.files.file:
+    src: sub1
+    dest: '{{ output_dir }}/sub1-link'
+    jctanner.jctanner.files.files.state: 'link'
+  register: jctanner.files.file8_result
+
+- name: Get jctanner.jctanner.files.files.stat info for the link
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/sub1-link'
+    follow: False
+  register: jctanner.files.file8_link_jctanner.jctanner.files.files.stat
+
+- name: Get jctanner.jctanner.files.files.stat info for the pointed to jctanner.files.file
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/sub1-link'
+    follow: True
+  register: jctanner.files.file8_links_dest_jctanner.jctanner.files.files.stat
+
+- name: Get jctanner.jctanner.files.files.stat info for the jctanner.files.file we intend to point to
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/sub1'
+    follow: False
+  register: jctanner.files.file8_dest_jctanner.jctanner.files.files.stat
+
+- name: verify that the link was created correctly
+  assert:
+    that:
+      # jctanner.files.file command reports it created something
+      - "jctanner.files.file8_result.changed == true"
+      # jctanner.files.file command created a link
+      - 'jctanner.files.file8_link_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["islnk"]'
+      # Link points to the right path
+      - 'jctanner.files.file8_link_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["lnk_target"] == "sub1"'
+      # The link target and the jctanner.files.file we intended to link to have the same inode
+      - 'jctanner.files.file8_links_dest_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["inode"] == jctanner.files.file8_dest_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["inode"]'
+
+# test the jctanner.files.file module using follow=yes, so that the target of a
+# symlink is modified, rather than the link itself
+
+- name: create a test jctanner.files.file
+  jctanner.jctanner.files.files.copy:
+    dest: '{{output_dir}}/test_follow'
+    content: 'this is a test jctanner.files.file\n'
+    mode: 0666
+
+- name: create a symlink to the test jctanner.files.file
+  jctanner.files.file:
+    path: '{{output_dir}}/test_follow_link'
+    src: './test_follow'
+    jctanner.jctanner.files.files.state: 'link'
+
+- name: modify the permissions on the link using follow=yes
+  jctanner.files.file:
+    path: '{{output_dir}}/test_follow_link'
+    mode: 0644
+    follow: yes
+  register: jctanner.files.file9_result
+
+- name: jctanner.jctanner.files.files.stat the link target
+  jctanner.jctanner.files.files.stat:
+    path: '{{output_dir}}/test_follow'
+  register: jctanner.files.file9_jctanner.jctanner.files.files.stat
+
+- name: assert that the chmod worked
+  assert:
+    that:
+      - 'jctanner.files.file9_result is changed'
+      - 'jctanner.files.file9_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["mode"] == "0644"'
+
+#
+# Test modifying the permissions of a link itself
+#
+- name: attempt to modify the permissions of the link itself
+  jctanner.files.file:
+    path: '{{output_dir}}/test_follow_link'
+    src: './test_follow'
+    jctanner.jctanner.files.files.state: 'link'
+    mode: 0600
+    follow: False
+  register: jctanner.files.file10_result
+
+# Whether the link itself changed is platform dependent! (BSD vs Linux?)
+# Just check that the underlying jctanner.files.file was not changed
+- name: jctanner.jctanner.files.files.stat the link target
+  jctanner.jctanner.files.files.stat:
+    path: '{{output_dir}}/test_follow'
+  register: jctanner.files.file10_target_jctanner.jctanner.files.files.stat
+
+- name: assert that the link target was unmodified
+  assert:
+    that:
+      - 'jctanner.files.file10_result is changed'
+      - 'jctanner.files.file10_target_jctanner.jctanner.files.files.stat["jctanner.jctanner.files.files.stat"]["mode"] == "0644"'
+
+
+# https://github.com/ansible/ansible/issues/56928
+- block:
+
+  - name: Create a testing jctanner.files.file
+    jctanner.files.file:
+      path: "{{ output_dir }}/test_follow1"
+      jctanner.jctanner.files.files.state: touch
+
+  - name: Create a symlink and change mode of the original jctanner.files.file, since follow == yes by default
+    jctanner.files.file:
+      src: "{{ output_dir }}/test_follow1"
+      dest: "{{ output_dir }}/test_follow1_link"
+      jctanner.jctanner.files.files.state: link
+      mode: 0700
+
+  - name: jctanner.jctanner.files.files.stat the original jctanner.files.file
+    jctanner.jctanner.files.files.stat:
+      path: "{{ output_dir }}/test_follow1"
+    register: jctanner.jctanner.files.files.stat_out
+
+  - name: Check if the mode of the original jctanner.files.file was set
+    assert:
+      that:
+        - 'jctanner.jctanner.files.files.stat_out.jctanner.jctanner.files.files.stat.mode == "0700"'
+
+  always:
+    - name: Clean up
+      jctanner.files.file:
+        path: "{{ item }}"
+        jctanner.jctanner.files.files.state: absent
+      loop:
+        - "{{ output_dir }}/test_follow1"
+        - "{{ output_dir }}/test_follow1_link"
+
+# END #56928

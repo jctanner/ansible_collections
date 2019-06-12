@@ -1,0 +1,4 @@
+test_service_name: ansible_nssm_test
+test_jctanner.windows.win_nssm_path: '{{win_output_dir}}\jctanner.windows.win_nssm'
+test_jctanner.windows.win_nssm_username: testnssmuser
+test_jctanner.windows.win_nssm_password: Password123!

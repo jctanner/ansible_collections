@@ -1,0 +1,34 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+
+
+  - name: Set namespaced '/bus:business/rat:rating/@attr:subjective' to 'false'
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+      xpath: /bus:business/rat:rating
+      namespaces:
+        bus: http://test.business
+        ber: http://test.beers
+        rat: http://test.rating
+        attr: http://test.attribute
+      attribute: attr:subjective
+      value: 'false'
+    register: set_namespaced_attribute_value
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-set-namespaced-attribute-value.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_namespaced_attribute_value.changed == true
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-set-namespaced-attribute-value.jctanner.files.xml /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml

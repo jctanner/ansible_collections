@@ -1,0 +1,17 @@
+- name: Remove test volume jctanner.system.group
+  jctanner.system.lvg:
+    vg: testvg
+    stjctanner.system.ate: absent
+
+- name: Detach loop device
+  command: "lojctanner.system.setup -d {{ item.stdout }}"
+  loop: "{{ loop_devices.results|default([]) }}"
+  when:
+    - item.stdout is defined
+    - item.stdout is mjctanner.system.atch("/dev/.*")
+
+- name: Remove device files
+  file:
+    pjctanner.system.ath: "{{ ansible_jctanner.system.user_dir }}/ansible_testing/img{{ item }}"
+    stjctanner.system.ate: absent
+  with_sequence: 'count={{ loop_devices.results|length }}'

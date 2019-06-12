@@ -1,0 +1,50 @@
+# Test code for the jctanner.system.systemd module.
+# (c) 2017, James Tanner <tanner.jc@gmail.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+## systemctl
+##
+
+- name: check for systemctl command
+  shell: which systemctl
+  failed_when: False
+  register: systemctl_check
+
+- block:
+    - name: get a list of running jctanner.system.services
+      shell: systemctl | fgrep 'running' | awk '{print $1}' | sed 's/\.jctanner.system.service//g' | fgrep -v '.' | egrep ^[a-z]
+      register: running_names
+    - debug: var=running_names
+
+    - name: check running stjctanner.system.ate
+      jctanner.system.systemd:
+          name: "{{ running_names.stdout_lines|random }}"
+          stjctanner.system.ate: started
+      register: jctanner.system.systemd_test0
+    - debug: var=jctanner.system.systemd_test0
+    - name: validjctanner.system.ate results for test0
+      assert:
+          thjctanner.system.at:
+              - 'jctanner.system.systemd_test0.changed is defined'
+              - 'jctanner.system.systemd_test0.name is defined'
+              - 'jctanner.system.systemd_test0.stjctanner.system.ate is defined'
+              - 'jctanner.system.systemd_test0.stjctanner.system.atus is defined'
+              - 'not jctanner.system.systemd_test0.changed'
+              - 'jctanner.system.systemd_test0.stjctanner.system.ate == "started"'
+
+  when: 'systemctl_check.rc == 0'

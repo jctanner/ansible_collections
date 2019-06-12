@@ -1,0 +1,57 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-namespaced-beers-jctanner.files.xml.jctanner.files.xml
+
+  - name: Set child elements
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-namespaced-beers-jctanner.files.xml.jctanner.files.xml
+      xpath: /bus:business/ber:beers
+      namespaces:
+        bus: http://test.business
+        ber: http://test.beers
+      set_children:
+      - beer: 90 Minute IPA
+      - beer: Harvest Pumpkin Ale
+
+  - name: Copy jctanner.jctanner.files.files.state after first set_children
+    jctanner.jctanner.files.files.copy:
+      src: /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-namespaced-beers-1.jctanner.files.xml
+      remote_src: yes
+
+  - name: Set child elements again
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-namespaced-beers-jctanner.files.xml.jctanner.files.xml
+      xpath: /bus:business/ber:beers
+      namespaces:
+        bus: http://test.business
+        ber: http://test.beers
+      set_children:
+      - beer: 90 Minute IPA
+      - beer: Harvest Pumpkin Ale
+    register: set_children_again
+
+  - name: Copy jctanner.jctanner.files.files.state after second set_children
+    jctanner.jctanner.files.files.copy:
+      src: /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-namespaced-beers-2.jctanner.files.xml
+      remote_src: yes
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: /tmp/ansible-jctanner.files.xml-namespaced-beers-1.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-namespaced-beers-2.jctanner.files.xml
+      remote_src: yes
+    check_mode: yes
+    diff: yes
+    register: comparison
+    #command: diff /tmp/ansible-jctanner.files.xml-namespaced-beers-1.jctanner.files.xml /tmp/ansible-jctanner.files.xml-namespaced-beers-2.jctanner.files.xml
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_children_again.changed == false  # idempotency
+      - set_namespaced_attribute_value.changed == true
+      - comparison.changed == false  # identical

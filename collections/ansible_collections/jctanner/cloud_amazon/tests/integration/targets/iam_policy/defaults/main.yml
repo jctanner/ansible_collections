@@ -1,0 +1,5 @@
+---
+jctanner.cloud_amazon.iam_user_name: '{{resource_prefix}}'
+jctanner.cloud_amazon.iam_role_name: '{{resource_prefix}}'
+jctanner.cloud_amazon.iam_group_name: '{{resource_prefix}}'
+jctanner.cloud_amazon.iam_policy_name: '{{resource_prefix}}'

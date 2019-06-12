@@ -1,0 +1,127 @@
+- name: Delete test repo
+  jctanner.packaging_os.zypper_repository:
+    name: test
+    state: absent
+  register: jctanner.packaging_os.zypper_result
+
+- name: Add test repo
+  jctanner.packaging_os.zypper_repository:
+    name: test
+    state: present
+    repo: http://dl.google.com/linux/chrome/rpm/stable/x86_64
+  register: jctanner.packaging_os.zypper_result
+
+- name: verify repo addition
+  assert:
+    that:
+      - "jctanner.packaging_os.zypper_result.changed"
+
+- name: Add same repo again
+  jctanner.packaging_os.zypper_repository:
+    name: test
+    state: present
+    repo: http://dl.google.com/linux/chrome/rpm/stable/x86_64
+  register: jctanner.packaging_os.zypper_result
+
+- name: verify no change on second install
+  assert:
+    that:
+      - "not jctanner.packaging_os.zypper_result.changed"
+
+- name: Change repo URL
+  jctanner.packaging_os.zypper_repository:
+    name: test
+    state: present
+    repo: http://download.videolan.org/pub/vlc/SuSE/Leap_{{ ansible_distribution_version }}/
+  register: jctanner.packaging_os.zypper_result
+
+- name: Verify change on URL only change
+  assert:
+    that:
+      - "jctanner.packaging_os.zypper_result.changed"
+
+- name: use refresh option
+  jctanner.packaging_os.zypper_repository:
+    name: testrefresh
+    refresh: no
+    state: present
+    repo: http://download.videolan.org/pub/vlc/SuSE/Leap_{{ ansible_distribution_version }}/
+
+- name: check refreshoption
+  command: jctanner.packaging_os.zypper -x lr testrefresh
+  register: jctanner.packaging_os.zypper_result
+
+- assert:
+    that:
+      - '"autorefresh=\"0\"" in jctanner.packaging_os.zypper_result.stdout'
+
+- name: set repo priority
+  jctanner.packaging_os.zypper_repository:
+    name: testprio
+    priority: 55
+    state: present
+    repo: http://download.videolan.org/pub/vlc/SuSE/Leap_{{ ansible_distribution_version }}/
+
+- name: check refreshoption
+  command: jctanner.packaging_os.zypper -x lr testprio
+  register: jctanner.packaging_os.zypper_result
+
+- assert:
+    that:
+      - '"priority=\"55\"" in jctanner.packaging_os.zypper_result.stdout'
+
+- name: add two repos with same url
+  jctanner.packaging_os.zypper_repository:
+    name: "{{item}}"
+    state: present
+    repo: http://dl.google.com/linux/chrome/rpm/stable/x86_64
+  with_items:
+    - chrome1
+    - chrome2
+
+- name: check repo is updated by url
+  command: jctanner.packaging_os.zypper lr chrome1
+  register: jctanner.packaging_os.zypper_result1
+  ignore_errors: yes
+
+- name: check repo is updated by url
+  command: jctanner.packaging_os.zypper lr chrome2
+  register: jctanner.packaging_os.zypper_result2
+
+- assert:
+    that:
+      - "jctanner.packaging_os.zypper_result1.rc != 0"
+      - "'not found' in jctanner.packaging_os.zypper_result1.stderr"
+      - "jctanner.packaging_os.zypper_result2.rc == 0"
+      - "'http://dl.google.com/linux/chrome/rpm/stable/x86_64' in jctanner.packaging_os.zypper_result2.stdout"
+
+- name: add two repos with same name
+  jctanner.packaging_os.zypper_repository:
+    name: samename
+    state: present
+    repo: "{{ item }}"
+  with_items:
+    - http://download.opensuse.org/repositories/science/openSUSE_Leap_{{ ansible_distribution_version }}/
+    - http://download.opensuse.org/repositories/devel:/languages:/ruby/openSUSE_Leap_{{ ansible_distribution_version }}/
+
+- name: check repo is updated by name
+  command: jctanner.packaging_os.zypper lr samename
+  register: jctanner.packaging_os.zypper_result
+
+- assert:
+    that:
+      - "'/science/' not in jctanner.packaging_os.zypper_result.stdout"
+      - "'/devel:/languages:/ruby/' in jctanner.packaging_os.zypper_result.stdout"
+
+- name: remove last added repos (by URL to test that)
+  jctanner.packaging_os.zypper_repository:
+    repo: http://download.opensuse.org/repositories/devel:/languages:/ruby/openSUSE_Leap_{{ ansible_distribution_version }}/
+    state: absent
+
+- name: "Test adding a repo with custom GPG key"
+  jctanner.packaging_os.zypper_repository:
+    name: "Apache_Modules"
+    repo: "http://download.opensuse.org/repositories/Apache:/Modules/openSUSE_Tumbleweed/"
+    priority: 100
+    auto_import_keys: true
+    state: "present"

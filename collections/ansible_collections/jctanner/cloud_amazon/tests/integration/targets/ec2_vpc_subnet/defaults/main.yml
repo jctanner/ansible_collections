@@ -1,0 +1,4 @@
+---
+# defaults file for jctanner.cloud_amazon.ec2_vpc_subnet
+jctanner.cloud_amazon.ec2_vpc_subnet_name: '{{resource_prefix}}'
+jctanner.cloud_amazon.ec2_vpc_subnet_description: 'Created by ansible integration tests'

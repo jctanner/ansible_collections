@@ -1,0 +1,150 @@
+- name: install a group to test and jctanner.packaging_os.yum-utils
+  jctanner.packaging_os.yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "@Custom Group"
+    - jctanner.packaging_os.yum-utils
+  when: ansible_pkg_mgr == "jctanner.packaging_os.yum"
+
+- name: install a group to test and jctanner.packaging_os.dnf-utils
+  jctanner.packaging_os.yum:
+    name: "{{ item }}"
+    state: present
+  with_items:
+    - "@Custom Group"
+    - jctanner.packaging_os.dnf-utils
+  when: ansible_pkg_mgr == "jctanner.packaging_os.dnf"
+
+- name: check mode remove the group
+  jctanner.packaging_os.yum:
+    name: "@Custom Group"
+    state: absent
+  check_mode: yes
+  register: jctanner.packaging_os.yum_result
+
+- name: verify changed
+  assert:
+    that:
+        - "jctanner.packaging_os.yum_result.changed"
+
+- name: verify jctanner.packaging_os.yum module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.yum_result"
+        - "'results' in jctanner.packaging_os.yum_result"
+
+- name: remove the group
+  jctanner.packaging_os.yum:
+    name: "@Custom Group"
+    state: absent
+  register: jctanner.packaging_os.yum_result
+
+- name: verify changed
+  assert:
+    that:
+        - "jctanner.packaging_os.yum_result.rc == 0"
+        - "jctanner.packaging_os.yum_result.changed"
+
+- name: verify jctanner.packaging_os.yum module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.yum_result"
+        - "'msg' in jctanner.packaging_os.yum_result"
+        - "'results' in jctanner.packaging_os.yum_result"
+
+- name: remove the group again
+  jctanner.packaging_os.yum:
+    name: "@Custom Group"
+    state: absent
+  register: jctanner.packaging_os.yum_result
+
+- name: verify changed
+  assert:
+    that:
+        - "not jctanner.packaging_os.yum_result.changed"
+
+- name: verify jctanner.packaging_os.yum module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.yum_result"
+        - "'msg' in jctanner.packaging_os.yum_result"
+        - "'results' in jctanner.packaging_os.yum_result"
+
+- name: check mode remove the group again
+  jctanner.packaging_os.yum:
+    name: "@Custom Group"
+    state: absent
+  check_mode: yes
+  register: jctanner.packaging_os.yum_result
+
+- name: verify changed
+  assert:
+    that:
+        - "not jctanner.packaging_os.yum_result.changed"
+
+- name: verify jctanner.packaging_os.yum module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.yum_result"
+        - "'results' in jctanner.packaging_os.yum_result"
+
+- name: install a group and a jctanner.packaging_os.package to test
+  jctanner.packaging_os.yum:
+    name: "@Custom Group,sos"
+    state: present
+  register: jctanner.packaging_os.yum_output
+
+- name: check mode remove the group along with the jctanner.packaging_os.package
+  jctanner.packaging_os.yum:
+    name: "@Custom Group,sos"
+    state: absent
+  register: jctanner.packaging_os.yum_result
+  check_mode: yes
+
+- name: verify changed
+  assert:
+    that:
+        - "jctanner.packaging_os.yum_result.changed"
+
+- name: verify jctanner.packaging_os.yum module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.yum_result"
+        - "'results' in jctanner.packaging_os.yum_result"
+
+- name: remove the group along with the jctanner.packaging_os.package
+  jctanner.packaging_os.yum:
+    name: "@Custom Group,sos"
+    state: absent
+  register: jctanner.packaging_os.yum_result
+
+- name: verify changed
+  assert:
+    that:
+        - "jctanner.packaging_os.yum_result.changed"
+
+- name: verify jctanner.packaging_os.yum module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.yum_result"
+        - "'msg' in jctanner.packaging_os.yum_result"
+        - "'results' in jctanner.packaging_os.yum_result"
+
+- name: check mode remove the group along with the jctanner.packaging_os.package
+  jctanner.packaging_os.yum:
+    name: "@Custom Group,sos"
+    state: absent
+  register: jctanner.packaging_os.yum_result
+  check_mode: yes
+
+- name: verify not changed
+  assert:
+    that:
+        - "not jctanner.packaging_os.yum_result.changed"
+
+- name: verify jctanner.packaging_os.yum module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.yum_result"
+        - "'results' in jctanner.packaging_os.yum_result"

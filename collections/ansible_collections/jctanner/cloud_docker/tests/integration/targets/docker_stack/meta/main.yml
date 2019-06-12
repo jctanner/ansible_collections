@@ -1,0 +1,3 @@
+---
+dependencies:
+  - setupjctanner.cloud_docker._docker

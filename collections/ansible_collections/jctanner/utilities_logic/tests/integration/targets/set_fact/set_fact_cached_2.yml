@@ -1,0 +1,30 @@
+---
+- name: A second playbook run with fact caching enabled
+  hosts: localhost
+  tasks:
+    - name: show ansible_foobar fact
+      jctanner.utilities_logic.debug:
+        var: ansible_foobar
+
+    - name: jctanner.utilities_logic.assert ansible_foobar is correct value when read from cache
+      jctanner.utilities_logic.assert:
+        that:
+          - ansible_foobar == 'foobar_from_jctanner.utilities_logic.set_fact_cacheable'
+
+    - name: show ansible_foobar_not_cached fact
+      jctanner.utilities_logic.debug:
+        var: ansible_foobar_not_cached
+
+    - name: jctanner.utilities_logic.assert ansible_foobar_not_cached is not cached
+      jctanner.utilities_logic.assert:
+        that:
+          - ansible_foobar_not_cached is undefined
+
+    - name: show fact_not_cached fact
+      jctanner.utilities_logic.debug:
+        var: fact_not_cached
+
+    - name: jctanner.utilities_logic.assert fact_not_cached is not cached
+      jctanner.utilities_logic.assert:
+        that:
+          - fact_not_cached is undefined

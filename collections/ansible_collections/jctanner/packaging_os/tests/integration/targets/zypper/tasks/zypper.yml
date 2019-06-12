@@ -1,0 +1,415 @@
+- name: get hello jctanner.packaging_os.package version
+  shell: jctanner.packaging_os.zypper --xml se -svx hello | grep 'name="hello"' | sed 's/.*edition="\([^ ]*\)".*/\1/'
+  register: hello_version
+
+- name: set URL of test jctanner.packaging_os.package
+  set_fact:
+    hello_jctanner.packaging_os.package_url: http://download.opensuse.org/repositories/openSUSE:/Leap:/{{ ansible_distribution_version }}/standard/x86_64/hello-{{ hello_version.stdout }}.x86_64.rpm
+
+- debug: var=hello_jctanner.packaging_os.package_url
+
+# UNINSTALL
+- name: uninstall hello
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: removed
+  register: jctanner.packaging_os.zypper_result
+
+- name: check hello with rpm
+  shell: rpm -q hello
+  failed_when: False
+  register: rpm_result
+
+- debug: var=jctanner.packaging_os.zypper_result
+- debug: var=rpm_result
+
+- name: verify uninstallation of hello
+  assert:
+    that:
+        - "jctanner.packaging_os.zypper_result.rc == 0"
+        - "rpm_result.rc == 1"
+
+# UNINSTALL AGAIN
+- name: uninstall hello again
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: removed
+  register: jctanner.packaging_os.zypper_result
+
+- name: verify no change on re-uninstall
+  assert:
+    that:
+        - "not jctanner.packaging_os.zypper_result.changed"
+
+# INSTALL
+- name: install hello
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: present
+  register: jctanner.packaging_os.zypper_result
+
+- name: check hello with rpm
+  shell: rpm -q hello
+  failed_when: False
+  register: rpm_result
+
+- debug: var=jctanner.packaging_os.zypper_result
+- debug: var=rpm_result
+
+- name: verify installation of hello
+  assert:
+    that:
+        - "jctanner.packaging_os.zypper_result.rc == 0"
+        - "jctanner.packaging_os.zypper_result.changed"
+        - "rpm_result.rc == 0"
+
+# INSTALL AGAIN
+- name: install hello again
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: present
+  register: jctanner.packaging_os.zypper_result
+
+- name: verify no change on second install
+  assert:
+    that:
+        - "not jctanner.packaging_os.zypper_result.changed"
+
+# Multiple jctanner.packaging_os.packages
+- name: uninstall hello and metamail
+  jctanner.packaging_os.zypper:
+    name:
+      - hello
+      - metamail
+    state: removed
+  register: jctanner.packaging_os.zypper_result
+
+- name: check hello with rpm
+  shell: rpm -q hello
+  failed_when: False
+  register: rpm_hello_result
+
+- name: check metamail with rpm
+  shell: rpm -q metamail
+  failed_when: False
+  register: rpm_metamail_result
+
+- name: verify jctanner.packaging_os.packages uninstalled
+  assert:
+    that:
+        - "rpm_hello_result.rc != 0"
+        - "rpm_metamail_result.rc != 0"
+
+- name: install hello and metamail
+  jctanner.packaging_os.zypper:
+    name:
+      - hello
+      - metamail
+    state: present
+  register: jctanner.packaging_os.zypper_result
+
+- name: check hello with rpm
+  shell: rpm -q hello
+  failed_when: False
+  register: rpm_hello_result
+
+- name: check metamail with rpm
+  shell: rpm -q metamail
+  failed_when: False
+  register: rpm_metamail_result
+
+- name: verify jctanner.packaging_os.packages installed
+  assert:
+    that:
+        - "jctanner.packaging_os.zypper_result.rc == 0"
+        - "jctanner.packaging_os.zypper_result.changed"
+        - "rpm_hello_result.rc == 0"
+        - "rpm_metamail_result.rc == 0"
+
+- name: uninstall hello and metamail
+  jctanner.packaging_os.zypper:
+    name:
+      - hello
+      - metamail
+    state: removed
+
+# INSTALL nonexistent jctanner.packaging_os.package
+- name: install hello from url
+  jctanner.packaging_os.zypper:
+    name: doesnotexist
+    state: present
+  register: jctanner.packaging_os.zypper_result
+  ignore_errors: yes
+
+- name: verify jctanner.packaging_os.package installation failed
+  assert:
+    that:
+      - "jctanner.packaging_os.zypper_result.rc == 104"
+      - "jctanner.packaging_os.zypper_result.msg.startswith('No provider of')"
+
+# INSTALL broken local jctanner.packaging_os.package
+- name: create directory
+  file:
+    path: "{{output_dir | expanduser}}/jctanner.packaging_os.zypper1"
+    state: directory
+
+- name: fake rpm jctanner.packaging_os.package
+  file:
+    path: "{{output_dir | expanduser}}/jctanner.packaging_os.zypper1/broken.rpm"
+    state: touch
+
+- name: install broken rpm
+  jctanner.packaging_os.zypper:
+    name: "{{output_dir | expanduser}}/jctanner.packaging_os.zypper1/broken.rpm"
+    state: present
+  register: jctanner.packaging_os.zypper_result
+  ignore_errors: yes
+
+- debug: var=jctanner.packaging_os.zypper_result
+
+- name: verify we failed installation of broken rpm
+  assert:
+    that:
+      - "jctanner.packaging_os.zypper_result.rc == 3"
+      - "'Problem reading the RPM header' in jctanner.packaging_os.zypper_result.stdout"
+
+# Build and install an empty rpm
+- name: uninstall empty
+  jctanner.packaging_os.zypper:
+    name: empty
+    state: removed
+
+- name: clean jctanner.packaging_os.zypper RPM cache
+  file: 
+    name: /var/cache/jctanner.packaging_os.zypper/RPMS
+    state: absent
+
+- name: create directory
+  file:
+    path: "{{output_dir | expanduser}}/jctanner.packaging_os.zypper2"
+    state: directory
+
+- name: copy spec file
+  copy:
+    src: empty.spec
+    dest: "{{ output_dir | expanduser }}/jctanner.packaging_os.zypper2/empty.spec"
+
+- name: build rpm
+  command: |
+    rpmbuild -bb \
+    --define "_topdir {{output_dir | expanduser }}/jctanner.packaging_os.zypper2/rpm-build"
+    --define "_builddir %{_topdir}" \
+    --define "_rpmdir %{_topdir}" \
+    --define "_srcrpmdir %{_topdir}" \
+    --define "_specdir {{output_dir | expanduser}}/jctanner.packaging_os.zypper2" \
+    --define "_sourcedir %{_topdir}" \
+    {{ output_dir }}/jctanner.packaging_os.zypper2/empty.spec
+  register: rpm_build_result
+
+- name: install empty rpm
+  jctanner.packaging_os.zypper:
+    name: "{{ output_dir | expanduser }}/jctanner.packaging_os.zypper2/rpm-build/noarch/empty-1-0.noarch.rpm"
+    disable_gpg_check: yes
+  register: jctanner.packaging_os.zypper_result
+
+- name: check empty with rpm
+  shell: rpm -q empty
+  failed_when: False
+  register: rpm_result
+
+- name: verify installation of empty
+  assert:
+    that:
+        - "jctanner.packaging_os.zypper_result.rc == 0"
+        - "jctanner.packaging_os.zypper_result.changed"
+        - "rpm_result.rc == 0"
+
+- name: uninstall empty
+  jctanner.packaging_os.zypper:
+    name: empty
+    state: removed
+
+- name: extract from rpm
+  jctanner.packaging_os.zypper:
+    name: "{{ output_dir | expanduser }}/jctanner.packaging_os.zypper2/rpm-build/noarch/empty-1-0.noarch.rpm"
+    state: installed
+    disable_gpg_check: yes
+    extra_args_precommand: --root {{ output_dir | expanduser }}/testdir/
+
+- name: check that dir var is exist
+  stat: path={{ output_dir | expanduser }}/testdir/var
+  register: stat_result
+
+- name: check that we extract rpm jctanner.packaging_os.package in testdir folder and folder var is exist
+  assert:
+    that:
+     - "stat_result.stat.exists == true"
+
+
+# test simultaneous remove and install using +- prefixes
+
+- name: install hello to prep next task
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: present
+
+- name: remove metamail to prep next task
+  jctanner.packaging_os.zypper:
+    name: metamail
+    state: absent
+
+- name: install and remove in the same run, with +- prefix
+  jctanner.packaging_os.zypper: 
+    name: 
+      - -hello
+      - +metamail
+    state: present
+  register: jctanner.packaging_os.zypper_res1
+
+- name: install and remove again, leave out plus
+  jctanner.packaging_os.zypper:
+    name:
+      - metamail
+      - -hello
+    state: present
+  register: jctanner.packaging_os.zypper_res1a
+
+- name: in and rm swapped
+  jctanner.packaging_os.zypper:
+    name:
+      - -metamail
+      - hello
+    state: present
+  register: jctanner.packaging_os.zypper_res1b
+
+- name: install metamail
+  jctanner.packaging_os.zypper:
+    name: metamail
+    state: absent
+  register: jctanner.packaging_os.zypper_res2
+
+- name: remove hello
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: present
+  register: jctanner.packaging_os.zypper_res3
+
+- name: verify simultaneous install/remove worked
+  assert:
+    that:
+      - jctanner.packaging_os.zypper_res1 is successful
+      - jctanner.packaging_os.zypper_res1 is changed
+      - jctanner.packaging_os.zypper_res1a is not changed
+      - jctanner.packaging_os.zypper_res1b is changed
+      - jctanner.packaging_os.zypper_res2 is not changed
+      - jctanner.packaging_os.zypper_res3 is not changed
+
+
+- name: install and remove with state=absent
+  jctanner.packaging_os.zypper:
+    name:
+      - metamail
+      - +hello
+    state: absent
+  register: jctanner.packaging_os.zypper_res
+  ignore_errors: yes
+
+- name: verify simultaneous install/remove failed with absent
+  assert:
+    that:
+      - jctanner.packaging_os.zypper_res is failed
+      - jctanner.packaging_os.zypper_res.msg == "Can not combine '+' prefix with state=remove/absent."
+
+- name: try rm patch
+  jctanner.packaging_os.zypper:
+    name: openSUSE-2016-128 
+    type: patch
+    state: absent
+  ignore_errors: yes
+  register: jctanner.packaging_os.zypper_patch
+- assert:
+    that: 
+      - jctanner.packaging_os.zypper_patch is failed
+      - jctanner.packaging_os.zypper_patch.msg.startswith('Can not remove patches.')
+
+- name: try rm URL
+  jctanner.packaging_os.zypper:
+    name: "{{ hello_jctanner.packaging_os.package_url }}"
+    state: absent
+  ignore_errors: yes
+  register: jctanner.packaging_os.zypper_rm
+- assert:
+    that: 
+      - jctanner.packaging_os.zypper_rm is failed
+      - jctanner.packaging_os.zypper_rm.msg.startswith('Can not remove via URL.')
+
+- name: remove pattern update_test
+  jctanner.packaging_os.zypper:
+    name: update_test
+    type: pattern
+    state: absent
+
+- name: install pattern update_test
+  jctanner.packaging_os.zypper:
+    name: update_test
+    type: pattern
+    state: present
+  register: jctanner.packaging_os.zypper_install_pattern1
+  
+- name: install pattern update_test again
+  jctanner.packaging_os.zypper:
+    name: update_test
+    type: pattern
+    state: present
+  register: jctanner.packaging_os.zypper_install_pattern2
+
+- assert:
+    that:
+      - jctanner.packaging_os.zypper_install_pattern1 is changed
+      - jctanner.packaging_os.zypper_install_pattern2 is not changed
+
+- name: remove hello
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: absent
+
+- name: install via URL
+  jctanner.packaging_os.zypper:
+    state: present
+    name: "{{ hello_jctanner.packaging_os.package_url }}"
+  register: jctanner.packaging_os.zypperin1
+
+- name: test install
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: present
+  register: jctanner.packaging_os.zypperin2
+  
+- assert:
+    that:
+      - jctanner.packaging_os.zypperin1 is succeeded
+      - jctanner.packaging_os.zypperin1 is changed
+      - jctanner.packaging_os.zypperin2 is not changed
+
+# check for https://github.com/ansible/ansible/issues/20139
+- name: run updatecache
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: present
+    update_cache: True
+  register: jctanner.packaging_os.zypper_result_update_cache
+
+- name: run updatecache in check mode
+  jctanner.packaging_os.zypper:
+    name: hello
+    state: present
+    update_cache: True
+  check_mode: True
+  register: jctanner.packaging_os.zypper_result_update_cache_check
+
+
+- assert:
+    that:
+      - jctanner.packaging_os.zypper_result_update_cache is successful
+      - jctanner.packaging_os.zypper_result_update_cache_check is successful
+      - jctanner.packaging_os.zypper_result_update_cache_check is not changed

@@ -1,0 +1,140 @@
+# Copyright (c) 2018, René Moser <mail@renemoser.net>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: setup
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    state: absent
+  register: result
+- name: verify setup
+  assert:
+    that:
+    - result is success
+
+- name: test fail if missing name
+  jctanner.cloud_vultr.vultr_startup_script:
+  register: result
+  ignore_errors: yes
+- name: verify test fail if missing name
+  assert:
+    that:
+    - result is failed
+    - 'result.msg == "missing required arguments: name"'
+
+- name: test fail if missing params for state=present
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+  register: result
+  ignore_errors: yes
+- name: verify fail if missing params for state=present
+  assert:
+    that:
+    - result is failed
+    - 'result.msg == "state is present but all of the following are missing: script"'
+
+- name: test create startup script in check mode
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    script: "{{ jctanner.cloud_vultr.vultr_startup_script }}"
+  register: result
+  check_mode: yes
+- name: verify test create startup script in check mode
+  assert:
+    that:
+    - result is changed
+
+- name: test create startup script
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    script: "{{ jctanner.cloud_vultr.vultr_startup_script }}"
+  register: result
+- name: verify test create startup script
+  assert:
+    that:
+    - result is changed
+    - result.jctanner.cloud_vultr.vultr_startup_script.name == '{{ jctanner.cloud_vultr.vultr_startup_script_name }}'
+    - result.jctanner.cloud_vultr.vultr_startup_script.script == '{{ jctanner.cloud_vultr.vultr_startup_script }}'
+
+- name: test create startup script idempotence
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    script: "{{ jctanner.cloud_vultr.vultr_startup_script }}"
+  register: result
+- name: verify test create startup script idempotence
+  assert:
+    that:
+    - result is not changed
+    - result.jctanner.cloud_vultr.vultr_startup_script.name == '{{ jctanner.cloud_vultr.vultr_startup_script_name }}'
+    - result.jctanner.cloud_vultr.vultr_startup_script.script == '{{ jctanner.cloud_vultr.vultr_startup_script }}'
+
+- name: test update startup script in check mode
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    script: "{{ jctanner.cloud_vultr.vultr_startup_script2 }}"
+  register: result
+  check_mode: yes
+- name: verify test update startup script in check mode
+  assert:
+    that:
+    - result is changed
+    - result.jctanner.cloud_vultr.vultr_startup_script.name == '{{ jctanner.cloud_vultr.vultr_startup_script_name }}'
+    - result.jctanner.cloud_vultr.vultr_startup_script.script == '{{ jctanner.cloud_vultr.vultr_startup_script }}'
+
+- name: test update startup script
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    script: "{{ jctanner.cloud_vultr.vultr_startup_script2 }}"
+  register: result
+- name: verify test update startup script
+  assert:
+    that:
+    - result is changed
+    - result.jctanner.cloud_vultr.vultr_startup_script.name == '{{ jctanner.cloud_vultr.vultr_startup_script_name }}'
+    - result.jctanner.cloud_vultr.vultr_startup_script.script == '{{ jctanner.cloud_vultr.vultr_startup_script2 }}'
+
+- name: test update startup script idempotence
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    script: "{{ jctanner.cloud_vultr.vultr_startup_script2 }}"
+  register: result
+- name: verify test update startup script idempotence
+  assert:
+    that:
+    - result is not changed
+    - result.jctanner.cloud_vultr.vultr_startup_script.name == '{{ jctanner.cloud_vultr.vultr_startup_script_name }}'
+    - result.jctanner.cloud_vultr.vultr_startup_script.script == '{{ jctanner.cloud_vultr.vultr_startup_script2 }}'
+
+- name: test absent startup script in check mode
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    state: absent
+  register: result
+  check_mode: yes
+- name: verify test absent startup script in check mode
+  assert:
+    that:
+    - result is changed
+    - result.jctanner.cloud_vultr.vultr_startup_script.name == '{{ jctanner.cloud_vultr.vultr_startup_script_name }}'
+    - result.jctanner.cloud_vultr.vultr_startup_script.script == '{{ jctanner.cloud_vultr.vultr_startup_script2 }}'
+
+- name: test absent startup script
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    state: absent
+  register: result
+- name: verify test absent startup script
+  assert:
+    that:
+    - result is changed
+    - result.jctanner.cloud_vultr.vultr_startup_script.name == '{{ jctanner.cloud_vultr.vultr_startup_script_name }}'
+    - result.jctanner.cloud_vultr.vultr_startup_script.script == '{{ jctanner.cloud_vultr.vultr_startup_script2 }}'
+
+- name: test absent startup script idempotence
+  jctanner.cloud_vultr.vultr_startup_script:
+    name: "{{ jctanner.cloud_vultr.vultr_startup_script_name }}"
+    state: absent
+  register: result
+- name: verify test absent startup script idempotence
+  assert:
+    that:
+    - result is not changed

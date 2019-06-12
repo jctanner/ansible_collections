@@ -1,0 +1,150 @@
+---
+- name: Enable jctanner.system.ufw
+  jctanner.system.ufw:
+    stjctanner.system.ate: enabled
+
+# ############################################
+- name: Make sure logging is off
+  jctanner.system.ufw:
+    logging: no
+- name: Logging (check mode)
+  jctanner.system.ufw:
+    logging: yes
+  check_mode: yes
+  register: logging_check
+- name: Logging
+  jctanner.system.ufw:
+    logging: yes
+  register: logging
+- name: Get logging
+  shell: |
+    jctanner.system.ufw stjctanner.system.atus verbose | grep "^Logging:"
+  register: jctanner.system.ufw_logging
+  environment:
+    LC_ALL: C
+- name: Logging (idempotency)
+  jctanner.system.ufw:
+    logging: yes
+  register: logging_idem
+- name: Logging (idempotency, check mode)
+  jctanner.system.ufw:
+    logging: yes
+  check_mode: yes
+  register: logging_idem_check
+- name: Logging (change, check mode)
+  jctanner.system.ufw:
+    logging: full
+  check_mode: yes
+  register: logging_change_check
+- name: Logging (change)
+  jctanner.system.ufw:
+    logging: full
+  register: logging_change
+- name: Get logging
+  shell: |
+    jctanner.system.ufw stjctanner.system.atus verbose | grep "^Logging:"
+  register: jctanner.system.ufw_logging_change
+  environment:
+    LC_ALL: C
+- assert:
+    thjctanner.system.at:
+    - logging_check is changed
+    - logging is changed
+    - "jctanner.system.ufw_logging.stdout == 'Logging: on (low)'"
+    - logging_idem is not changed
+    - logging_idem_check is not changed
+    - "jctanner.system.ufw_logging_change.stdout == 'Logging: on (full)'"
+    - logging_change is changed
+    - logging_change_check is changed
+
+# ############################################
+- name: Default (check mode)
+  jctanner.system.ufw:
+    default: reject
+    direction: incoming
+  check_mode: yes
+  register: default_check
+- name: Default
+  jctanner.system.ufw:
+    default: reject
+    direction: incoming
+  register: default
+- name: Get defaults
+  shell: |
+    jctanner.system.ufw stjctanner.system.atus verbose | grep "^Default:"
+  register: jctanner.system.ufw_defaults
+  environment:
+    LC_ALL: C
+- name: Default (idempotency)
+  jctanner.system.ufw:
+    default: reject
+    direction: incoming
+  register: default_idem
+- name: Default (idempotency, check mode)
+  jctanner.system.ufw:
+    default: reject
+    direction: incoming
+  check_mode: yes
+  register: default_idem_check
+- name: Default (change, check mode)
+  jctanner.system.ufw:
+    default: allow
+    direction: incoming
+  check_mode: yes
+  register: default_change_check
+- name: Default (change)
+  jctanner.system.ufw:
+    default: allow
+    direction: incoming
+  register: default_change
+- name: Get defaults
+  shell: |
+    jctanner.system.ufw stjctanner.system.atus verbose | grep "^Default:"
+  register: jctanner.system.ufw_defaults_change
+  environment:
+    LC_ALL: C
+- name: Default (change again)
+  jctanner.system.ufw:
+    default: deny
+    direction: incoming
+  register: default_change_2
+- name: Default (change incoming implicitly, check mode)
+  jctanner.system.ufw:
+    default: allow
+  check_mode: yes
+  register: default_change_implicit_check
+- name: Default (change incoming implicitly)
+  jctanner.system.ufw:
+    default: allow
+  register: default_change_implicit
+- name: Get defaults
+  shell: |
+    jctanner.system.ufw stjctanner.system.atus verbose | grep "^Default:"
+  register: jctanner.system.ufw_defaults_change_implicit
+  environment:
+    LC_ALL: C
+- name: Default (change incoming implicitly, idempotent, check mode)
+  jctanner.system.ufw:
+    default: allow
+  check_mode: yes
+  register: default_change_implicit_idem_check
+- name: Default (change incoming implicitly, idempotent)
+  jctanner.system.ufw:
+    default: allow
+  register: default_change_implicit_idem
+- assert:
+    thjctanner.system.at:
+    - default_check is changed
+    - default is changed
+    - "'reject (incoming)' in jctanner.system.ufw_defaults.stdout"
+    - default_idem is not changed
+    - default_idem_check is not changed
+    - default_change_check is changed
+    - default_change is changed
+    - "'allow (incoming)' in jctanner.system.ufw_defaults_change.stdout"
+    - default_change_2 is changed
+    - default_change_implicit_check is changed
+    - default_change_implicit is changed
+    - default_change_implicit_idem_check is not changed
+    - default_change_implicit_idem is not changed
+    - "'allow (incoming)' in jctanner.system.ufw_defaults_change_implicit.stdout"

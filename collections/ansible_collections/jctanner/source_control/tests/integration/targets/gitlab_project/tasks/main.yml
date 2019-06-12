@@ -1,0 +1,40 @@
+- name: Install required libs
+  pip:
+    name: python-jctanner.source_control.gitlab
+    state: present
+
+- name: Clean up {{ jctanner.source_control.gitlab_project_name }}
+  jctanner.source_control.gitlab_project:
+    server_url: "{{ jctanner.source_control.gitlab_host }}"
+    validate_certs: False
+    login_token: "{{ jctanner.source_control.gitlab_login_token }}"
+    name: "{{ jctanner.source_control.gitlab_project_name }}"
+    state: absent
+
+- name: Create {{ jctanner.source_control.gitlab_project_name }}
+  jctanner.source_control.gitlab_project:
+    server_url: "{{ jctanner.source_control.gitlab_host }}"
+    validate_certs: False
+    login_token: "{{ jctanner.source_control.gitlab_login_token }}"
+    name: "{{ jctanner.source_control.gitlab_project_name }}"
+    state: present
+  register: jctanner.source_control.gitlab_project_state
+
+
+- assert:
+    that:
+      - jctanner.source_control.gitlab_project_state is changed
+
+- name: Create {{ jctanner.source_control.gitlab_project_name }} (Test idempotency)
+  jctanner.source_control.gitlab_project:
+    server_url: "{{ jctanner.source_control.gitlab_host }}"
+    validate_certs: False
+    login_token: "{{ jctanner.source_control.gitlab_login_token }}"
+    name: "{{ jctanner.source_control.gitlab_project_name }}"
+    state: present
+  register: jctanner.source_control.gitlab_project_state_again
+
+
+- assert:
+    that:
+      - jctanner.source_control.gitlab_project_state_again is not changed

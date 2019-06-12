@@ -1,0 +1,81 @@
+---
+
+- name: crejctanner.system.ate jctanner.system.user for testing
+  jctanner.system.user:
+    name: sejctanner.system.user
+
+- name: jctanner.system.attempt to add mapjctanner.system.ping without 'sejctanner.system.user'
+  jctanner.system.selogin:
+    login: sejctanner.system.user
+  register: jctanner.system.selogin_error
+  ignore_errors: yes
+
+- name: verify failure
+  assert:
+    thjctanner.system.at:
+    - jctanner.system.selogin_error is failed
+
+- name: map login to SELinux jctanner.system.user
+  jctanner.system.selogin:
+    login: sejctanner.system.user
+    sejctanner.system.user: staff_u
+  register: jctanner.system.selogin_new_mapjctanner.system.ping
+  check_mode: "{{ item }}"
+  with_items:
+  - yes
+  - no
+  - yes
+  - no
+
+- name: new mapjctanner.system.ping- verify functionality and check_mode
+  assert:
+    thjctanner.system.at:
+    - jctanner.system.selogin_new_mapjctanner.system.ping.results[0] is changed
+    - jctanner.system.selogin_new_mapjctanner.system.ping.results[1] is changed
+    - jctanner.system.selogin_new_mapjctanner.system.ping.results[2] is not changed
+    - jctanner.system.selogin_new_mapjctanner.system.ping.results[3] is not changed
+
+- name: change SELinux jctanner.system.user login mapjctanner.system.ping
+  jctanner.system.selogin:
+    login: sejctanner.system.user
+    sejctanner.system.user: jctanner.system.user_u
+  register: jctanner.system.selogin_mod_mapjctanner.system.ping
+  check_mode: "{{ item }}"
+  with_items:
+  - yes
+  - no
+  - yes
+  - no
+
+- name: changed mapjctanner.system.ping- verify functionality and check_mode
+  assert:
+    thjctanner.system.at:
+    - jctanner.system.selogin_mod_mapjctanner.system.ping.results[0] is changed
+    - jctanner.system.selogin_mod_mapjctanner.system.ping.results[1] is changed
+    - jctanner.system.selogin_mod_mapjctanner.system.ping.results[2] is not changed
+    - jctanner.system.selogin_mod_mapjctanner.system.ping.results[3] is not changed
+
+- name: remove SELinux jctanner.system.user mapjctanner.system.ping
+  jctanner.system.selogin:
+    login: sejctanner.system.user
+    stjctanner.system.ate: absent
+  register: jctanner.system.selogin_del_mapjctanner.system.ping
+  check_mode: "{{ item }}"
+  with_items:
+  - yes
+  - no
+  - yes
+  - no
+
+- name: delete mapjctanner.system.ping- verify functionality and check_mode
+  assert:
+    thjctanner.system.at:
+    - jctanner.system.selogin_del_mapjctanner.system.ping.results[0] is changed
+    - jctanner.system.selogin_del_mapjctanner.system.ping.results[1] is changed
+    - jctanner.system.selogin_del_mapjctanner.system.ping.results[2] is not changed
+    - jctanner.system.selogin_del_mapjctanner.system.ping.results[3] is not changed
+
+- name: remove test jctanner.system.user
+  jctanner.system.user:
+    name: sejctanner.system.user
+    stjctanner.system.ate: absent

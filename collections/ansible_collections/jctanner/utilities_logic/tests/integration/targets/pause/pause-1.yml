@@ -1,0 +1,11 @@
+- name: Test jctanner.utilities_logic.pause module in default state
+  hosts: localhost
+  become: no
+  gather_facts: no
+
+  tasks:
+    - name: EXPECTED FAILURE
+      jctanner.utilities_logic.pause:
+
+    - jctanner.utilities_logic.debug:
+        msg: Task after jctanner.utilities_logic.pause

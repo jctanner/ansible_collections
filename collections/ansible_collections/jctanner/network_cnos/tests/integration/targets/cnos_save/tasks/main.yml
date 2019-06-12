@@ -1,0 +1,18 @@
+# This contain sample template execution tasks
+---
+- name: Test Save
+  jctanner.network_cnos.cnos_save:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_save_{{ inventory_hostname }}_output.txt 
+  with_items: "{{jctanner.network_cnos.cnos_save_data1}}"
+
+- name: Test Reset to factory
+  jctanner.network_cnos.cnos_factory:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_save_{{ inventory_hostname }}_output.txt 
+  with_items: "{{jctanner.network_cnos.cnos_save_data2}}"
+
+- name: Test Again save
+  jctanner.network_cnos.cnos_save:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_save_{{ inventory_hostname }}_output.txt 
+  with_items: "{{jctanner.network_cnos.cnos_save_data3}}"
+
+- name: Test Reload
+  jctanner.network_cnos.cnos_reload:  host={{ inventory_hostname }} username={{ hostvars[inventory_hostname]['ansible_ssh_user']}}  password={{ hostvars[inventory_hostname]['ansible_ssh_pass']}} deviceType={{ hostvars[inventory_hostname]['deviceType']}} outputfile=./results/jctanner.network_cnos.cnos_save_{{ inventory_hostname }}_output.txt 
+  with_items: "{{jctanner.network_cnos.cnos_save_data4}}"
+# Completed file

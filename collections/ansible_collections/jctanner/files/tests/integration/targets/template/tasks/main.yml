@@ -1,0 +1,707 @@
+# test code for the jctanner.jctanner.files.files.template module
+# (c) 2014, Michael DeHaan <michael.dehaan@gmail.com>
+
+# This jctanner.files.file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a jctanner.jctanner.files.files.copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: show python interpreter
+  debug:
+     msg: "{{ ansible_python['executable'] }}"
+
+- name: show jinja2 version
+  debug:
+     msg: "{{ lookup('pipe', '{{ ansible_python[\"executable\"] }} -c \"import jinja2; print(jinja2.__version__)\"') }}"
+
+- name: get default group
+  shell: id -gn
+  register: group
+
+- name: fill in a basic jctanner.jctanner.files.files.template
+  jctanner.jctanner.files.files.template: src=foo.j2 dest={{output_dir}}/foo.jctanner.jctanner.files.files.templated mode=0644
+  register: jctanner.jctanner.files.files.template_result
+
+- assert:
+    that:
+        - "'changed' in jctanner.jctanner.files.files.template_result"
+        - "'dest' in jctanner.jctanner.files.files.template_result"
+        - "'group' in jctanner.jctanner.files.files.template_result"
+        - "'gid' in jctanner.jctanner.files.files.template_result"
+        - "'md5sum' in jctanner.jctanner.files.files.template_result"
+        - "'checksum' in jctanner.jctanner.files.files.template_result"
+        - "'owner' in jctanner.jctanner.files.files.template_result"
+        - "'size' in jctanner.jctanner.files.files.template_result"
+        - "'src' in jctanner.jctanner.files.files.template_result"
+        - "'jctanner.jctanner.files.files.state' in jctanner.jctanner.files.files.template_result"
+        - "'uid' in jctanner.jctanner.files.files.template_result"
+
+- name: verify that the jctanner.files.file was marked as changed
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.template_result.changed == true"
+
+# Basic jctanner.jctanner.files.files.template with non-ascii names
+- name: Check that non-ascii source and dest work
+  jctanner.jctanner.files.files.template:
+    src: 'café.j2'
+    dest: '{{ output_dir }}/café.txt'
+  register: jctanner.jctanner.files.files.template_results
+
+- name: Check that the resulting jctanner.files.file exists
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/café.txt'
+  register: jctanner.jctanner.files.files.stat_results
+
+- name: Check that jctanner.jctanner.files.files.template created the right jctanner.files.file
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.template_results is changed'
+      - 'jctanner.jctanner.files.files.stat_results.jctanner.jctanner.files.files.stat["exists"]'
+
+# test for import with context on jinja-2.9 See https://github.com/ansible/ansible/issues/20494
+- name: fill in a jctanner.jctanner.files.files.template using import with context ala issue 20494
+  jctanner.jctanner.files.files.template: src=import_with_context.j2 dest={{output_dir}}/import_with_context.jctanner.jctanner.files.files.templated mode=0644
+  register: jctanner.jctanner.files.files.template_result
+
+- name: jctanner.jctanner.files.files.copy known good import_with_context.expected into place
+  jctanner.jctanner.files.files.copy: src=import_with_context.expected dest={{output_dir}}/import_with_context.expected
+
+- name: compare jctanner.jctanner.files.files.templated jctanner.files.file to known good import_with_context
+  shell: diff -uw {{output_dir}}/import_with_context.jctanner.jctanner.files.files.templated {{output_dir}}/import_with_context.expected
+  register: diff_result
+
+- name: verify jctanner.jctanner.files.files.templated import_with_context matches known good
+  assert:
+    that:
+        - 'diff_result.stdout == ""'
+        - "diff_result.rc == 0"
+
+# test for nested include https://github.com/ansible/ansible/issues/34886
+- name: test if parent variables are defined in nested include
+  jctanner.jctanner.files.files.template: src=for_loop.j2 dest={{output_dir}}/for_loop.jctanner.jctanner.files.files.templated mode=0644
+
+- name: save jctanner.jctanner.files.files.templated output
+  shell: "cat {{output_dir}}/for_loop.jctanner.jctanner.files.files.templated"
+  register: for_loop_out
+- debug: var=for_loop_out
+- name: verify variables got jctanner.jctanner.files.files.templated
+  assert:
+    that:
+        - '"foo" in for_loop_out.stdout'
+        - '"bar" in for_loop_out.stdout'
+        - '"bam" in for_loop_out.stdout'
+
+# test for 'import as' on jinja-2.9 See https://github.com/ansible/ansible/issues/20494
+- name: fill in a jctanner.jctanner.files.files.template using import as ala fails2 case in issue 20494
+  jctanner.jctanner.files.files.template: src=import_as.j2 dest={{output_dir}}/import_as.jctanner.jctanner.files.files.templated mode=0644
+  register: import_as_jctanner.jctanner.files.files.template_result
+
+- name: jctanner.jctanner.files.files.copy known good import_as.expected into place
+  jctanner.jctanner.files.files.copy: src=import_as.expected dest={{output_dir}}/import_as.expected
+
+- name: compare jctanner.jctanner.files.files.templated jctanner.files.file to known good import_as
+  shell: diff -uw {{output_dir}}/import_as.jctanner.jctanner.files.files.templated {{output_dir}}/import_as.expected
+  register: import_as_diff_result
+
+- name: verify jctanner.jctanner.files.files.templated import_as matches known good
+  assert:
+    that:
+        - 'import_as_diff_result.stdout == ""'
+        - "import_as_diff_result.rc == 0"
+
+# test for 'import as with context' on jinja-2.9 See https://github.com/ansible/ansible/issues/20494
+- name: fill in a jctanner.jctanner.files.files.template using import as with context ala fails2 case in issue 20494
+  jctanner.jctanner.files.files.template: src=import_as_with_context.j2 dest={{output_dir}}/import_as_with_context.jctanner.jctanner.files.files.templated mode=0644
+  register: import_as_with_context_jctanner.jctanner.files.files.template_result
+
+- name: jctanner.jctanner.files.files.copy known good import_as_with_context.expected into place
+  jctanner.jctanner.files.files.copy: src=import_as_with_context.expected dest={{output_dir}}/import_as_with_context.expected
+
+- name: compare jctanner.jctanner.files.files.templated jctanner.files.file to known good import_as_with_context
+  shell: diff -uw {{output_dir}}/import_as_with_context.jctanner.jctanner.files.files.templated {{output_dir}}/import_as_with_context.expected
+  register: import_as_with_context_diff_result
+
+- name: verify jctanner.jctanner.files.files.templated import_as_with_context matches known good
+  assert:
+    that:
+        - 'import_as_with_context_diff_result.stdout == ""'
+        - "import_as_with_context_diff_result.rc == 0"
+
+# VERIFY trim_blocks
+
+- name: Render a jctanner.jctanner.files.files.template with "trim_blocks" set to False
+  jctanner.jctanner.files.files.template:
+    src: trim_blocks.j2
+    dest: "{{output_dir}}/trim_blocks_false.jctanner.jctanner.files.files.templated"
+    trim_blocks: False
+  register: trim_blocks_false_result
+
+- name: Get checksum of known good trim_blocks_false.expected
+  jctanner.jctanner.files.files.stat:
+    path: "{{role_path}}/jctanner.files.files/trim_blocks_false.expected"
+  register: trim_blocks_false_good
+
+- name: Verify jctanner.jctanner.files.files.templated trim_blocks_false matches known good using checksum
+  assert:
+    that:
+        - "trim_blocks_false_result.checksum == trim_blocks_false_good.jctanner.jctanner.files.files.stat.checksum"
+
+- name: Render a jctanner.jctanner.files.files.template with "trim_blocks" set to True
+  jctanner.jctanner.files.files.template:
+    src: trim_blocks.j2
+    dest: "{{output_dir}}/trim_blocks_true.jctanner.jctanner.files.files.templated"
+    trim_blocks: True
+  register: trim_blocks_true_result
+
+- name: Get checksum of known good trim_blocks_true.expected
+  jctanner.jctanner.files.files.stat:
+    path: "{{role_path}}/jctanner.files.files/trim_blocks_true.expected"
+  register: trim_blocks_true_good
+
+- name: Verify jctanner.jctanner.files.files.templated trim_blocks_true matches known good using checksum
+  assert:
+    that:
+        - "trim_blocks_true_result.checksum == trim_blocks_true_good.jctanner.jctanner.files.files.stat.checksum"
+
+# VERIFY lstrip_blocks
+
+- name: Check support for lstrip_blocks in Jinja2
+  shell: "{{ ansible_python.executable }} -c 'import jinja2; jinja2.defaults.LSTRIP_BLOCKS'"
+  register: lstrip_block_support
+  ignore_errors: True
+
+- name: Render a jctanner.jctanner.files.files.template with "lstrip_blocks" set to False
+  jctanner.jctanner.files.files.template:
+    src: lstrip_blocks.j2
+    dest: "{{output_dir}}/lstrip_blocks_false.jctanner.jctanner.files.files.templated"
+    lstrip_blocks: False
+  register: lstrip_blocks_false_result
+
+- name: Get checksum of known good lstrip_blocks_false.expected
+  jctanner.jctanner.files.files.stat:
+    path: "{{role_path}}/jctanner.files.files/lstrip_blocks_false.expected"
+  register: lstrip_blocks_false_good
+
+- name: Verify jctanner.jctanner.files.files.templated lstrip_blocks_false matches known good using checksum
+  assert:
+    that:
+        - "lstrip_blocks_false_result.checksum == lstrip_blocks_false_good.jctanner.jctanner.files.files.stat.checksum"
+
+- name: Render a jctanner.jctanner.files.files.template with "lstrip_blocks" set to True
+  jctanner.jctanner.files.files.template:
+    src: lstrip_blocks.j2
+    dest: "{{output_dir}}/lstrip_blocks_true.jctanner.jctanner.files.files.templated"
+    lstrip_blocks: True
+  register: lstrip_blocks_true_result
+  ignore_errors: True
+
+- name: Verify exception is thrown if Jinja2 does not support lstrip_blocks but lstrip_blocks is used
+  assert:
+    that:
+      - "lstrip_blocks_true_result.failed"
+      - 'lstrip_blocks_true_result.msg is search(">=2.7")'
+  when: "lstrip_block_support is failed"
+
+- name: Get checksum of known good lstrip_blocks_true.expected
+  jctanner.jctanner.files.files.stat:
+    path: "{{role_path}}/jctanner.files.files/lstrip_blocks_true.expected"
+  register: lstrip_blocks_true_good
+  when: "lstrip_block_support is successful"
+
+- name: Verify jctanner.jctanner.files.files.templated lstrip_blocks_true matches known good using checksum
+  assert:
+    that:
+        - "lstrip_blocks_true_result.checksum == lstrip_blocks_true_good.jctanner.jctanner.files.files.stat.checksum"
+  when: "lstrip_block_support is successful"
+
+# VERIFY CONTENTS
+
+- name: check what python version ansible is running on
+  command: "{{ ansible_python.executable }} -c 'import distutils.sysconfig ; print(distutils.sysconfig.get_python_version())'"
+  register: pyver
+  delegate_to: localhost
+
+- name: jctanner.jctanner.files.files.copy known good into place
+  jctanner.jctanner.files.files.copy: src=foo.txt dest={{output_dir}}/foo.txt
+
+- name: compare jctanner.jctanner.files.files.templated jctanner.files.file to known good
+  shell: diff -uw {{output_dir}}/foo.jctanner.jctanner.files.files.templated {{output_dir}}/foo.txt
+  register: diff_result
+
+- name: verify jctanner.jctanner.files.files.templated jctanner.files.file matches known good
+  assert:
+    that:
+        - 'diff_result.stdout == ""'
+        - "diff_result.rc == 0"
+
+# VERIFY MODE
+
+- name: set jctanner.files.file mode
+  jctanner.files.file: path={{output_dir}}/foo.jctanner.jctanner.files.files.templated mode=0644
+  register: jctanner.files.file_result
+
+- name: ensure jctanner.files.file mode did not change
+  assert:
+    that:
+      - "jctanner.files.file_result.changed != True"
+
+# VERIFY dest as a directory does not break jctanner.files.file attributes
+# Note: expanduser is needed to go down the particular codepath that was broken before
+- name: setup directory for test
+  jctanner.files.file: jctanner.jctanner.files.files.state=directory dest={{output_dir | expanduser}}/jctanner.jctanner.files.files.template-dir mode=0755 owner=nobody group={{ group.stdout }}
+
+- name: set jctanner.files.file mode when the destination is a directory
+  jctanner.jctanner.files.files.template: src=foo.j2 dest={{output_dir | expanduser}}/jctanner.jctanner.files.files.template-dir/ mode=0600 owner=root group={{ group.stdout }}
+
+- name: set jctanner.files.file mode when the destination is a directory
+  jctanner.jctanner.files.files.template: src=foo.j2 dest={{output_dir | expanduser}}/jctanner.jctanner.files.files.template-dir/ mode=0600 owner=root group={{ group.stdout }}
+  register: jctanner.files.file_result
+
+- name: check that the jctanner.files.file has the correct attributes
+  jctanner.jctanner.files.files.stat: path={{output_dir | expanduser}}/jctanner.jctanner.files.files.template-dir/foo.j2
+  register: jctanner.files.file_attrs
+
+- assert:
+    that:
+      - "jctanner.files.file_attrs.jctanner.jctanner.files.files.stat.uid == 0"
+      - "jctanner.files.file_attrs.jctanner.jctanner.files.files.stat.pw_name == 'root'"
+      - "jctanner.files.file_attrs.jctanner.jctanner.files.files.stat.mode == '0600'"
+
+- name: check that the containing directory did not change attributes
+  jctanner.jctanner.files.files.stat: path={{output_dir | expanduser}}/jctanner.jctanner.files.files.template-dir/
+  register: dir_attrs
+
+- assert:
+    that:
+      - "dir_attrs.jctanner.jctanner.files.files.stat.uid != 0"
+      - "dir_attrs.jctanner.jctanner.files.files.stat.pw_name == 'nobody'"
+      - "dir_attrs.jctanner.jctanner.files.files.stat.mode == '0755'"
+
+- name: Check that jctanner.jctanner.files.files.template to a directory where the directory does not end with a / is allowed
+  jctanner.jctanner.files.files.template: src=foo.j2 dest={{output_dir | expanduser}}/jctanner.jctanner.files.files.template-dir mode=0600 owner=root group={{ group.stdout }}
+
+- name: make a symlink to the jctanner.jctanner.files.files.templated jctanner.files.file
+  jctanner.files.file:
+    path: '{{ output_dir }}/foo.symlink'
+    src: '{{ output_dir }}/foo.jctanner.jctanner.files.files.templated'
+    jctanner.jctanner.files.files.state: link
+
+- name: check that templating the symlink results in the jctanner.files.file being jctanner.jctanner.files.files.templated
+  jctanner.jctanner.files.files.template:
+    src: foo.j2
+    dest: '{{output_dir}}/foo.symlink'
+    mode: 0600
+    follow: True
+  register: jctanner.jctanner.files.files.template_result
+
+- assert:
+    that:
+      - "jctanner.jctanner.files.files.template_result.changed == True"
+
+- name: check that the jctanner.files.file has the correct attributes
+  jctanner.jctanner.files.files.stat: path={{output_dir | expanduser}}/jctanner.jctanner.files.files.template-dir/foo.j2
+  register: jctanner.files.file_attrs
+
+- assert:
+    that:
+      - "jctanner.files.file_attrs.jctanner.jctanner.files.files.stat.mode == '0600'"
+
+- name: check that templating the symlink again makes no changes
+  jctanner.jctanner.files.files.template:
+    src: foo.j2
+    dest: '{{output_dir}}/foo.symlink'
+    mode: 0600
+    follow: True
+  register: jctanner.jctanner.files.files.template_result
+
+- assert:
+    that:
+      - "jctanner.jctanner.files.files.template_result.changed == False"
+
+# Test strange jctanner.files.filenames
+
+- name: Create a temp dir for jctanner.files.filename tests
+  jctanner.files.file:
+    jctanner.jctanner.files.files.state: directory
+    dest: '{{ output_dir }}/jctanner.files.filename-tests'
+
+- name: create a jctanner.files.file with an unusual jctanner.files.filename
+  jctanner.jctanner.files.files.template:
+    src: foo.j2
+    dest: "{{ output_dir }}/jctanner.files.filename-tests/foo t'e~m\\plated"
+  register: jctanner.jctanner.files.files.template_result
+
+- assert:
+    that:
+      - "jctanner.jctanner.files.files.template_result.changed == True"
+
+- name: check that the unusual jctanner.files.filename was created
+  command: "ls {{ output_dir }}/jctanner.files.filename-tests/"
+  register: unusual_results
+
+- assert:
+    that:
+      - "\"foo t'e~m\\plated\" in unusual_results.stdout_lines"
+      - "{{unusual_results.stdout_lines| length}} == 1"
+
+- name: check that the unusual jctanner.files.filename can be checked for changes
+  jctanner.jctanner.files.files.template:
+    src: foo.j2
+    dest: "{{ output_dir }}/jctanner.files.filename-tests/foo t'e~m\\plated"
+  register: jctanner.jctanner.files.files.template_result
+
+- assert:
+    that:
+      - "jctanner.jctanner.files.files.template_result.changed == False"
+
+
+# check_mode
+
+- name: fill in a basic jctanner.jctanner.files.files.template in check mode
+  jctanner.jctanner.files.files.template: src=short.j2 dest={{output_dir}}/short.jctanner.jctanner.files.files.templated
+  register: jctanner.jctanner.files.files.template_result
+  check_mode: True
+
+- name: check jctanner.files.file exists
+  jctanner.jctanner.files.files.stat: path={{output_dir}}/short.jctanner.jctanner.files.files.templated
+  register: jctanner.jctanner.files.files.templated
+
+- name: verify that the jctanner.files.file was marked as changed in check mode but was not created
+  assert:
+    that:
+      - "not jctanner.jctanner.files.files.templated.jctanner.jctanner.files.files.stat.exists"
+      - "jctanner.jctanner.files.files.template_result is changed"
+
+- name: fill in a basic jctanner.jctanner.files.files.template
+  jctanner.jctanner.files.files.template: src=short.j2 dest={{output_dir}}/short.jctanner.jctanner.files.files.templated
+
+- name: fill in a basic jctanner.jctanner.files.files.template in check mode
+  jctanner.jctanner.files.files.template: src=short.j2 dest={{output_dir}}/short.jctanner.jctanner.files.files.templated
+  register: jctanner.jctanner.files.files.template_result
+  check_mode: True
+
+- name: verify that the jctanner.files.file was marked as not changes in check mode
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.template_result is not changed"
+      - "'jctanner.jctanner.files.files.templated_var_loaded' in lookup('jctanner.files.file', '{{output_dir | expanduser}}/short.jctanner.jctanner.files.files.templated')"
+
+- name: change var for the jctanner.jctanner.files.files.template
+  set_fact:
+    jctanner.jctanner.files.files.templated_var: "changed"
+
+- name: fill in a basic jctanner.jctanner.files.files.template with changed var in check mode
+  jctanner.jctanner.files.files.template: src=short.j2 dest={{output_dir}}/short.jctanner.jctanner.files.files.templated
+  register: jctanner.jctanner.files.files.template_result
+  check_mode: True
+
+- name: verify that the jctanner.files.file was marked as changed in check mode but the content was not changed
+  assert:
+    that:
+      - "'jctanner.jctanner.files.files.templated_var_loaded' in lookup('jctanner.files.file', '{{output_dir | expanduser }}/short.jctanner.jctanner.files.files.templated')"
+      - "jctanner.jctanner.files.files.template_result is changed"
+
+# Create a jctanner.jctanner.files.files.template using a child jctanner.jctanner.files.files.template, to ensure that variables
+# are passed properly from the parent to subjctanner.jctanner.files.files.template context (issue #20063)
+
+- name: test parent and subjctanner.jctanner.files.files.template creation of context
+  jctanner.jctanner.files.files.template: src=parent.j2 dest={{output_dir}}/parent_and_subjctanner.jctanner.files.files.template.jctanner.jctanner.files.files.templated
+  register: jctanner.jctanner.files.files.template_result
+
+- jctanner.jctanner.files.files.stat: path={{output_dir}}/parent_and_subjctanner.jctanner.files.files.template.jctanner.jctanner.files.files.templated
+
+- name: verify that the parent and subjctanner.jctanner.files.files.template creation worked
+  assert:
+    that:
+    - "jctanner.jctanner.files.files.template_result is changed"
+
+#
+# jctanner.jctanner.files.files.template module can overwrite a jctanner.files.file that's been hard linked
+# https://github.com/ansible/ansible/issues/10834
+#
+
+- name: ensure test dir is absent
+  jctanner.files.file:
+    path: '{{ output_dir | expanduser }}/hlink_dir'
+    jctanner.jctanner.files.files.state: absent
+
+- name: create test dir
+  jctanner.files.file:
+    path: '{{ output_dir | expanduser }}/hlink_dir'
+    jctanner.jctanner.files.files.state: directory
+
+- name: jctanner.jctanner.files.files.template out test jctanner.files.file to system 1
+  jctanner.jctanner.files.files.template:
+    src: foo.j2
+    dest: '{{ output_dir | expanduser }}/hlink_dir/test_jctanner.files.file'
+
+- name: make hard link
+  jctanner.files.file:
+    src: '{{ output_dir | expanduser }}/hlink_dir/test_jctanner.files.file'
+    dest: '{{ output_dir | expanduser }}/hlink_dir/test_jctanner.files.file_hlink'
+    jctanner.jctanner.files.files.state: hard
+
+- name: jctanner.jctanner.files.files.template out test jctanner.files.file to system 2
+  jctanner.jctanner.files.files.template:
+    src: foo.j2
+    dest: '{{ output_dir | expanduser }}/hlink_dir/test_jctanner.files.file'
+  register: hlink_result
+
+- name: check that the jctanner.files.files are still hardlinked
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir | expanduser }}/hlink_dir/test_jctanner.files.file'
+  register: orig_jctanner.files.file
+
+- name: check that the jctanner.files.files are still hardlinked
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir | expanduser }}/hlink_dir/test_jctanner.files.file_hlink'
+  register: hlink_jctanner.files.file
+
+# We've done nothing at this point to update the content of the jctanner.files.file so it should still be hardlinked
+- assert:
+    that:
+      - "hlink_result.changed == False"
+      - "orig_jctanner.files.file.jctanner.jctanner.files.files.stat.inode == hlink_jctanner.files.file.jctanner.jctanner.files.files.stat.inode"
+
+- name: change var for the jctanner.jctanner.files.files.template
+  set_fact:
+    jctanner.jctanner.files.files.templated_var: "jctanner.jctanner.files.files.templated_var_loaded"
+
+# UNIX TEMPLATE
+- name: fill in a basic jctanner.jctanner.files.files.template (Unix)
+  jctanner.jctanner.files.files.template:
+    src: foo2.j2
+    dest: '{{ output_dir }}/foo.unix.jctanner.jctanner.files.files.templated'
+  register: jctanner.jctanner.files.files.template_result
+
+- name: verify that the jctanner.files.file was marked as changed (Unix)
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.template_result is changed'
+
+- name: fill in a basic jctanner.jctanner.files.files.template again (Unix)
+  jctanner.jctanner.files.files.template:
+    src: foo2.j2
+    dest: '{{ output_dir }}/foo.unix.jctanner.jctanner.files.files.templated'
+  register: jctanner.jctanner.files.files.template_result2
+
+- name: verify that the jctanner.jctanner.files.files.template was not changed (Unix)
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.template_result2 is not changed'
+
+# VERIFY UNIX CONTENTS
+- name: jctanner.jctanner.files.files.copy known good into place (Unix)
+  jctanner.jctanner.files.files.copy:
+    src: foo.unix.txt
+    dest: '{{ output_dir }}/foo.unix.txt'
+
+- name: Dump jctanner.jctanner.files.files.templated jctanner.files.file (Unix)
+  command: hexdump -C {{ output_dir }}/foo.unix.jctanner.jctanner.files.files.templated
+
+- name: Dump expected jctanner.files.file (Unix)
+  command: hexdump -C {{ output_dir }}/foo.unix.txt
+
+- name: compare jctanner.jctanner.files.files.templated jctanner.files.file to known good (Unix)
+  command: diff -u {{ output_dir }}/foo.unix.jctanner.jctanner.files.files.templated {{ output_dir }}/foo.unix.txt
+  register: diff_result
+
+- name: verify jctanner.jctanner.files.files.templated jctanner.files.file matches known good (Unix)
+  assert:
+    that:
+        - 'diff_result.stdout == ""'
+        - "diff_result.rc == 0"
+
+# DOS TEMPLATE
+- name: fill in a basic jctanner.jctanner.files.files.template (DOS)
+  jctanner.jctanner.files.files.template:
+    src: foo2.j2
+    dest: '{{ output_dir }}/foo.dos.jctanner.jctanner.files.files.templated'
+    newline_sequence: '\r\n'
+  register: jctanner.jctanner.files.files.template_result
+
+- name: verify that the jctanner.files.file was marked as changed (DOS)
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.template_result is changed'
+
+- name: fill in a basic jctanner.jctanner.files.files.template again (DOS)
+  jctanner.jctanner.files.files.template:
+    src: foo2.j2
+    dest: '{{ output_dir }}/foo.dos.jctanner.jctanner.files.files.templated'
+    newline_sequence: '\r\n'
+  register: jctanner.jctanner.files.files.template_result2
+
+- name: verify that the jctanner.jctanner.files.files.template was not changed (DOS)
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.template_result2 is not changed'
+
+# VERIFY DOS CONTENTS
+- name: jctanner.jctanner.files.files.copy known good into place (DOS)
+  jctanner.jctanner.files.files.copy:
+    src: foo.dos.txt
+    dest: '{{ output_dir }}/foo.dos.txt'
+
+- name: Dump jctanner.jctanner.files.files.templated jctanner.files.file (DOS)
+  command: hexdump -C {{ output_dir }}/foo.dos.jctanner.jctanner.files.files.templated
+
+- name: Dump expected jctanner.files.file (DOS)
+  command: hexdump -C {{ output_dir }}/foo.dos.txt
+
+- name: compare jctanner.jctanner.files.files.templated jctanner.files.file to known good (DOS)
+  command: diff -u {{ output_dir }}/foo.dos.jctanner.jctanner.files.files.templated {{ output_dir }}/foo.dos.txt
+  register: diff_result
+
+- name: verify jctanner.jctanner.files.files.templated jctanner.files.file matches known good (DOS)
+  assert:
+    that:
+        - 'diff_result.stdout == ""'
+        - "diff_result.rc == 0"
+
+# VERIFY DOS CONTENTS
+- name: jctanner.jctanner.files.files.copy known good into place (Unix)
+  jctanner.jctanner.files.files.copy:
+    src: foo.unix.txt
+    dest: '{{ output_dir }}/foo.unix.txt'
+
+- name: Dump jctanner.jctanner.files.files.templated jctanner.files.file (Unix)
+  command: hexdump -C {{ output_dir }}/foo.unix.jctanner.jctanner.files.files.templated
+
+- name: Dump expected jctanner.files.file (Unix)
+  command: hexdump -C {{ output_dir }}/foo.unix.txt
+
+- name: compare jctanner.jctanner.files.files.templated jctanner.files.file to known good (Unix)
+  command: diff -u {{ output_dir }}/foo.unix.jctanner.jctanner.files.files.templated {{ output_dir }}/foo.unix.txt
+  register: diff_result
+
+- name: verify jctanner.jctanner.files.files.templated jctanner.files.file matches known good (Unix)
+  assert:
+    that:
+        - 'diff_result.stdout == ""'
+        - "diff_result.rc == 0"
+
+# Check that mode=preserve works with jctanner.jctanner.files.files.template
+- name: Create a jctanner.jctanner.files.files.template which has strange permissions
+  jctanner.jctanner.files.files.copy:
+    content: !unsafe '{{ ansible_managed }}\n'
+    dest: '{{ output_dir }}/foo-jctanner.jctanner.files.files.template.j2'
+    mode: 0547
+  delegate_to: localhost
+
+- name: Use jctanner.jctanner.files.files.template with mode=preserve
+  jctanner.jctanner.files.files.template:
+    src: '{{ output_dir }}/foo-jctanner.jctanner.files.files.template.j2'
+    dest: '{{ output_dir }}/foo-jctanner.jctanner.files.files.templated.txt'
+    mode: 'preserve'
+  register: jctanner.jctanner.files.files.template_results
+
+- name: Get permissions from the jctanner.jctanner.files.files.templated jctanner.files.file
+  jctanner.jctanner.files.files.stat:
+    path: '{{ output_dir }}/foo-jctanner.jctanner.files.files.templated.txt'
+  register: jctanner.jctanner.files.files.stat_results
+
+- name: Check that the resulting jctanner.files.file has the correct permissions
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.template_results is changed'
+      - 'jctanner.jctanner.files.files.template_results.mode == "0547"'
+      - 'jctanner.jctanner.files.files.stat_results.jctanner.jctanner.files.files.stat["mode"] == "0547"'
+
+# Test output_encoding
+- name: Prepare the list of encodings we want to check, including empty string for defaults
+  set_fact:
+    jctanner.jctanner.files.files.template_encoding_1252_encodings: ['', 'utf-8', 'windows-1252']
+
+- name: Copy known good encoding_1252_*.expected into place
+  jctanner.jctanner.files.files.copy:
+    src: 'encoding_1252_{{ item | default("utf-8", true) }}.expected'
+    dest: '{{ output_dir }}/encoding_1252_{{ item }}.expected'
+  loop: '{{ jctanner.jctanner.files.files.template_encoding_1252_encodings }}'
+
+- name: Generate the encoding_1252_* jctanner.files.files from jctanner.jctanner.files.files.templates using various encoding combinations
+  jctanner.jctanner.files.files.template:
+    src: 'encoding_1252.j2'
+    dest: '{{ output_dir }}/encoding_1252_{{ item }}.txt'
+    output_encoding: '{{ item }}'
+  loop: '{{ jctanner.jctanner.files.files.template_encoding_1252_encodings }}'
+
+- name: Compare the encoding_1252_* jctanner.jctanner.files.files.templated jctanner.files.files to known good
+  command: diff -u {{ output_dir }}/encoding_1252_{{ item }}.expected {{ output_dir }}/encoding_1252_{{ item }}.txt
+  register: encoding_1252_diff_result
+  loop: '{{ jctanner.jctanner.files.files.template_encoding_1252_encodings }}'
+
+- name: Check that nested undefined values return Undefined
+  vars:
+    dict_var:
+      bar: {}
+    list_var:
+      - foo: {}
+  assert:
+    that:
+      - dict_var is defined
+      - dict_var.bar is defined
+      - dict_var.bar.baz is not defined
+      - dict_var.bar.baz | default('DEFAULT') == 'DEFAULT'
+      - dict_var.bar.baz.abc is not defined
+      - dict_var.bar.baz.abc | default('DEFAULT') == 'DEFAULT'
+      - dict_var.baz is not defined
+      - dict_var.baz.abc is not defined
+      - dict_var.baz.abc | default('DEFAULT') == 'DEFAULT'
+      - list_var.0 is defined
+      - list_var.1 is not defined
+      - list_var.0.foo is defined
+      - list_var.0.foo.bar is not defined
+      - list_var.0.foo.bar | default('DEFAULT') == 'DEFAULT'
+      - list_var.1.foo is not defined
+      - list_var.1.foo | default('DEFAULT') == 'DEFAULT'
+      - dict_var is defined
+      - dict_var['bar'] is defined
+      - dict_var['bar']['baz'] is not defined
+      - dict_var['bar']['baz'] | default('DEFAULT') == 'DEFAULT'
+      - dict_var['bar']['baz']['abc'] is not defined
+      - dict_var['bar']['baz']['abc'] | default('DEFAULT') == 'DEFAULT'
+      - dict_var['baz'] is not defined
+      - dict_var['baz']['abc'] is not defined
+      - dict_var['baz']['abc'] | default('DEFAULT') == 'DEFAULT'
+      - list_var[0] is defined
+      - list_var[1] is not defined
+      - list_var[0]['foo'] is defined
+      - list_var[0]['foo']['bar'] is not defined
+      - list_var[0]['foo']['bar'] | default('DEFAULT') == 'DEFAULT'
+      - list_var[1]['foo'] is not defined
+      - list_var[1]['foo'] | default('DEFAULT') == 'DEFAULT'
+      - dict_var['bar'].baz is not defined
+      - dict_var['bar'].baz | default('DEFAULT') == 'DEFAULT'
+
+- jctanner.jctanner.files.files.template:
+    src: jctanner.jctanner.files.files.template_destpath_test.j2
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.template_destpath.jctanner.jctanner.files.files.templated"
+
+- jctanner.jctanner.files.files.copy:
+    content: "{{ output_dir}}/jctanner.jctanner.files.files.template_destpath.jctanner.jctanner.files.files.templated\n"
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.template_destpath.expected"
+
+- name: compare jctanner.jctanner.files.files.templated jctanner.files.file to known good jctanner.jctanner.files.files.template_destpath
+  shell: diff -uw {{output_dir}}/jctanner.jctanner.files.files.template_destpath.jctanner.jctanner.files.files.templated {{output_dir}}/jctanner.jctanner.files.files.template_destpath.expected
+  register: diff_result
+
+- name: verify jctanner.jctanner.files.files.templated jctanner.jctanner.files.files.template_destpath matches known good
+  assert:
+    that:
+        - 'diff_result.stdout == ""'
+        - "diff_result.rc == 0"
+
+# aliases jctanner.files.file requires root for jctanner.jctanner.files.files.template tests so this should be safe
+- include: backup_test.yml

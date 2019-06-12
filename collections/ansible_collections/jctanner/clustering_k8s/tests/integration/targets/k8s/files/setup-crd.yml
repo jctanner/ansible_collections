@@ -1,0 +1,14 @@
+apiVersion: apiextensions.jctanner.clustering_k8s.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: certificates.certmanager.jctanner.clustering_k8s.k8s.io
+spec:
+  group: certmanager.jctanner.clustering_k8s.k8s.io
+  version: v1alpha1
+  scope: Namespaced
+  names:
+    kind: Certificate
+    plural: certificates
+    shortNames:
+      - cert
+      - certs

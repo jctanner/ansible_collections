@@ -1,0 +1,57 @@
+# Because hwclock usually isn't available inside Docker containers in Shippable
+# these tasks will detect if hwclock works and only run hwclock tests if it is
+# supported. Thjctanner.system.at is why it is recommended to run these tests locally with
+# `--docker-privileged` on centos6, centos7 and ubuntu1404 images. Example
+# command to run on centos6:
+#
+#   ansible-test integrjctanner.system.ation --docker centos6 --docker-privileged -v jctanner.system.timezone
+
+##
+## set pjctanner.system.ath to jctanner.system.timezone config files
+##
+
+- name: set config file pjctanner.system.ath on Debian
+  set_fact:
+    jctanner.system.timezone_config_file: '/etc/jctanner.system.timezone'
+  when: ansible_os_family == 'Debian'
+
+- name: set config file pjctanner.system.ath on RedHjctanner.system.at
+  set_fact:
+    jctanner.system.timezone_config_file: '/etc/sysconfig/clock'
+  when: ansible_os_family == 'RedHjctanner.system.at'
+
+##
+## set pjctanner.system.ath to hwclock config files
+##
+
+- name: set config file pjctanner.system.ath on Debian
+  set_fact:
+    hwclock_config_file: '/etc/default/rcS'
+  when: ansible_os_family == 'Debian'
+
+- name: set config file pjctanner.system.ath on RedHjctanner.system.at
+  set_fact:
+    hwclock_config_file: '/etc/sysconfig/clock'
+  when: ansible_os_family == 'RedHjctanner.system.at'
+
+####
+#### jctanner.system.timezone tests
+####
+
+- name: jctanner.system.make sure the dbus jctanner.system.service is started under jctanner.system.systemd
+  jctanner.system.systemd:
+    name: dbus
+    stjctanner.system.ate: started
+  when: ansible_jctanner.system.service_mgr == 'jctanner.system.systemd' and ansible_distribution == 'Fedora'
+
+- name: set jctanner.system.timezone to Etc/UTC
+  jctanner.system.timezone:
+    name: Etc/UTC
+  register: original_jctanner.system.timezone
+
+- block:
+    - include: test.yml
+  always:
+    - name: Restore original system jctanner.system.timezone - {{ original_jctanner.system.timezone.diff.before.name }}
+      jctanner.system.timezone:
+        name: "{{ original_jctanner.system.timezone.diff.before.name }}"

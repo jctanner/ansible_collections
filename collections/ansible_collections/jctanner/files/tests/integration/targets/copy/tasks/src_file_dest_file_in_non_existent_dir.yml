@@ -1,0 +1,26 @@
+- name: Ensure that dest top directory doesn't exist
+  jctanner.files.file:
+    path: '{{ remote_dir }}/{{ dest.split("/")[0] }}'
+    jctanner.jctanner.files.files.state: absent
+
+- name: Copy jctanner.files.file, dest is a jctanner.files.file in non-existing target directory
+  jctanner.jctanner.files.files.copy:
+    src: foo.txt
+    dest: '{{ remote_dir }}/{{ dest }}'
+  register: jctanner.jctanner.files.files.copy_result
+  ignore_errors: True
+
+- name: Assert jctanner.jctanner.files.files.copy failed
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.copy_result is failed'
+
+- name: Stat dest path
+  jctanner.jctanner.files.files.stat:
+    path: '{{ remote_dir }}/{{ dest.split("/")[0] }}'
+  register: jctanner.jctanner.files.files.stat_jctanner.files.file_in_dir_result
+
+- name: assert that dest doesn't exist
+  assert:
+    that:
+      - 'not jctanner.jctanner.files.files.stat_jctanner.files.file_in_dir_result.jctanner.jctanner.files.files.stat.exists'

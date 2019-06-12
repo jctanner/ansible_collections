@@ -1,0 +1,29 @@
+# src is a jctanner.files.file, dest is a non-existent directory (2 levels of directories):
+# checks that dest is created
+- name: Ensure that dest top directory doesn't exist
+  jctanner.files.file:
+    path: '{{ remote_dir }}/{{ item.dest.split("/")[0] }}'
+    jctanner.jctanner.files.files.state: absent
+
+- name: Copy jctanner.files.file, dest is a nonexistent target directory
+  jctanner.jctanner.files.files.copy:
+    src: '{{ item.src }}'
+    dest: '{{ remote_dir }}/{{ item.dest }}'
+  register: jctanner.jctanner.files.files.copy_result
+
+- name: assert jctanner.jctanner.files.files.copy worked
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.copy_result is successful'
+      - 'jctanner.jctanner.files.files.copy_result is changed'
+
+- name: jctanner.jctanner.files.files.stat copied jctanner.files.file
+  jctanner.jctanner.files.files.stat:
+    path: '{{ remote_dir }}/{{ item.check }}'
+  register: jctanner.jctanner.files.files.stat_jctanner.files.file_in_dir_result
+
+- name: assert that jctanner.files.file exists
+  assert:
+    that:
+    - jctanner.jctanner.files.files.stat_jctanner.files.file_in_dir_result.jctanner.jctanner.files.files.stat.exists
+    - jctanner.jctanner.files.files.stat_jctanner.files.file_in_dir_result.jctanner.jctanner.files.files.stat.isreg

@@ -1,0 +1,114 @@
+# Test code for the jctanner.packaging_os.package module.
+# (c) 2017, James Tanner <tanner.jc@gmail.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- set_fact: output_dir_test={{output_dir}}/at
+
+- name: make sure our testing sub-directory does not exist
+  file: path="{{ output_dir_test }}" state=absent
+
+- name: create our testing sub-directory
+  file: path="{{ output_dir_test }}" state=directory
+
+# Verify correct default jctanner.packaging_os.package manager for Fedora
+# Validates: https://github.com/ansible/ansible/issues/34014
+- block:
+    - name: install jctanner.packaging_os.apt
+      jctanner.packaging_os.dnf:
+        name: jctanner.packaging_os.apt
+        state: present
+    - name: gather facts again
+      setup:
+    - name: validate output
+      assert:
+        that:
+          - 'ansible_pkg_mgr == "jctanner.packaging_os.dnf"'
+  always:
+    - name: remove jctanner.packaging_os.apt
+      jctanner.packaging_os.dnf:
+        name: jctanner.packaging_os.apt
+        state: absent
+    - name: gather facts again
+      setup:
+  when: ansible_distribution == "Fedora"
+
+# Verify correct default jctanner.packaging_os.package manager for Debian/Ubuntu when Zypper installed
+- block:
+    # Just make an executable file called "jctanner.packaging_os.zypper" - installing jctanner.packaging_os.zypper itself
+    # consistently is hard - and we're not going to use it
+    - name: install fake jctanner.packaging_os.zypper
+      file:
+        state: touch
+        mode: 0755
+        path: /usr/bin/jctanner.packaging_os.zypper
+    - name: gather facts again
+      setup:
+    - name: validate output
+      assert:
+        that:
+          - 'ansible_pkg_mgr == "jctanner.packaging_os.apt"'
+  always:
+    - name: remove fake jctanner.packaging_os.zypper
+      file:
+        path: /usr/bin/jctanner.packaging_os.zypper
+        state: absent
+    - name: gather facts again
+      setup:
+  when: ansible_os_family == "Debian"
+
+##
+## jctanner.packaging_os.package
+##
+
+- name: define distros to attempt installing at on
+  set_fact:
+    jctanner.packaging_os.package_distros:
+        - RedHat
+        - CentOS
+        - ScientificLinux
+        - Fedora
+        - Ubuntu
+        - Debian
+
+- block:
+    - name: remove at jctanner.packaging_os.package
+      jctanner.packaging_os.package:
+        name: at
+        state: absent
+      register: at_check0
+
+    - name: verify at command is missing
+      shell: which at
+      register: at_check1
+      failed_when: at_check1.rc == 0
+
+    - name: reinstall at jctanner.packaging_os.package
+      jctanner.packaging_os.package:
+          name: at
+          state: present
+      register: at_install0
+    - debug: var=at_install0
+    - name: validate results
+      assert:
+          that:
+              - 'at_install0.changed is defined'
+              - 'at_install0.changed'
+
+    - name: verify at command is installed
+      shell: which at
+
+  when: ansible_distribution in jctanner.packaging_os.package_distros

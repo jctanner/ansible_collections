@@ -1,0 +1,111 @@
+# Copyright (c) 2018, Yanis Guenane <yanis+ansible@guenane.org>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: setup
+  jctanner.cloud_vultr.vultr_block_storage:
+    name: "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+    state: absent
+  register: result
+- name: verify setup
+  assert:
+    that:
+    - result is success
+
+- name: test fail if missing name
+  jctanner.cloud_vultr.vultr_block_storage:
+  register: result
+  ignore_errors: yes
+- name: verify test fail if missing name
+  assert:
+    that:
+    - result is failed
+    - 'result.msg == "missing required arguments: name"'
+
+- name: test fail if missing params for state=present
+  jctanner.cloud_vultr.vultr_block_storage:
+    name: "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+  register: result
+  ignore_errors: yes
+- name: verify fail if missing params for state=present
+  assert:
+    that:
+    - result is failed
+    - 'result.msg == "state is present but all of the following are missing: size, region"'
+
+- name: test create block storage volume in check mode
+  jctanner.cloud_vultr.vultr_block_storage:
+    name: "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+    size: "{{ jctanner.cloud_vultr.vultr_block_storage_size }}"
+    region: "{{ jctanner.cloud_vultr.vultr_block_storage_region }}"
+  register: result
+  check_mode: yes
+- name: verify test create server in check mode
+  assert:
+    that:
+    - result is changed
+
+- name: test create block storage volume
+  jctanner.cloud_vultr.vultr_block_storage:
+    name: "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+    size: "{{ jctanner.cloud_vultr.vultr_block_storage_size }}"
+    region: "{{ jctanner.cloud_vultr.vultr_block_storage_region }}"
+  register: result
+
+- name: verify test create block storage volume
+  assert:
+    that:
+    - result is changed
+    - result.jctanner.cloud_vultr.vultr_block_storage.name == "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+    - result.jctanner.cloud_vultr.vultr_block_storage.region == "{{ jctanner.cloud_vultr.vultr_block_storage_region }}"
+    - result.jctanner.cloud_vultr.vultr_block_storage.size == 10
+
+- name: test create block storage volume idempotence
+  jctanner.cloud_vultr.vultr_block_storage:
+    name: "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+    size: "{{ jctanner.cloud_vultr.vultr_block_storage_size }}"
+    region: "{{ jctanner.cloud_vultr.vultr_block_storage_region }}"
+  register: result
+
+- name: verify test block storage volume idempotence
+  assert:
+    that:
+    - result is not changed
+    - result.jctanner.cloud_vultr.vultr_block_storage.name == "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+    - result.jctanner.cloud_vultr.vultr_block_storage.region == "{{ jctanner.cloud_vultr.vultr_block_storage_region }}"
+    - result.jctanner.cloud_vultr.vultr_block_storage.size == 10
+
+- name: test destroy block storage volume in check mode
+  jctanner.cloud_vultr.vultr_block_storage:
+    name: "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+    state: absent
+  register: result
+  check_mode: yes
+
+- name: verify test destroy block storage volume in check mode
+  assert:
+    that:
+    - result is changed
+    - result.jctanner.cloud_vultr.vultr_block_storage.name == "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+
+- name: test destroy block storage volume
+  jctanner.cloud_vultr.vultr_block_storage:
+    name: "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+    state: absent
+  register: result
+
+- name: verify test destroy an existing block storage volume
+  assert:
+    that:
+    - result is changed
+    - result.jctanner.cloud_vultr.vultr_block_storage.name == "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+
+- name: test destroy an existing block storage volume idempotence
+  jctanner.cloud_vultr.vultr_block_storage:
+    name: "{{ jctanner.cloud_vultr.vultr_block_storage_name }}"
+    state: absent
+  register: result
+
+- name: verify test destroy an existing block storage volume idempotence
+  assert:
+    that:
+    - result is not changed

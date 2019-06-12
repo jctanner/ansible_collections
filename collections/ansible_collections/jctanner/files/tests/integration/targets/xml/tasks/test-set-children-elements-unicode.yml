@@ -1,0 +1,46 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Set child elements
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      xpath: /business/beers
+      set_children: &children
+      - beer: Окское
+      - beer: Невское
+    register: set_children_elements_unicode
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-set-children-elements-unicode.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_children_elements_unicode.changed == true
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-set-children-elements-unicode.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-set-children-elements-unicode.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_children_again.changed == false
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-set-children-elements-unicode.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml

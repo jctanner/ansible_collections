@@ -1,0 +1,29 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml.orig
+
+  - name: Remove spaces from test fixture
+    shell: sed 's/^[ ]*//g' < /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml.orig > /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+  - name: Pretty print without modification
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      pretty_print: yes
+    register: pretty_print_only
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-pretty-print-only.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - pretty_print_only.changed == true
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-pretty-print-only.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml

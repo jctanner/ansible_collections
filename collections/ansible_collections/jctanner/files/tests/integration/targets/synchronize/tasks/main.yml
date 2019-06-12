@@ -1,0 +1,273 @@
+# test code for the jctanner.jctanner.files.files.synchronize module
+# (c) 2014, James Tanner <tanner.jc@gmail.com>
+
+# This jctanner.files.file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a jctanner.jctanner.files.files.copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: install rsync
+  package:
+    name: rsync
+  when: ansible_distribution != "MacOSX"
+
+- name: cleanup old jctanner.files.files
+  shell: rm -rf {{output_dir}}/*
+
+- name: create test new jctanner.files.files
+  jctanner.jctanner.files.files.copy: dest={{output_dir}}/{{item}} mode=0644 content="hello world"
+  with_items:
+    - foo.txt
+    - bar.txt
+
+- name: jctanner.jctanner.files.files.synchronize jctanner.files.file to new jctanner.files.filename
+  jctanner.jctanner.files.files.synchronize: src={{output_dir}}/foo.txt dest={{output_dir}}/foo.result
+  register: sync_result
+
+- assert:
+    that:
+        - "'changed' in sync_result"
+        - "sync_result.changed == true"
+        - "'cmd' in sync_result"
+        - "'rsync' in sync_result.cmd"
+        - "'msg' in sync_result"
+        - "sync_result.msg.startswith('>f+')"
+        - "sync_result.msg.endswith('+ foo.txt\n')"
+
+- name: test that the jctanner.files.file was really copied over
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/foo.result"
+  register: jctanner.jctanner.files.files.stat_result
+
+- assert:
+    that:
+      - "jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat.exists == True"
+      - "jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat.checksum == '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'"
+
+- name: test that the jctanner.files.file is not copied a second time
+  jctanner.jctanner.files.files.synchronize: src={{output_dir}}/foo.txt dest={{output_dir}}/foo.result
+  register: sync_result
+
+- assert:
+    that:
+     - "sync_result.changed == False"
+
+- name: Cleanup
+  jctanner.files.file:
+    jctanner.jctanner.files.files.state: absent
+    path: "{{output_dir}}/{{item}}"
+  with_items:
+    - foo.result
+    - bar.result
+
+- name: Synchronize using the mode=push param
+  jctanner.jctanner.files.files.synchronize:
+    src: "{{output_dir}}/foo.txt"
+    dest: "{{output_dir}}/foo.result"
+    mode: push
+  register: sync_result
+
+- assert:
+    that:
+        - "'changed' in sync_result"
+        - "sync_result.changed == true"
+        - "'cmd' in sync_result"
+        - "'rsync' in sync_result.cmd"
+        - "'msg' in sync_result"
+        - "sync_result.msg.startswith('>f+')"
+        - "sync_result.msg.endswith('+ foo.txt\n')"
+
+- name: test that the jctanner.files.file was really copied over
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/foo.result"
+  register: jctanner.jctanner.files.files.stat_result
+
+- assert:
+    that:
+      - "jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat.exists == True"
+      - "jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat.checksum == '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'"
+
+- name: test that the jctanner.files.file is not copied a second time
+  jctanner.jctanner.files.files.synchronize:
+    src: "{{output_dir}}/foo.txt"
+    dest: "{{output_dir}}/foo.result"
+    mode: push
+  register: sync_result
+
+- assert:
+    that:
+     - "sync_result.changed == False"
+
+- name: Cleanup
+  jctanner.files.file:
+    jctanner.jctanner.files.files.state: absent
+    path: "{{output_dir}}/{{item}}"
+  with_items:
+    - foo.result
+    - bar.result
+
+- name: Synchronize using the mode=pull param
+  jctanner.jctanner.files.files.synchronize:
+    src: "{{output_dir}}/foo.txt"
+    dest: "{{output_dir}}/foo.result"
+    mode: pull
+  register: sync_result
+
+- assert:
+    that:
+        - "'changed' in sync_result"
+        - "sync_result.changed == true"
+        - "'cmd' in sync_result"
+        - "'rsync' in sync_result.cmd"
+        - "'msg' in sync_result"
+        - "sync_result.msg.startswith('>f+')"
+        - "sync_result.msg.endswith('+ foo.txt\n')"
+
+- name: test that the jctanner.files.file was really copied over
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/foo.result"
+  register: jctanner.jctanner.files.files.stat_result
+
+- assert:
+    that:
+      - "jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat.exists == True"
+      - "jctanner.jctanner.files.files.stat_result.jctanner.jctanner.files.files.stat.checksum == '2aae6c35c94fcfb415dbe95f408b9ce91ee846ed'"
+
+- name: test that the jctanner.files.file is not copied a second time
+  jctanner.jctanner.files.files.synchronize:
+    src: "{{output_dir}}/foo.txt"
+    dest: "{{output_dir}}/foo.result"
+    mode: pull
+  register: sync_result
+
+- assert:
+    that:
+     - "sync_result.changed == False"
+
+- name: Cleanup
+  jctanner.files.file:
+    jctanner.jctanner.files.files.state: absent
+    path: "{{output_dir}}/{{item}}"
+  with_items:
+    - foo.result
+    - bar.result
+
+- name: jctanner.jctanner.files.files.synchronize jctanner.files.files using with_items (issue#5965)
+  jctanner.jctanner.files.files.synchronize: src={{output_dir}}/{{item}} dest={{output_dir}}/{{item}}.result
+  with_items:
+    - foo.txt
+    - bar.txt
+  register: sync_result
+
+- assert:
+    that:
+        - "sync_result.changed"
+        - "sync_result.msg == 'All items completed'"
+        - "'results' in sync_result"
+        - "sync_result.results|length == 2"
+        - "sync_result.results[0].msg.endswith('+ foo.txt\n')"
+        - "sync_result.results[1].msg.endswith('+ bar.txt\n')"
+
+- name: Cleanup
+  jctanner.files.file:
+    jctanner.jctanner.files.files.state: absent
+    path: "{{output_dir}}/{{item}}.result"
+  with_items:
+    - foo.txt
+    - bar.txt
+
+- name: jctanner.jctanner.files.files.synchronize jctanner.files.files using rsync_path (issue#7182)
+  jctanner.jctanner.files.files.synchronize: src={{output_dir}}/foo.txt dest={{output_dir}}/foo.rsync_path rsync_path="sudo rsync"
+  register: sync_result
+
+- assert:
+    that:
+        - "'changed' in sync_result"
+        - "sync_result.changed == true"
+        - "'cmd' in sync_result"
+        - "'rsync' in sync_result.cmd"
+        - "'rsync_path' in sync_result.cmd"
+        - "'msg' in sync_result"
+        - "sync_result.msg.startswith('>f+')"
+        - "sync_result.msg.endswith('+ foo.txt\n')"
+
+- name: Cleanup
+  jctanner.files.file:
+    jctanner.jctanner.files.files.state: absent
+    path: "{{output_dir}}/{{item}}"
+  with_items:
+    - foo.rsync_path
+
+- name: add subdirectories for link-dest test
+  jctanner.files.file:
+    path: "{{output_dir}}/{{item}}/"
+    jctanner.jctanner.files.files.state: directory
+    mode: 0755
+  with_items:
+    - directory_a
+    - directory_b
+
+- name: jctanner.jctanner.files.files.copy foo.txt into the first directory
+  jctanner.jctanner.files.files.synchronize:
+    src: "{{output_dir}}/foo.txt"
+    dest: "{{output_dir}}/{{item}}/foo.txt"
+  with_items:
+    - directory_a
+
+- name: jctanner.jctanner.files.files.synchronize jctanner.files.files using link_dest
+  jctanner.jctanner.files.files.synchronize:
+    src: "{{output_dir}}/directory_a/foo.txt"
+    dest: "{{output_dir}}/directory_b/foo.txt"
+    link_dest:
+      - "{{output_dir}}/directory_a"
+  register: sync_result
+
+- name: get jctanner.jctanner.files.files.stat information for directory_a
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/directory_a/foo.txt"
+  register: jctanner.jctanner.files.files.stat_result_a
+
+- name: get jctanner.jctanner.files.files.stat information for directory_b
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/directory_b/foo.txt"
+  register: jctanner.jctanner.files.files.stat_result_b
+
+- assert:
+    that:
+        - "'changed' in sync_result"
+        - "sync_result.changed == true"
+        - "jctanner.jctanner.files.files.stat_result_a.jctanner.jctanner.files.files.stat.inode == jctanner.jctanner.files.files.stat_result_b.jctanner.jctanner.files.files.stat.inode"
+
+- name: jctanner.jctanner.files.files.synchronize jctanner.files.files using link_dest that would be recursive
+  jctanner.jctanner.files.files.synchronize:
+    src: "{{output_dir}}/foo.txt"
+    dest: "{{output_dir}}/foo.result"
+    link_dest:
+      - "{{output_dir}}"
+  register: sync_result
+  ignore_errors: yes
+
+- assert:
+    that:
+      - sync_result is not changed
+      - sync_result is failed
+
+- name: Cleanup
+  jctanner.files.file:
+    jctanner.jctanner.files.files.state: absent
+    path: "{{output_dir}}/{{item}}"
+  with_items:
+    - "directory_b/foo.txt"
+    - "directory_a/foo.txt"
+    - "directory_a"
+    - "directory_b"

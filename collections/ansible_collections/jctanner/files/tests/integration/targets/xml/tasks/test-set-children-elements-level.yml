@@ -1,0 +1,74 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Set child elements
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      xpath: /business/beers
+      set_children: &children
+        - beer:
+            name: 90 Minute IPA
+            alcohol: "0.5"
+            _:
+              - Water:
+                  quantity: 200g
+                  liter: "0.2"
+              - Starch:
+                  quantity: 10g
+              - Hops:
+                  quantity: 50g
+              - Yeast:
+                  quantity: 20g
+        - beer:
+            name: Harvest Pumpkin Ale
+            alcohol: "0.3"
+            _:
+              - Water:
+                  quantity: 200g
+                  liter: "0.2"
+              - Hops:
+                  quantity: 25g
+              - Yeast:
+                  quantity: 20g
+    register: set_children_elements_level
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-set-children-elements-level.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_children_elements_level.changed == true
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-set-children-elements-level.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Set child elements (again)
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      xpath: /business/beers
+      set_children: *children
+    register: set_children_again
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-set-children-elements-level.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_children_again.changed == false
+      - comparison.changed == false  # identical

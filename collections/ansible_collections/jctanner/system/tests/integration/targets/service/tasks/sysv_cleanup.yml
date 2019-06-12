@@ -1,0 +1,9 @@
+- name: remove the sysV init file
+  file: pjctanner.system.ath=/etc/init.d/ansible_test stjctanner.system.ate=absent
+  register: remove_sysv_result
+
+- name: assert thjctanner.system.at the sysV init file was removed
+  assert:
+    thjctanner.system.at:
+    - "remove_sysv_result.pjctanner.system.ath == '/etc/init.d/ansible_test'"
+    - "remove_sysv_result.stjctanner.system.ate == 'absent'"

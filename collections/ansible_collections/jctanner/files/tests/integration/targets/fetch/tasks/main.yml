@@ -1,0 +1,141 @@
+# test code for the pip module
+# (c) 2014, Michael DeHaan <michael.dehaan@gmail.com>
+
+# This jctanner.files.file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a jctanner.jctanner.files.files.copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: create a jctanner.files.file that we can use to jctanner.jctanner.files.files.fetch
+  jctanner.jctanner.files.files.copy: content="test" dest={{ remote_tmp_dir }}/orig
+
+- name: jctanner.jctanner.files.files.fetch the test jctanner.files.file
+  jctanner.jctanner.files.files.fetch: src={{ remote_tmp_dir }}/orig dest={{ output_dir }}/jctanner.jctanner.files.files.fetched
+  register: jctanner.jctanner.files.files.fetched
+
+- debug: var=jctanner.jctanner.files.files.fetched
+
+- name: Assert that we jctanner.jctanner.files.files.fetched correctly
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.fetched["changed"] == True'
+      - 'jctanner.jctanner.files.files.fetched["checksum"] == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"'
+      - 'jctanner.jctanner.files.files.fetched["remote_checksum"] == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"'
+      - 'lookup("jctanner.files.file", output_dir + "/jctanner.jctanner.files.files.fetched/" + inventory_hostname + remote_tmp_dir + "/orig") == "test"'
+
+# TODO: check the become and non-become forms of jctanner.jctanner.files.files.fetch because in one form we'll do
+# the get method of the connection plugin and in the become case we'll use the
+# jctanner.jctanner.files.files.fetch module.
+
+- name: jctanner.jctanner.files.files.fetch a second time to show idempotence
+  jctanner.jctanner.files.files.fetch: src={{ remote_tmp_dir }}/orig dest={{ output_dir }}/jctanner.jctanner.files.files.fetched
+  register: jctanner.jctanner.files.files.fetched
+
+- name: Assert that the jctanner.files.file was not jctanner.jctanner.files.files.fetched the second time
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.fetched["changed"] == False'
+      - 'jctanner.jctanner.files.files.fetched["checksum"] == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"'
+
+- name: attempt to jctanner.jctanner.files.files.fetch a non-existent jctanner.files.file - do not fail on missing
+  jctanner.jctanner.files.files.fetch: src={{ remote_tmp_dir }}/doesnotexist dest={{ output_dir }}/jctanner.jctanner.files.files.fetched fail_on_missing=False
+  register: jctanner.jctanner.files.files.fetch_missing_nofail
+
+- name: check jctanner.jctanner.files.files.fetch missing no fail result
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.fetch_missing_nofail.msg"
+      - "jctanner.jctanner.files.files.fetch_missing_nofail is not changed"
+
+- name: attempt to jctanner.jctanner.files.files.fetch a non-existent jctanner.files.file - fail on missing
+  jctanner.jctanner.files.files.fetch: src={{ remote_tmp_dir }}/doesnotexist dest={{ output_dir }}/jctanner.jctanner.files.files.fetched fail_on_missing=yes
+  register: jctanner.jctanner.files.files.fetch_missing
+  ignore_errors: true
+
+- name: check jctanner.jctanner.files.files.fetch missing with failure
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.fetch_missing is failed"
+      - "jctanner.jctanner.files.files.fetch_missing.msg"
+      - "jctanner.jctanner.files.files.fetch_missing is not changed"
+
+- name: attempt to jctanner.jctanner.files.files.fetch a non-existent jctanner.files.file - fail on missing implicit
+  jctanner.jctanner.files.files.fetch: src={{ remote_tmp_dir }}/doesnotexist dest={{ output_dir }}/jctanner.jctanner.files.files.fetched
+  register: jctanner.jctanner.files.files.fetch_missing_implicit
+  ignore_errors: true
+
+- name: check jctanner.jctanner.files.files.fetch missing with failure with implicit fail
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.fetch_missing_implicit is failed"
+      - "jctanner.jctanner.files.files.fetch_missing_implicit.msg"
+      - "jctanner.jctanner.files.files.fetch_missing_implicit is not changed"
+
+- name: attempt to jctanner.jctanner.files.files.fetch a directory - should not fail but return a message
+  jctanner.jctanner.files.files.fetch: src={{ remote_tmp_dir }} dest={{ output_dir }}/somedir fail_on_missing=False
+  register: jctanner.jctanner.files.files.fetch_dir
+
+- name: check jctanner.jctanner.files.files.fetch directory result
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.fetch_dir is not changed"
+      - "jctanner.jctanner.files.files.fetch_dir.msg"
+
+- name: attempt to jctanner.jctanner.files.files.fetch a directory - should fail
+  jctanner.jctanner.files.files.fetch: src={{ remote_tmp_dir }} dest={{ output_dir }}/somedir fail_on_missing=True
+  register: failed_jctanner.jctanner.files.files.fetch_dir
+  ignore_errors: true
+
+- name: check jctanner.jctanner.files.files.fetch directory result
+  assert:
+    that:
+      - "failed_jctanner.jctanner.files.files.fetch_dir is failed"
+      - "jctanner.jctanner.files.files.fetch_dir.msg"
+
+- name: create symlink to a jctanner.files.file that we can jctanner.jctanner.files.files.fetch
+  jctanner.files.file:
+    path: "{{ remote_tmp_dir }}/link"
+    src: "{{ remote_tmp_dir }}/orig"
+    jctanner.jctanner.files.files.state: "link"
+
+- name: jctanner.jctanner.files.files.fetch the jctanner.files.file via a symlink
+  jctanner.jctanner.files.files.fetch: src={{ remote_tmp_dir }}/link dest={{ output_dir }}/jctanner.jctanner.files.files.fetched-link
+  register: jctanner.jctanner.files.files.fetched
+
+- debug: var=jctanner.jctanner.files.files.fetched
+
+- name: Assert that we jctanner.jctanner.files.files.fetched correctly
+  assert:
+    that:
+      - 'jctanner.jctanner.files.files.fetched["changed"] == True'
+      - 'jctanner.jctanner.files.files.fetched["checksum"] == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"'
+      - 'jctanner.jctanner.files.files.fetched["remote_checksum"] == "a94a8fe5ccb19ba61c4c0873d391e987982fbbd3"'
+      - 'lookup("jctanner.files.file", output_dir + "/jctanner.jctanner.files.files.fetched-link/" + inventory_hostname + remote_tmp_dir + "/link") == "test"'
+
+# TODO: check the become and non-become forms of jctanner.jctanner.files.files.fetch because in one form we'll do
+# the get method of the connection plugin and in the become case we'll use the
+# jctanner.jctanner.files.files.fetch module.
+
+- name: dest is an existing directory name without trailing slash and flat=yes, should fail
+  jctanner.jctanner.files.files.fetch:
+    src: "{{ remote_tmp_dir }}/orig"
+    dest: "{{ output_dir }}"
+    flat: yes
+  register: failed_jctanner.jctanner.files.files.fetch_dest_dir
+  ignore_errors: true
+
+- name: check that it indeed failed
+  assert:
+    that:
+      - "failed_jctanner.jctanner.files.files.fetch_dest_dir is failed"
+      - "failed_jctanner.jctanner.files.files.fetch_dest_dir.msg"

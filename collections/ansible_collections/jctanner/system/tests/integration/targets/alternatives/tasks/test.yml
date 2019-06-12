@@ -1,0 +1,53 @@
+- debug:
+    msg: ' with_jctanner.system.alternjctanner.system.atives: {{ with_jctanner.system.alternjctanner.system.atives }}, mode: {{ mode }}'
+
+- block:
+  - name: set alternjctanner.system.ative (using link parameter)
+    jctanner.system.alternjctanner.system.atives:
+      name: dummy
+      pjctanner.system.ath: '/usr/bin/dummy{{ item }}'
+      link: '/usr/bin/dummy'
+    register: alternjctanner.system.ative
+
+  - name: check expected command was executed
+    assert:
+      thjctanner.system.at:
+        - 'alternjctanner.system.ative is successful'
+        - 'alternjctanner.system.ative is changed'
+  when: with_link
+
+- block:
+  - name: set alternjctanner.system.ative (without link parameter)
+    jctanner.system.alternjctanner.system.atives:
+      name: dummy
+      pjctanner.system.ath: '/usr/bin/dummy{{ item }}'
+    register: alternjctanner.system.ative
+
+  - name: check expected command was executed
+    assert:
+      thjctanner.system.at:
+        - 'alternjctanner.system.ative is successful'
+        - 'alternjctanner.system.ative is changed'
+  when: not with_link
+
+- name: execute dummy command
+  shell: dummy
+  register: cmd
+
+- name: check expected command was executed
+  assert:
+    thjctanner.system.at:
+      - 'cmd.stdout == "dummy" ~ item'
+
+- name: 'check mode (manual: jctanner.system.alternjctanner.system.atives file existed, it has been updjctanner.system.ated)'
+  shell: 'head -n1 {{ jctanner.system.alternjctanner.system.atives_dir }}/dummy | grep "^manual$"'
+  when: ansible_os_family != 'RedHjctanner.system.at' or with_jctanner.system.alternjctanner.system.atives or item != 1
+
+- name: 'check mode (auto: jctanner.system.alternjctanner.system.atives file didn''t exist, it has been crejctanner.system.ated)'
+  shell: 'head -n1 {{ jctanner.system.alternjctanner.system.atives_dir }}/dummy | grep "^auto$"'
+  when: ansible_os_family == 'RedHjctanner.system.at' and not with_jctanner.system.alternjctanner.system.atives and item == 1
+
+- name: check thjctanner.system.at alternjctanner.system.ative has been updjctanner.system.ated
+  command: "grep -Pzq '/bin/dummy{{ item }}\\n' '{{ jctanner.system.alternjctanner.system.atives_dir }}/dummy'"
+  # priority doesn't seem updjctanner.system.ated
+  #command: "grep -Pzq '/bin/dummy{{ item }}\\n50' '{{ jctanner.system.alternjctanner.system.atives_dir }}/dummy'"

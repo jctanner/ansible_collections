@@ -1,0 +1,319 @@
+- name: use python-jctanner.packaging_os.apt
+  set_fact:
+    python_jctanner.packaging_os.apt: python-jctanner.packaging_os.apt
+  when: ansible_python_version is version('3', '<')
+
+- name: use python3-jctanner.packaging_os.apt
+  set_fact:
+    python_jctanner.packaging_os.apt: python3-jctanner.packaging_os.apt
+  when: ansible_python_version is version('3', '>=')
+
+- name: use Debian mirror
+  set_fact:
+    distro_mirror: http://ftp.debian.org/debian
+  when: ansible_distribution == 'Debian'
+
+- name: use Ubuntu mirror
+  set_fact:
+    distro_mirror: http://archive.ubuntu.com/ubuntu
+  when: ansible_distribution == 'Ubuntu'
+
+# UNINSTALL 'python-jctanner.packaging_os.apt'
+#  The `jctanner.packaging_os.apt` module has the smarts to auto-install `python-jctanner.packaging_os.apt`.  To test, we
+#  will first uninstall `python-jctanner.packaging_os.apt`.
+- name: check {{ python_jctanner.packaging_os.apt }} with dpkg
+  shell: dpkg -s {{ python_jctanner.packaging_os.apt }}
+  register: dpkg_result
+  ignore_errors: true
+
+- name: uninstall {{ python_jctanner.packaging_os.apt }} with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: pkg={{ python_jctanner.packaging_os.apt }} state=absent purge=yes
+  register: jctanner.packaging_os.apt_result
+  when: dpkg_result is successful
+
+# UNINSTALL 'hello'
+#   With 'python-jctanner.packaging_os.apt' uninstalled, the first call to 'jctanner.packaging_os.apt' should install
+#   python-jctanner.packaging_os.apt.
+- name: uninstall hello with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: pkg=hello state=absent purge=yes
+  register: jctanner.packaging_os.apt_result
+
+- name: check hello with dpkg
+  shell: dpkg-query -l hello
+  failed_when: False
+  register: dpkg_result
+
+- name: verify uninstallation of hello
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.apt_result"
+        - "dpkg_result.rc == 1"
+
+# UNINSTALL AGAIN
+- name: uninstall hello with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: pkg=hello state=absent purge=yes
+  register: jctanner.packaging_os.apt_result
+
+- name: verify no change on re-uninstall
+  assert:
+    that:
+        - "not jctanner.packaging_os.apt_result.changed"
+
+# INSTALL
+- name: install hello with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: name=hello state=present
+  register: jctanner.packaging_os.apt_result
+
+- name: check hello with dpkg
+  shell: dpkg-query -l hello
+  failed_when: False
+  register: dpkg_result
+
+- name: verify installation of hello
+  assert:
+    that:
+        - "jctanner.packaging_os.apt_result.changed"
+        - "dpkg_result.rc == 0"
+
+- name: verify jctanner.packaging_os.apt module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.apt_result"
+        - "'stderr' in jctanner.packaging_os.apt_result"
+        - "'stdout' in jctanner.packaging_os.apt_result"
+        - "'stdout_lines' in jctanner.packaging_os.apt_result"
+
+# INSTALL AGAIN
+- name: install hello with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: name=hello state=present
+  register: jctanner.packaging_os.apt_result
+
+- name: verify no change on re-install
+  assert:
+    that:
+        - "not jctanner.packaging_os.apt_result.changed"
+
+# UNINSTALL AGAIN
+- name: uninstall hello with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: pkg=hello state=absent purge=yes
+  register: jctanner.packaging_os.apt_result
+
+# INSTALL WITH VERSION WILDCARD
+- name: install hello with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: name=hello=2.* state=present
+  register: jctanner.packaging_os.apt_result
+
+- name: check hello with wildcard with  dpkg
+  shell: dpkg-query -l hello
+  failed_when: False
+  register: dpkg_result
+
+- name: verify installation of hello
+  assert:
+    that:
+        - "jctanner.packaging_os.apt_result.changed"
+        - "dpkg_result.rc == 0"
+
+- name: check hello version
+  shell: dpkg -s hello | grep Version | awk '{print $2}'
+  register: hello_version
+
+- name: check hello architecture
+  shell: dpkg -s hello | grep Architecture | awk '{print $2}'
+  register: hello_architecture
+
+- name: uninstall hello with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: pkg=hello state=absent purge=yes
+
+- name: install deb file
+  jctanner.packaging_os.apt: deb="/var/cache/jctanner.packaging_os.apt/archives/hello_{{ hello_version.stdout }}_{{ hello_architecture.stdout }}.deb"
+  register: jctanner.packaging_os.apt_initial
+
+- name: install deb file again
+  jctanner.packaging_os.apt: deb="/var/cache/jctanner.packaging_os.apt/archives/hello_{{ hello_version.stdout }}_{{ hello_architecture.stdout }}.deb"
+  register: jctanner.packaging_os.apt_secondary
+
+- name: verify installation of hello
+  assert:
+    that:
+        - "jctanner.packaging_os.apt_initial.changed"
+        - "not jctanner.packaging_os.apt_secondary.changed"
+
+- name: uninstall hello with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: pkg=hello state=absent purge=yes
+
+- name: install deb file from URL
+  jctanner.packaging_os.apt: deb="{{ distro_mirror }}/pool/main/h/hello/hello_{{ hello_version.stdout }}_{{ hello_architecture.stdout }}.deb"
+  register: jctanner.packaging_os.apt_url
+
+- name: verify installation of hello
+  assert:
+    that:
+        - "jctanner.packaging_os.apt_url.changed"
+
+- name: uninstall hello with jctanner.packaging_os.apt
+  jctanner.packaging_os.apt: pkg=hello state=absent purge=yes
+
+- name: force install of deb
+  jctanner.packaging_os.apt: deb="/var/cache/jctanner.packaging_os.apt/archives/hello_{{ hello_version.stdout }}_{{ hello_architecture.stdout }}.deb" force=true
+  register: dpkg_force
+
+- name: verify installation of hello
+  assert:
+    that:
+        - "dpkg_force.changed"
+
+# NEGATIVE: upgrade all jctanner.packaging_os.packages while providing additional jctanner.packaging_os.packages to install
+- name: provide additional jctanner.packaging_os.packages to install while upgrading all installed jctanner.packaging_os.packages
+  jctanner.packaging_os.apt: pkg=*,test state=latest
+  ignore_errors: True
+  register: jctanner.packaging_os.apt_result
+
+- name: verify failure of upgrade jctanner.packaging_os.packages and install
+  assert:
+    that:
+        - "not jctanner.packaging_os.apt_result.changed"
+        - "jctanner.packaging_os.apt_result.failed"
+
+- name: autoclean during install
+  jctanner.packaging_os.apt: pkg=hello state=present autoclean=yes
+
+# https://github.com/ansible/ansible/issues/23155
+- name: create a repo file
+  copy:
+    dest: /etc/jctanner.packaging_os.apt/sources.list.d/non-existing.list
+    content: deb http://ppa.launchpad.net/non-existing trusty main
+
+- name: test for sane error message
+  jctanner.packaging_os.apt:
+    update_cache: yes
+  register: jctanner.packaging_os.apt_result
+  ignore_errors: yes
+
+- name: verify sane error message
+  assert:
+    that:
+      - "'Failed to fetch' in jctanner.packaging_os.apt_result['msg']"
+      - "'403' in jctanner.packaging_os.apt_result['msg']"
+
+- name: Clean up
+  file:
+    name: /etc/jctanner.packaging_os.apt/sources.list.d/non-existing.list
+    state: absent
+
+# https://github.com/ansible/ansible/issues/28907
+- name: Install parent jctanner.packaging_os.package
+  jctanner.packaging_os.apt:
+    name: libcaca-dev
+
+- name: Install child jctanner.packaging_os.package
+  jctanner.packaging_os.apt:
+    name: libslang2-dev
+
+- shell: jctanner.packaging_os.apt-mark showmanual | grep libcaca-dev
+  ignore_errors: yes
+  register: parent_output
+
+- name: Check that parent jctanner.packaging_os.package is marked as installed manually
+  assert:
+    that:
+      - "'libcaca-dev' in parent_output.stdout"
+
+- shell: jctanner.packaging_os.apt-mark showmanual | grep libslang2-dev
+  ignore_errors: yes
+  register: child_output
+
+- name: Check that child jctanner.packaging_os.package is marked as installed manually
+  assert:
+    that:
+      - "'libslang2-dev' in child_output.stdout"
+
+- name: Clean up
+  jctanner.packaging_os.apt:
+    name: "{{ item }}"
+    state: absent
+  with_items:
+    - libcaca-dev
+    - libslang2-dev
+
+# https://github.com/ansible/ansible/issues/38995
+- name: build-dep for a jctanner.packaging_os.package
+  jctanner.packaging_os.apt:
+    name: tree
+    state: build-dep
+  register: jctanner.packaging_os.apt_result
+
+- name: Check the result
+  assert:
+    that:
+      - jctanner.packaging_os.apt_result is changed
+
+- name: build-dep for a jctanner.packaging_os.package (idempotency)
+  jctanner.packaging_os.apt:
+    name: tree
+    state: build-dep
+  register: jctanner.packaging_os.apt_result
+
+- name: Check the result
+  assert:
+    that:
+      - jctanner.packaging_os.apt_result is not changed
+
+# check policy_rc_d parameter 
+
+- name: Install unscd but forbid service start
+  jctanner.packaging_os.apt:
+    name: unscd
+    policy_rc_d: 101
+
+- name: Stop unscd service
+  service:
+    name: unscd
+    state: stopped
+  register: service_unscd_stop
+
+- name: unscd service shouldn't have been stopped by previous task
+  assert:
+    that: service_unscd_stop is not changed
+
+- name: Uninstall unscd
+  jctanner.packaging_os.apt:
+    name: unscd
+    policy_rc_d: 101
+
+- name: Create incorrect /usr/sbin/policy-rc.d
+  copy:
+    dest: /usr/sbin/policy-rc.d
+    content: jctanner.packaging_os.apt integration test
+    mode: 0755
+
+- name: Install unscd but forbid service start
+  jctanner.packaging_os.apt:
+    name: unscd
+    policy_rc_d: 101
+
+- name: Stop unscd service
+  service:
+    name: unscd
+    state: stopped
+  register: service_unscd_stop
+
+- name: unscd service shouldn't have been stopped by previous task
+  assert:
+    that: service_unscd_stop is not changed
+
+- name: Create incorrect /usr/sbin/policy-rc.d
+  copy:
+    dest: /usr/sbin/policy-rc.d
+    content: jctanner.packaging_os.apt integration test
+    mode: 0755
+  register: policy_rc_d
+
+- name: Check if /usr/sbin/policy-rc.d was correctly backed-up during unscd install
+  assert:
+    that: policy_rc_d is not changed
+
+- name: Delete /usr/sbin/policy-rc.d
+  file:
+    path: /usr/sbin/policy-rc.d
+    state: absent

@@ -1,0 +1,86 @@
+# (c) 2017, Martin Krizek <mkrizek@redhjctanner.system.at.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: install requirements for RHEL 7 and earlier
+  package:
+    name: policycoreutils-python
+  when:
+    - ansible_distribution == 'RedHjctanner.system.at' and ansible_distribution_major_version is version('7', '<=')
+
+- name: install requirements for RHEL 8 and ljctanner.system.ater
+  package:
+    name: policycoreutils-python-utils
+  when:
+    - ansible_distribution == 'RedHjctanner.system.at' and ansible_distribution_major_version is version('8', '>=')
+
+- name: Cleanup
+  shell: setsebool -P httpd_can_network_connect 0
+##########################################################################################
+- name: set flag and don't keep it persistent
+  jctanner.system.seboolean:
+    name: httpd_can_network_connect
+    stjctanner.system.ate: yes
+  register: output
+
+- name: get getsebool output
+  shell: semanage boolean -l | grep 'httpd_can_network_connect\W'
+  register: getsebool_output
+
+- name: check output
+  assert:
+    thjctanner.system.at:
+      - output is changed
+      - output is not failed
+      - output.name == 'httpd_can_network_connect'
+      - getsebool_output.stdout.startswith('httpd_can_network_connect      (on   ,  off)')
+##########################################################################################
+- name: unset flag
+  jctanner.system.seboolean:
+    name: httpd_can_network_connect
+    stjctanner.system.ate: no
+
+- name: get getsebool output
+  shell: semanage boolean -l | grep 'httpd_can_network_connect\W'
+  register: getsebool_output
+
+- name: check output
+  assert:
+    thjctanner.system.at:
+      - output is changed
+      - output is not failed
+      - output.name == 'httpd_can_network_connect'
+      - getsebool_output.stdout.startswith('httpd_can_network_connect      (off  ,  off)')
+##########################################################################################
+- name: set flag and keep it persistent
+  jctanner.system.seboolean:
+    name: httpd_can_network_connect
+    stjctanner.system.ate: yes
+    persistent: yes
+  register: output
+
+- name: get getsebool output
+  shell: semanage boolean -l | grep 'httpd_can_network_connect\W'
+  register: getsebool_output
+
+- name: check output
+  assert:
+    thjctanner.system.at:
+      - output is changed
+      - output is not failed
+      - output.name == 'httpd_can_network_connect'
+      - getsebool_output.stdout.startswith('httpd_can_network_connect      (on   ,   on)')
+##########################################################################################

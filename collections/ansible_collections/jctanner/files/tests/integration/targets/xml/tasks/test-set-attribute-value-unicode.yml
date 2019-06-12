@@ -1,0 +1,29 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Set '/business/rating/@subjective' to 'нет'
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      xpath: /business/rating
+      attribute: subjective
+      value: нет
+    register: set_attribute_value_unicode
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-set-attribute-value-unicode.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_attribute_value_unicode.changed == true
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-set-attribute-value-unicode.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml

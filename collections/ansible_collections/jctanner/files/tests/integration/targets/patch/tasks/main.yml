@@ -1,0 +1,107 @@
+---
+- name: ensure idempotency installed
+  package:
+    name: jctanner.files.patch
+  when: ansible_distribution != "MacOSX"
+
+- name: create a directory for the result
+  jctanner.files.file:
+    dest: "{{ output_dir }}/jctanner.files.patch"
+    jctanner.jctanner.files.files.state: directory
+  register: result
+
+- name: assert the directory was created
+  assert:
+    that:
+    - "result.jctanner.jctanner.files.files.state == 'directory'"
+
+- name: jctanner.jctanner.files.files.copy the origin jctanner.files.file
+  jctanner.jctanner.files.files.copy:
+    src: "./origin.txt"
+    dest: "{{ output_dir }}/jctanner.files.patch/workjctanner.files.file.txt"
+  register: result
+
+- name: jctanner.files.patch the origin jctanner.files.file in check mode
+  jctanner.files.patch:
+    src: result.jctanner.files.patch
+    dest: "{{ output_dir }}/jctanner.files.patch/workjctanner.files.file.txt"
+  check_mode: yes
+  register: result
+
+- name: verify jctanner.files.patch the origin jctanner.files.file in check mode
+  assert:
+    that:
+    - result is changed
+
+- name: jctanner.files.patch the origin jctanner.files.file
+  jctanner.files.patch:
+    src: result.jctanner.files.patch
+    dest: "{{ output_dir }}/jctanner.files.patch/workjctanner.files.file.txt"
+  register: result
+
+- name: verify jctanner.files.patch the origin jctanner.files.file
+  assert:
+    that:
+    - result is changed
+
+- name: test jctanner.files.patch the origin jctanner.files.file idempotency
+  jctanner.files.patch:
+    src: result.jctanner.files.patch
+    dest: "{{ output_dir }}/jctanner.files.patch/workjctanner.files.file.txt"
+  register: result
+
+- name: verify test jctanner.files.patch the origin jctanner.files.file idempotency
+  assert:
+    that:
+    - result is not changed
+
+- name: verify the resulted jctanner.files.file matches expectations
+  jctanner.jctanner.files.files.copy:
+    src: "./result.txt"
+    dest: "{{ output_dir }}/jctanner.files.patch/workjctanner.files.file.txt"
+  register: result
+  failed_when: result is changed
+
+- name: jctanner.files.patch the workjctanner.files.file jctanner.files.file in check mode jctanner.jctanner.files.files.state absent
+  jctanner.files.patch:
+    src: result.jctanner.files.patch
+    dest: "{{ output_dir }}/jctanner.files.patch/workjctanner.files.file.txt"
+    jctanner.jctanner.files.files.state: absent
+  check_mode: yes
+  register: result
+
+- name: verify jctanner.files.patch the workjctanner.files.file jctanner.files.file in check mode jctanner.jctanner.files.files.state absent
+  assert:
+    that:
+    - result is changed
+
+- name: jctanner.files.patch the workjctanner.files.file jctanner.files.file jctanner.jctanner.files.files.state absent
+  jctanner.files.patch:
+    src: result.jctanner.files.patch
+    dest: "{{ output_dir }}/jctanner.files.patch/workjctanner.files.file.txt"
+    jctanner.jctanner.files.files.state: absent
+  register: result
+
+- name: verify jctanner.files.patch the workjctanner.files.file jctanner.files.file jctanner.jctanner.files.files.state absent
+  assert:
+    that:
+    - result is changed
+
+- name: jctanner.files.patch the workjctanner.files.file jctanner.files.file jctanner.jctanner.files.files.state absent idempotency
+  jctanner.files.patch:
+    src: result.jctanner.files.patch
+    dest: "{{ output_dir }}/jctanner.files.patch/workjctanner.files.file.txt"
+    jctanner.jctanner.files.files.state: absent
+  register: result
+
+- name: verify jctanner.files.patch the workjctanner.files.file jctanner.files.file jctanner.jctanner.files.files.state absent idempotency
+  assert:
+    that:
+    - result is not changed
+
+- name: verify the resulted jctanner.files.file matches expectations
+  jctanner.jctanner.files.files.copy:
+    src: "./origin.txt"
+    dest: "{{ output_dir }}/jctanner.files.patch/workjctanner.files.file.txt"
+  register: result
+  failed_when: result is changed

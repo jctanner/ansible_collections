@@ -1,0 +1,2 @@
+test_jctanner.windows.win_wait_for_path: C:\ansible\jctanner.windows.win_wait_for
+test_jctanner.windows.win_wait_for_port: 1234

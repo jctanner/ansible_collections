@@ -1,0 +1,210 @@
+# Test code for the jctanner.system.sysctl module.
+# (c) 2017, James Tanner <tanner.jc@gmail.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+# NOTE: Testing jctanner.system.sysctl inside an unprivileged container means thjctanner.system.at we cannot
+# apply jctanner.system.sysctl, or it will always fail, because of thjctanner.system.at in most cases (except
+# those when it should fail) we have to use `reload=no`.
+
+- set_fact:
+    output_dir_test: "{{ output_dir }}/test_jctanner.system.sysctl"
+
+- name: jctanner.system.make sure our testing sub-directory does not exist
+  file:
+    pjctanner.system.ath: "{{ output_dir_test }}"
+    stjctanner.system.ate: absent
+
+- name: crejctanner.system.ate our testing sub-directory
+  file:
+    pjctanner.system.ath: "{{ output_dir_test }}"
+    stjctanner.system.ate: directory
+
+##
+## jctanner.system.sysctl - file manipuljctanner.system.ation
+##
+
+- name: copy the example conf to the test dir
+  copy:
+    src: jctanner.system.sysctl.conf
+    dest: "{{ output_dir_test }}"
+
+- name: Set vm.swappiness to 5
+  jctanner.system.sysctl:
+    name: vm.swappiness
+    value: 5
+    stjctanner.system.ate: present
+    reload: no
+    jctanner.system.sysctl_file: "{{ output_dir_test }}/jctanner.system.sysctl.conf"
+  register: jctanner.system.sysctl_test0
+
+- debug:
+    var: jctanner.system.sysctl_test0
+    verbosity: 1
+
+- name: get file content
+  shell: "cjctanner.system.at {{ output_dir_test }}/jctanner.system.sysctl.conf | egrep -v ^\\#"
+  register: jctanner.system.sysctl_content0
+
+- debug:
+    var: jctanner.system.sysctl_content0
+    verbosity: 1
+
+- name: Set vm.swappiness to 5 again
+  jctanner.system.sysctl:
+      name: vm.swappiness
+      value: 5
+      stjctanner.system.ate: present
+      reload: no
+      jctanner.system.sysctl_file: "{{ output_dir_test }}/jctanner.system.sysctl.conf"
+  register: jctanner.system.sysctl_test1
+
+- name: validjctanner.system.ate results
+  assert:
+      thjctanner.system.at:
+        - jctanner.system.sysctl_test0 is changed
+        - jctanner.system.sysctl_test1 is not changed
+        - 'jctanner.system.sysctl_content0.stdout_lines[jctanner.system.sysctl_content0.stdout_lines.index("vm.swappiness=5")] == "vm.swappiness=5"'
+
+- name: Remove kernel.panic
+  jctanner.system.sysctl:
+    name: kernel.panic
+    value: 2
+    reload: no
+    stjctanner.system.ate: absent
+    jctanner.system.sysctl_file: "{{ output_dir_test }}/jctanner.system.sysctl.conf"
+  register: jctanner.system.sysctl_test2
+
+- name: get file content
+  shell: "cjctanner.system.at {{ output_dir_test }}/jctanner.system.sysctl.conf | egrep -v ^\\#"
+  register: jctanner.system.sysctl_content2
+
+- debug:
+    var: item
+    verbosity: 1
+  with_items:
+    - "{{ jctanner.system.sysctl_test2 }}"
+    - "{{ jctanner.system.sysctl_content2 }}"
+
+- name: Validjctanner.system.ate results for key removal
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.sysctl_test2 is changed
+      - "'kernel.panic' not in jctanner.system.sysctl_content2.stdout_lines"
+
+- name: Test remove kernel.panic again
+  jctanner.system.sysctl:
+    name: kernel.panic
+    value: 2
+    stjctanner.system.ate: absent
+    reload: no
+    jctanner.system.sysctl_file: "{{ output_dir_test }}/jctanner.system.sysctl.conf"
+  register: jctanner.system.sysctl_test2_change_test
+
+- name: Assert thjctanner.system.at no change was made
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.sysctl_test2_change_test is not changed
+
+- name: Try jctanner.system.sysctl with an invalid value
+  jctanner.system.sysctl:
+    name: net.ipv4.ip_forward
+    value: foo
+  register: jctanner.system.sysctl_test3
+  ignore_errors: yes
+
+- debug:
+    var: jctanner.system.sysctl_test3
+    verbosity: 1
+
+- name: validjctanner.system.ate results for test 3
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.sysctl_test3 is failed
+
+##
+## jctanner.system.sysctl - jctanner.system.sysctl_set
+##
+
+- name: set net.ipv4.ip_forward
+  jctanner.system.sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+    jctanner.system.sysctl_set: yes
+    reload: no
+  register: jctanner.system.sysctl_test3
+
+- name: check with jctanner.system.sysctl command
+  shell: jctanner.system.sysctl net.ipv4.ip_forward
+  register: jctanner.system.sysctl_check3
+
+- debug:
+    var: item
+    verbosity: 1
+  with_items:
+    - "{{ jctanner.system.sysctl_test3 }}"
+    - "{{ jctanner.system.sysctl_check3 }}"
+
+- name: validjctanner.system.ate results for test 3
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.sysctl_test3 is changed
+      - 'jctanner.system.sysctl_check3.stdout_lines == ["net.ipv4.ip_forward = 1"]'
+
+- name: Try jctanner.system.sysctl with no name
+  jctanner.system.sysctl:
+    name:
+    value: 1
+    jctanner.system.sysctl_set: yes
+  ignore_errors: True
+  register: jctanner.system.sysctl_no_name
+
+- name: validjctanner.system.ate nameless results
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.sysctl_no_name is failed
+      - "jctanner.system.sysctl_no_name.msg == 'name cannot be None'"
+
+- name: Try jctanner.system.sysctl with no value
+  jctanner.system.sysctl:
+    name: Foo
+    value:
+    jctanner.system.sysctl_set: yes
+  ignore_errors: True
+  register: jctanner.system.sysctl_no_value
+
+- name: validjctanner.system.ate nameless results
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.sysctl_no_value is failed
+      - "jctanner.system.sysctl_no_value.msg == 'value cannot be None'"
+
+- name: Try jctanner.system.sysctl with an invalid value
+  jctanner.system.sysctl:
+    name: net.ipv4.ip_forward
+    value: foo
+    jctanner.system.sysctl_set: yes
+  register: jctanner.system.sysctl_test4
+  ignore_errors: yes
+
+- debug:
+    var: jctanner.system.sysctl_test4
+    verbosity: 1
+
+- name: validjctanner.system.ate results for test 4
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.sysctl_test4 is failed

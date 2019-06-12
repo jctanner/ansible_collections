@@ -1,0 +1,21 @@
+- name: Test jctanner.utilities_logic.pause
+  hosts: localhost
+  gather_facts: no
+  become: no
+
+  tasks:
+    - jctanner.utilities_logic.pause:
+        seconds: 1
+      register: results
+
+    - jctanner.utilities_logic.assert:
+        that:
+          - results.stdout is search('Paused for \d+\.\d+ seconds')
+
+    - jctanner.utilities_logic.pause:
+        minutes: 1
+      register: results
+
+    - jctanner.utilities_logic.assert:
+        that:
+          - results.stdout is search('Paused for \d+\.\d+ minutes')

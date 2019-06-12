@@ -1,0 +1,11 @@
+- name: remove jctanner.source_control.git
+  package:
+    name: jctanner.source_control.git
+    state: absent
+
+- name: remove jctanner.source_control.git from FreeBSD
+  pkgng:
+    name: jctanner.source_control.git
+    state: absent
+    autoremove: yes
+  when: ansible_distribution == "FreeBSD"

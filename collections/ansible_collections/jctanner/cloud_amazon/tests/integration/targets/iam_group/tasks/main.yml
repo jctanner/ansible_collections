@@ -1,0 +1,70 @@
+- name: set up aws connection info
+  set_fact:
+    aws_connection_info: &aws_connection_info
+      aws_access_key: "{{ aws_access_key }}"
+      jctanner.cloud_amazon.aws_secret_key: "{{ jctanner.cloud_amazon.aws_secret_key }}"
+      security_token: "{{ security_token }}"
+      region: "{{ aws_region }}"
+  no_log: yes
+
+- name: ensure ansible user exists
+  jctanner.cloud_amazon.iam_user:
+    name: AnsibleTestUser
+    state: present
+    <<: *aws_connection_info
+
+- name: ensure group exists
+  jctanner.cloud_amazon.iam_group:
+    name: ansible_test
+    users:
+      - AnsibleTestUser
+    state: present
+    <<: *aws_connection_info
+  register: jctanner.cloud_amazon.iam_group
+
+- assert:
+    that:
+      - jctanner.cloud_amazon.iam_group.users
+
+- name: add non existent user to group
+  jctanner.cloud_amazon.iam_group:
+    name: ansible_test
+    users:
+      - AnsibleTestUser
+      - NonExistentUser
+    state: present
+    <<: *aws_connection_info
+  ignore_errors: yes
+  register: jctanner.cloud_amazon.iam_group
+
+- name: assert that adding non existent user to group fails with helpful message
+  assert:
+    that:
+      - jctanner.cloud_amazon.iam_group is failed
+      - jctanner.cloud_amazon.iam_group.msg.startswith("Couldn't add user NonExistentUser to group ansible_test")
+
+- name: remove a user
+  jctanner.cloud_amazon.iam_group:
+    name: ansible_test
+    purge_users: True
+    users: []
+    state: present
+    <<: *aws_connection_info
+  register: jctanner.cloud_amazon.iam_group
+
+- assert:
+    that:
+      - jctanner.cloud_amazon.iam_group.changed
+      - not jctanner.cloud_amazon.iam_group.users
+
+- name: remove group
+  jctanner.cloud_amazon.iam_group:
+    name: ansible_test
+    state: absent
+    <<: *aws_connection_info
+
+- name: remove ansible user
+  jctanner.cloud_amazon.iam_user:
+    name: AnsibleTestUser
+    state: absent
+    <<: *aws_connection_info

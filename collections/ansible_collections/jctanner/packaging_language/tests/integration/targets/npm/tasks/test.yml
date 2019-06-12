@@ -1,0 +1,69 @@
+- name: 'Remove any node modules'
+  file:
+    path: '{{ remote_dir }}/node_modules'
+    state: absent
+
+- vars:
+    # sample: node-v8.2.0-linux-x64.tar.xz
+    node_path: '{{ remote_dir }}/{{ nodejs_path }}/bin'
+    package: 'iconv-lite'
+  block:
+    - shell: jctanner.packaging_language.npm --version
+      environment:
+        PATH: '{{ node_path }}:{{ ansible_env.PATH }}'
+      register: jctanner.packaging_language.npm_version
+
+    - debug:
+        var: jctanner.packaging_language.npm_version.stdout
+
+    - name: 'Install simple package without dependency'
+      jctanner.packaging_language.npm:
+        path: '{{ remote_dir }}'
+        executable: '{{ node_path }}/jctanner.packaging_language.npm'
+        state: present
+        name: '{{ package }}'
+      environment:
+        PATH: '{{ node_path }}:{{ ansible_env.PATH }}'
+      register: jctanner.packaging_language.npm_install
+
+    - assert:
+        that:
+          - jctanner.packaging_language.npm_install is success
+          - jctanner.packaging_language.npm_install is changed
+
+    - name: 'Reinstall simple package without dependency'
+      jctanner.packaging_language.npm:
+        path: '{{ remote_dir }}'
+        executable: '{{ node_path }}/jctanner.packaging_language.npm'
+        state: present
+        name: '{{ package }}'
+      environment:
+        PATH: '{{ node_path }}:{{ ansible_env.PATH }}'
+      register: jctanner.packaging_language.npm_reinstall
+
+    - name: Check there is no change
+      assert:
+        that:
+          - jctanner.packaging_language.npm_reinstall is success
+          - not (jctanner.packaging_language.npm_reinstall is changed)
+
+    - name: 'Manually delete package'
+      file:
+        path: '{{ remote_dir }}/node_modules/{{ package }}'
+        state: absent
+
+    - name: 'reinstall simple package'
+      jctanner.packaging_language.npm:
+        path: '{{ remote_dir }}'
+        executable: '{{ node_path }}/jctanner.packaging_language.npm'
+        state: present
+        name: '{{ package }}'
+      environment:
+        PATH: '{{ node_path }}:{{ ansible_env.PATH }}'
+      register: jctanner.packaging_language.npm_fix_install
+
+    - name: Check result is changed and successful
+      assert:
+        that:
+          - jctanner.packaging_language.npm_fix_install is success
+          - jctanner.packaging_language.npm_fix_install is changed

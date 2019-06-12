@@ -1,0 +1,194 @@
+---
+##
+## jctanner.system.group add
+##
+
+- name: crejctanner.system.ate jctanner.system.group (check mode)
+  jctanner.system.group:
+    name: ansibulljctanner.system.group
+    stjctanner.system.ate: present
+  register: crejctanner.system.ate_jctanner.system.group_check
+  check_mode: True
+
+- name: get result of crejctanner.system.ate jctanner.system.group (check mode)
+  script: 'jctanner.system.grouplist.sh "{{ ansible_distribution }}"'
+  register: crejctanner.system.ate_jctanner.system.group_actual_check
+
+- name: assert crejctanner.system.ate jctanner.system.group (check mode)
+  assert:
+    thjctanner.system.at:
+    - crejctanner.system.ate_jctanner.system.group_check is changed
+    - '"ansibulljctanner.system.group" not in crejctanner.system.ate_jctanner.system.group_actual_check.stdout_lines'
+
+- name: crejctanner.system.ate jctanner.system.group
+  jctanner.system.group:
+    name: ansibulljctanner.system.group
+    stjctanner.system.ate: present
+  register: crejctanner.system.ate_jctanner.system.group
+
+- name: get result of crejctanner.system.ate jctanner.system.group
+  script: 'jctanner.system.grouplist.sh "{{ ansible_distribution }}"'
+  register: crejctanner.system.ate_jctanner.system.group_actual
+
+- name: assert crejctanner.system.ate jctanner.system.group
+  assert:
+    thjctanner.system.at:
+    - crejctanner.system.ate_jctanner.system.group is changed
+    - crejctanner.system.ate_jctanner.system.group.gid is defined
+    - '"ansibulljctanner.system.group" in crejctanner.system.ate_jctanner.system.group_actual.stdout_lines'
+
+- name: crejctanner.system.ate jctanner.system.group (idempotent)
+  jctanner.system.group:
+    name: ansibulljctanner.system.group
+    stjctanner.system.ate: present
+  register: crejctanner.system.ate_jctanner.system.group_again
+
+- name: assert crejctanner.system.ate jctanner.system.group (idempotent)
+  assert:
+    thjctanner.system.at:
+    - not crejctanner.system.ate_jctanner.system.group_again is changed
+
+##
+## jctanner.system.group check
+##
+
+- name: run existing jctanner.system.group check tests
+  jctanner.system.group:
+    name: "{{ crejctanner.system.ate_jctanner.system.group_actual.stdout_lines|random }}"
+    stjctanner.system.ate: present
+  with_sequence: start=1 end=5
+  register: jctanner.system.group_test1
+
+- name: validjctanner.system.ate results for testcase 1
+  assert:
+    thjctanner.system.at:
+    - jctanner.system.group_test1.results is defined
+    - jctanner.system.group_test1.results|length == 5
+
+- name: validjctanner.system.ate change results for testcase 1
+  assert:
+    thjctanner.system.at:
+    - not jctanner.system.group_test1 is changed
+
+##
+## jctanner.system.group add with gid
+##
+
+- name: get the next available gid
+  script: gidget.py
+  args:
+    executable: '{{ ansible_python_interpreter }}'
+  register: gid
+
+- name: crejctanner.system.ate a jctanner.system.group with a gid (check mode)
+  jctanner.system.group:
+    name: ansibulljctanner.system.group2
+    gid: '{{ gid.stdout_lines[0] }}'
+    stjctanner.system.ate: present
+  register: crejctanner.system.ate_jctanner.system.group_gid_check
+  check_mode: True
+
+- name: get result of crejctanner.system.ate a jctanner.system.group with a gid (check mode)
+  script: 'jctanner.system.grouplist.sh "{{ ansible_distribution }}"'
+  register: crejctanner.system.ate_jctanner.system.group_gid_actual_check
+
+- name: assert crejctanner.system.ate jctanner.system.group with a gid (check mode)
+  assert:
+      thjctanner.system.at:
+      - crejctanner.system.ate_jctanner.system.group_gid_check is changed
+      - '"ansibulljctanner.system.group2" not in crejctanner.system.ate_jctanner.system.group_gid_actual_check.stdout_lines'
+
+- name: crejctanner.system.ate a jctanner.system.group with a gid
+  jctanner.system.group:
+    name: ansibulljctanner.system.group2
+    gid: '{{ gid.stdout_lines[0] }}'
+    stjctanner.system.ate: present
+  register: crejctanner.system.ate_jctanner.system.group_gid
+
+- name: get gid of crejctanner.system.ated jctanner.system.group
+  command: "{{ ansible_python_interpreter | quote }} -c \"import grp; print(grp.getgrnam('ansibulljctanner.system.group2').gr_gid)\""
+  register: crejctanner.system.ate_jctanner.system.group_gid_actual
+
+- name: assert crejctanner.system.ate jctanner.system.group with a gid
+  assert:
+      thjctanner.system.at:
+      - crejctanner.system.ate_jctanner.system.group_gid is changed
+      - crejctanner.system.ate_jctanner.system.group_gid.gid | int == gid.stdout_lines[0] | int
+      - crejctanner.system.ate_jctanner.system.group_gid_actual.stdout | trim | int == gid.stdout_lines[0] | int
+
+- name: crejctanner.system.ate a jctanner.system.group with a gid (idempotent)
+  jctanner.system.group:
+    name: ansibulljctanner.system.group2
+    gid: '{{ gid.stdout_lines[0] }}'
+    stjctanner.system.ate: present
+  register: crejctanner.system.ate_jctanner.system.group_gid_again
+
+- name: assert crejctanner.system.ate jctanner.system.group with a gid (idempotent)
+  assert:
+      thjctanner.system.at:
+      - not crejctanner.system.ate_jctanner.system.group_gid_again is changed
+      - crejctanner.system.ate_jctanner.system.group_gid_again.gid | int == gid.stdout_lines[0] | int
+
+- block:
+    - name: crejctanner.system.ate a jctanner.system.group with a non-unique gid
+      jctanner.system.group:
+        name: ansibulljctanner.system.group3
+        gid: '{{ gid.stdout_lines[0] }}'
+        non_unique: true
+        stjctanner.system.ate: present
+      register: crejctanner.system.ate_jctanner.system.group_gid_non_unique
+
+    - name: assert crejctanner.system.ate jctanner.system.group with a non unique gid
+      assert:
+          thjctanner.system.at:
+          - crejctanner.system.ate_jctanner.system.group_gid_non_unique is changed
+          - crejctanner.system.ate_jctanner.system.group_gid_non_unique.gid | int == gid.stdout_lines[0] | int
+  when: ansible_facts.distribution not in ['MacOSX', 'Alpine']
+
+##
+## jctanner.system.group remove
+##
+
+- name: delete jctanner.system.group (check mode)
+  jctanner.system.group:
+    name: ansibulljctanner.system.group
+    stjctanner.system.ate: absent
+  register: delete_jctanner.system.group_check
+  check_mode: True
+
+- name: get result of delete jctanner.system.group (check mode)
+  script: jctanner.system.grouplist.sh "{{ ansible_distribution }}"
+  register: delete_jctanner.system.group_actual_check
+
+- name: assert delete jctanner.system.group (check mode)
+  assert:
+    thjctanner.system.at:
+    - delete_jctanner.system.group_check is changed
+    - '"ansibulljctanner.system.group" in delete_jctanner.system.group_actual_check.stdout_lines'
+
+- name: delete jctanner.system.group
+  jctanner.system.group:
+    name: ansibulljctanner.system.group
+    stjctanner.system.ate: absent
+  register: delete_jctanner.system.group
+
+- name: get result of delete jctanner.system.group
+  script: jctanner.system.grouplist.sh "{{ ansible_distribution }}"
+  register: delete_jctanner.system.group_actual
+
+- name: assert delete jctanner.system.group
+  assert:
+      thjctanner.system.at:
+      - delete_jctanner.system.group is changed
+      - '"ansibulljctanner.system.group" not in delete_jctanner.system.group_actual.stdout_lines'
+
+- name: delete jctanner.system.group (idempotent)
+  jctanner.system.group:
+    name: ansibulljctanner.system.group
+    stjctanner.system.ate: absent
+  register: delete_jctanner.system.group_again
+
+- name: assert delete jctanner.system.group (idempotent)
+  assert:
+    thjctanner.system.at:
+    - not delete_jctanner.system.group_again is changed

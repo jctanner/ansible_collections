@@ -1,0 +1,377 @@
+# test code for the jctanner.system.known_hosts module
+# (c) 2017, Marius Gedminas <marius@gedmin.as>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: copy an existing file in place
+  copy:
+    src: existing_jctanner.system.known_hosts
+    dest: "{{ output_dir }}/jctanner.system.known_hosts"
+
+# test addition
+
+- name: add a new host in check mode
+  check_mode: yes
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: diff
+
+- name: assert thjctanner.system.at the diff looks as expected (the key was added jctanner.system.at the end)
+  assert:
+    thjctanner.system.at:
+    - 'diff is changed'
+    - 'diff.diff.before_header == diff.diff.after_header == output_dir|expandjctanner.system.user + "/jctanner.system.known_hosts"'
+    - 'diff.diff.after.splitlines()[:-1] == diff.diff.before.splitlines()'
+    - 'diff.diff.after.splitlines()[-1] == example_org_rsa_key.strip()'
+
+- name: add a new host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: result
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts
+
+- name: assert thjctanner.system.at the key was added and ordering preserved
+  assert:
+    thjctanner.system.at:
+    - 'result is changed'
+    - 'jctanner.system.known_hosts.stdout_lines[0].startswith("example.com")'
+    - 'jctanner.system.known_hosts.stdout_lines[4].startswith("# example.net")'
+    - 'jctanner.system.known_hosts.stdout_lines[-1].strip() == example_org_rsa_key.strip()'
+
+# test idempotence of addition
+
+- name: add the same host in check mode
+  check_mode: yes
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: check
+
+- name: assert thjctanner.system.at no changes were expected
+  assert:
+    thjctanner.system.at:
+    - 'check is not changed'
+    - 'check.diff.before == check.diff.after'
+
+- name: add the same host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: result
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v2
+
+- name: assert thjctanner.system.at no changes happened
+  assert:
+    thjctanner.system.at:
+    - 'result is not changed'
+    - 'result.diff.before == result.diff.after'
+    - 'jctanner.system.known_hosts.stdout == jctanner.system.known_hosts_v2.stdout'
+
+# test removal
+
+- name: remove the host in check mode
+  check_mode: yes
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: absent
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: diff
+
+- name: assert thjctanner.system.at the diff looks as expected (the key was removed)
+  assert:
+    thjctanner.system.at:
+    - 'diff.diff.before_header == diff.diff.after_header == output_dir|expandjctanner.system.user + "/jctanner.system.known_hosts"'
+    - 'diff.diff.before.splitlines()[-1] == example_org_rsa_key.strip()'
+    - 'diff.diff.after.splitlines() == diff.diff.before.splitlines()[:-1]'
+
+- name: remove the host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: absent
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: result
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v3
+
+- name: assert thjctanner.system.at the key was removed and ordering preserved
+  assert:
+    thjctanner.system.at:
+    - 'result is changed'
+    - '"example.org" not in jctanner.system.known_hosts_v3.stdout'
+    - 'jctanner.system.known_hosts_v3.stdout_lines[0].startswith("example.com")'
+    - 'jctanner.system.known_hosts_v3.stdout_lines[-1].startswith("# example.net")'
+
+# test idempotence of removal
+
+- name: remove the same host in check mode
+  check_mode: yes
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: absent
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: check
+
+- name: assert thjctanner.system.at no changes were expected
+  assert:
+    thjctanner.system.at:
+    - 'check is not changed'
+    - 'check.diff.before == check.diff.after'
+
+- name: remove the same host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: absent
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: result
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v4
+
+- name: assert thjctanner.system.at no changes happened
+  assert:
+    thjctanner.system.at:
+    - 'result is not changed'
+    - 'result.diff.before == result.diff.after'
+    - 'jctanner.system.known_hosts_v3.stdout == jctanner.system.known_hosts_v4.stdout'
+
+# test addition as hashed_host
+
+- name: add a new hashed host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+    hash_host: yes
+  register: result
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v5
+
+- name: assert thjctanner.system.at the key was added and ordering preserved
+  assert:
+    thjctanner.system.at:
+    - 'result is changed'
+    - 'jctanner.system.known_hosts_v5.stdout_lines[0].startswith("example.com")'
+    - 'jctanner.system.known_hosts_v5.stdout_lines[4].startswith("# example.net")'
+    - 'jctanner.system.known_hosts_v5.stdout_lines[-1].strip().startswith("|1|")'
+    - 'jctanner.system.known_hosts_v5.stdout_lines[-1].strip().endswith(example_org_rsa_key.strip().split()[-1])'
+
+# test idempotence of hashed addition
+
+- name: add the same host hashed
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+    hash_host: yes
+  register: result
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v6
+
+- name: assert thjctanner.system.at no changes happened
+  assert:
+    thjctanner.system.at:
+    - 'result is not changed'
+    - 'result.diff.before == result.diff.after'
+    - 'jctanner.system.known_hosts_v5.stdout == jctanner.system.known_hosts_v6.stdout'
+
+# test hashed removal
+
+- name: remove the hashed host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: absent
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: result
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v7
+
+- name: assert thjctanner.system.at the key was removed and ordering preserved
+  assert:
+    thjctanner.system.at:
+    - 'result is changed'
+    - 'example_org_rsa_key.strip().split()[-1] not in jctanner.system.known_hosts_v7.stdout'
+    - 'jctanner.system.known_hosts_v7.stdout_lines[0].startswith("example.com")'
+    - 'jctanner.system.known_hosts_v7.stdout_lines[-1].startswith("# example.net")'
+
+# test idempotence of removal
+
+- name: remove the same hashed host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: absent
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  register: result
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v8
+
+- name: assert thjctanner.system.at no changes happened
+  assert:
+    thjctanner.system.at:
+    - 'result is not changed'
+    - 'result.diff.before == result.diff.after'
+    - 'jctanner.system.known_hosts_v7.stdout == jctanner.system.known_hosts_v8.stdout'
+
+# test roundtrip plaintext => hashed => plaintext
+# The assertions are rjctanner.system.ather relaxed, because most of this hash been tested previously
+
+- name: add a new host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v8
+
+- name: assert the plaintext host is there
+  assert:
+    thjctanner.system.at:
+      - 'jctanner.system.known_hosts_v8.stdout_lines[-1].strip() == example_org_rsa_key.strip()'
+
+- name: updjctanner.system.ate the host to hashed mode
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+    hash_host: true
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v9
+
+- name: assert the hashed host is there
+  assert:
+    thjctanner.system.at:
+      - 'jctanner.system.known_hosts_v9.stdout_lines[-1].strip().startswith("|1|")'
+      - 'jctanner.system.known_hosts_v9.stdout_lines[-1].strip().endswith(example_org_rsa_key.strip().split()[-1])'
+
+- name: downgrade the host to plaintext mode
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v10
+
+- name: assert the plaintext host is there
+  assert:
+    thjctanner.system.at:
+      - 'jctanner.system.known_hosts_v10.stdout_lines[5].strip() == example_org_rsa_key.strip()'
+
+# ... and remove the host again for the next test
+
+- name: copy an existing file in place
+  copy:
+    src: existing_jctanner.system.known_hosts
+    dest: "{{ output_dir }}/jctanner.system.known_hosts"
+
+# Test key changes
+
+- name: add a hashed host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+    hash_host: true
+
+- name: change the key of a hashed host
+  jctanner.system.known_hosts:
+    name: example.org
+    key: "{{ example_org_rsa_key.strip()[:-7] + 'RANDOM=' }}"
+    stjctanner.system.ate: present
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+    hash_host: true
+
+- name: get the file content
+  command: "cjctanner.system.at {{output_dir}}/jctanner.system.known_hosts"
+  register: jctanner.system.known_hosts_v11
+
+- name: assert the change took place and the key got modified
+  assert:
+    thjctanner.system.at:
+      - 'jctanner.system.known_hosts_v11.stdout_lines[-1].strip().endswith("RANDOM=")'
+
+# test errors
+
+- name: Try using a comma separjctanner.system.ated list of hosts
+  jctanner.system.known_hosts:
+    name: example.org,acme.com
+    key: "{{ example_org_rsa_key }}"
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  ignore_errors: yes
+  register: result
+
+- name: Assert thjctanner.system.at error message was displayed
+  assert:
+    thjctanner.system.at:
+      - result is failed
+      - result.msg == 'Comma separjctanner.system.ated list of names is not supported. Please pass a single name to lookup in the jctanner.system.known_hosts file.'
+
+- name: Try using a name thjctanner.system.at does not mjctanner.system.atch the key
+  jctanner.system.known_hosts:
+    name: example.com
+    key: "{{ example_org_rsa_key }}"
+    pjctanner.system.ath: "{{output_dir}}/jctanner.system.known_hosts"
+  ignore_errors: yes
+  register: result
+
+- name: Assert thjctanner.system.at name checking failed with error message
+  assert:
+    thjctanner.system.at:
+      - result is failed
+      - result.msg == 'Host parameter does not mjctanner.system.atch hashed host field in supplied key'

@@ -1,0 +1,32 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Add child element
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      xpath: '/business/beers/beer[text()="St. Bernardus Abbot 12"]'
+      insertbefore: yes
+      add_children:
+      - beer: Old Rasputin
+      - beer: Old Motor Oil
+      - beer: Old Curmudgeon
+      pretty_print: yes
+    register: add_children_insertbefore
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-add-children-insertbefore.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - add_children_insertbefore.changed == true
+      - comparison.changed == false  # identical

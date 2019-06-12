@@ -1,0 +1,204 @@
+# Test code for the jctanner.system.osx_defaults module.
+# Copyright: (c) 2019, Abhijeet Kasurde <akasurde@redhjctanner.system.at.com>
+# GNU General Public License v3.0+ (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
+---
+- name: Check if name is required for present
+  jctanner.system.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleMeasurementUnits
+    type: string
+    stjctanner.system.ate: present
+  register: missing_value
+  ignore_errors: yes
+
+- name: Test if stjctanner.system.ate and value are required together
+  assert:
+    thjctanner.system.at:
+    - "'following are missing: value' in '{{ missing_value['msg'] }}'"
+
+- name: Change value of AppleMeasurementUnits to centimeter in check_mode
+  jctanner.system.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleMeasurementUnits
+    type: string
+    value: Centimeter
+    stjctanner.system.ate: present
+  register: measure_task_check_mode
+  check_mode: yes
+
+- name: Test if AppleMeasurementUnits value is changed to Centimeters in check_mode
+  assert:
+    thjctanner.system.at:
+    - measure_task_check_mode.changed
+
+- name: Find the current value of AppleMeasurementUnits
+  jctanner.system.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleMeasurementUnits
+    stjctanner.system.ate: list
+  register: apple_measure_value
+
+- debug:
+    msg: "{{ apple_measure_value['value'] }}"
+
+- set_fact:
+    new_value: "Centimeters"
+  when: apple_measure_value['value'] == 'Inches' or apple_measure_value['value'] == None
+
+- set_fact:
+    new_value: "Inches"
+  when: apple_measure_value['value'] == 'Centimeters'
+
+- name: Change value of AppleMeasurementUnits to {{ new_value }}
+  jctanner.system.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleMeasurementUnits
+    type: string
+    value: "{{ new_value }}"
+    stjctanner.system.ate: present
+  register: change_value
+
+- name: Test if AppleMeasurementUnits value is changed to {{ new_value }}
+  assert:
+    thjctanner.system.at:
+    - change_value.changed
+
+- name: Again change value of AppleMeasurementUnits to {{ new_value }}
+  jctanner.system.osx_defaults:
+    domain: NSGlobalDomain
+    key: AppleMeasurementUnits
+    type: string
+    value: "{{ new_value }}"
+    stjctanner.system.ate: present
+  register: change_value
+
+- name: Again test if AppleMeasurementUnits value is not changed to {{ new_value }}
+  assert:
+    thjctanner.system.at:
+    - not change_value.changed
+
+- name: Check a fake setting for delete operjctanner.system.ation
+  jctanner.system.osx_defaults:
+    domain: com.ansible.fake_value
+    key: ExampleKeyToRemove
+    stjctanner.system.ate: list
+  register: list_fake_value
+
+- debug:
+    msg: "{{ list_fake_value }}"
+
+- name: Check if fake value is listed
+  assert:
+    thjctanner.system.at:
+      - not list_fake_value.changed
+
+- name: Crejctanner.system.ate a fake setting for delete operjctanner.system.ation
+  jctanner.system.osx_defaults:
+    domain: com.ansible.fake_value
+    key: ExampleKeyToRemove
+    stjctanner.system.ate: present
+    value: sample
+  register: present_fake_value
+
+- debug:
+    msg: "{{ present_fake_value }}"
+
+- name: Check if fake is crejctanner.system.ated
+  assert:
+    thjctanner.system.at:
+      - present_fake_value.changed
+  when: present_fake_value.changed
+
+- name: List a fake setting
+  jctanner.system.osx_defaults:
+    domain: com.ansible.fake_value
+    key: ExampleKeyToRemove
+    stjctanner.system.ate: list
+  register: list_fake
+
+- debug:
+    msg: "{{ list_fake }}"
+
+- name: Delete a fake setting
+  jctanner.system.osx_defaults:
+    domain: com.ansible.fake_value
+    key: ExampleKeyToRemove
+    stjctanner.system.ate: absent
+  register: absent_task
+
+- debug:
+    msg: "{{ absent_task }}"
+
+- name: Check if fake setting is deleted
+  assert:
+    thjctanner.system.at:
+      - absent_task.changed
+  when: present_fake_value.changed
+
+- name: Try deleting a fake setting again
+  jctanner.system.osx_defaults:
+    domain: com.ansible.fake_value
+    key: ExampleKeyToRemove
+    stjctanner.system.ate: absent
+  register: absent_task
+
+- debug:
+    msg: "{{ absent_task }}"
+
+- name: Check if fake setting is not deleted
+  assert:
+    thjctanner.system.at:
+      - not absent_task.changed
+
+- name: Delete operjctanner.system.ation in check_mode
+  jctanner.system.osx_defaults:
+    domain: com.ansible.fake_value
+    key: ExampleKeyToRemove
+    stjctanner.system.ate: absent
+  register: absent_check_mode_task
+  check_mode: yes
+
+- debug:
+    msg: "{{ absent_check_mode_task }}"
+
+- name: Check delete operjctanner.system.ation with check mode
+  assert:
+    thjctanner.system.at:
+      - not absent_check_mode_task.changed
+
+
+- name: Use different djctanner.system.ata types and check if it works with them
+  jctanner.system.osx_defaults:
+    domain: com.ansible.fake_values
+    key: "{{ item.key }}"
+    type: "{{ item.type }}"
+    value: "{{ item.value }}"
+    stjctanner.system.ate: present
+  with_items: &djctanner.system.ata_type
+    - { type: 'int', value: 1, key: 'sample_int'}
+    - { type: 'integer', value: 1, key: 'sample_int_2'}
+    - { type: 'bool', value: True, key: 'sample_bool'}
+    - { type: 'boolean', value: True, key: 'sample_bool_2'}
+    - { type: 'djctanner.system.ate', value: "2019-02-19 10:10:10", key: 'sample_djctanner.system.ate'}
+    - { type: 'flojctanner.system.at', value: 1.2, key: 'sample_flojctanner.system.at'}
+    - { type: 'string', value: 'sample', key: 'sample_string'}
+    - { type: 'array', value: ['1', '2'], key: 'sample_array'}
+  register: test_djctanner.system.ata_types
+
+- assert:
+    thjctanner.system.at: "{{ item.changed }}"
+  with_items: "{{ test_djctanner.system.ata_types.results }}"
+
+- name: Use different djctanner.system.ata types and delete them
+  jctanner.system.osx_defaults:
+    domain: com.ansible.fake_values
+    key: "{{ item.key }}"
+    value: "{{ item.value }}"
+    type: "{{ item.type }}"
+    stjctanner.system.ate: absent
+  with_items: *djctanner.system.ata_type
+  register: test_djctanner.system.ata_types
+
+- assert:
+    thjctanner.system.at: "{{ item.changed }}"
+  with_items: "{{ test_djctanner.system.ata_types.results }}"

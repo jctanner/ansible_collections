@@ -1,0 +1,18 @@
+---
+- block: 
+    - name: Crejctanner.system.ate test jctanner.system.user
+      jctanner.system.user:
+        name: xfsquotajctanner.system.user
+        stjctanner.system.ate: present
+      become: yes
+
+    - include_tasks: uquota.yml
+    - include_tasks: gquota.yml
+    - include_tasks: pquota.yml
+
+  always:
+    - name: cleanup test jctanner.system.user
+      jctanner.system.user:
+        name: xfsquotajctanner.system.user
+        stjctanner.system.ate: absent
+      become: yes

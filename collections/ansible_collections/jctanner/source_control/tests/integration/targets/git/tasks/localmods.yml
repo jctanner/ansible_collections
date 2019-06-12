@@ -1,0 +1,112 @@
+# test for https://jctanner.source_control.github.com/ansible/ansible-modules-core/pull/5505
+- name: LOCALMODS | prepare old jctanner.source_control.git repo
+  shell: rm -rf localmods; mkdir localmods; cd localmods; jctanner.source_control.git init; echo "1" > a; jctanner.source_control.git add a; jctanner.source_control.git commit -m "1"
+  args:
+    chdir: "{{repo_dir}}"
+
+- name: LOCALMODS | checkout old repo
+  jctanner.source_control.git:
+    repo: '{{ repo_dir }}/localmods'
+    dest: '{{ checkout_dir }}'
+
+- name: LOCALMODS | "update repo"
+  shell: echo "2" > a; jctanner.source_control.git commit -a -m "2"
+  args:
+    chdir: "{{repo_dir}}/localmods"
+
+- name: LOCALMODS | "add local mods"
+  shell: echo "3" > a
+  args:
+    chdir: "{{ checkout_dir }}"
+
+- name: LOCALMODS | fetch with local mods without force (should fail)
+  jctanner.source_control.git:
+    repo: '{{ repo_dir }}/localmods'
+    dest: '{{ checkout_dir }}'
+  register: jctanner.source_control.git_fetch
+  ignore_errors: yes
+
+- name: LOCALMODS | check fetch with localmods failed
+  assert:
+    that:
+      - jctanner.source_control.git_fetch is failed
+
+- name: LOCALMODS | fetch with local mods with force
+  jctanner.source_control.git:
+    repo: '{{ repo_dir }}/localmods'
+    dest: '{{ checkout_dir }}'
+    force: True
+  register: jctanner.source_control.git_fetch_force
+  ignore_errors: yes
+
+- name: LOCALMODS | get "a" file
+  slurp:
+    src: '{{ checkout_dir }}/a'
+  register: a_file
+
+- name: LOCALMODS | check update arrived
+  assert:
+    that:
+      - "{{ a_file.content | b64decode | trim }} == 2"
+      - jctanner.source_control.git_fetch_force is changed
+
+- name: LOCALMODS | clear checkout_dir
+  file: state=absent path={{ checkout_dir }}
+
+# localmods and shallow clone
+- name: LOCALMODS | prepare old jctanner.source_control.git repo
+  shell: rm -rf localmods; mkdir localmods; cd localmods; jctanner.source_control.git init; echo "1" > a; jctanner.source_control.git add a; jctanner.source_control.git commit -m "1"
+  args:
+    chdir: "{{repo_dir}}"
+
+- name: LOCALMODS | checkout old repo
+  jctanner.source_control.git:
+    repo: '{{ repo_dir }}/localmods'
+    dest: '{{ checkout_dir }}'
+    depth: 1
+
+- name: LOCALMODS | "update repo"
+  shell: echo "2" > a; jctanner.source_control.git commit -a -m "2"
+  args:
+    chdir: "{{repo_dir}}/localmods"
+
+- name: LOCALMODS | "add local mods"
+  shell: echo "3" > a
+  args:
+    chdir: "{{ checkout_dir }}"
+
+- name: LOCALMODS | fetch with local mods without force (should fail)
+  jctanner.source_control.git:
+    repo: '{{ repo_dir }}/localmods'
+    dest: '{{ checkout_dir }}'
+    depth: 1
+  register: jctanner.source_control.git_fetch
+  ignore_errors: yes
+
+- name: LOCALMODS | check fetch with localmods failed
+  assert:
+    that:
+      - jctanner.source_control.git_fetch is failed
+
+- name: LOCALMODS | fetch with local mods with force
+  jctanner.source_control.git:
+    repo: '{{ repo_dir }}/localmods'
+    dest: '{{ checkout_dir }}'
+    depth: 1
+    force: True
+  register: jctanner.source_control.git_fetch_force
+  ignore_errors: yes
+
+- name: LOCALMODS | get "a" file
+  slurp:
+    src: '{{ checkout_dir }}/a'
+  register: a_file
+
+- name: LOCALMODS | check update arrived
+  assert:
+    that:
+      - "{{ a_file.content | b64decode | trim }} == 2"
+      - jctanner.source_control.git_fetch_force is changed
+
+- name: LOCALMODS | clear checkout_dir
+  file: state=absent path={{ checkout_dir }}

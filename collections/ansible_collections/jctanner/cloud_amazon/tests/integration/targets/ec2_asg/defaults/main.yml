@@ -1,0 +1,6 @@
+---
+# defaults file for jctanner.cloud_amazon.ec2_asg
+# Amazon Linux AMI 2017.09.0 (HVM), SSD Volume Type
+jctanner.cloud_amazon.ec2_ami_image:
+  us-east-1: ami-8c1be5f6
+  us-east-2: ami-c5062ba0

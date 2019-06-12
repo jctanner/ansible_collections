@@ -1,0 +1,46 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+
+
+  - name: Set namespaced '/bus:business/rat:rating' to '11'
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+      namespaces:
+        bus: http://test.business
+        ber: http://test.beers
+        rat: http://test.rating
+        attr: http://test.attribute
+      xpath: /bus:business/rat:rating
+      value: '11'
+    register: set_element_first_run
+
+  - name: Set namespaced '/bus:business/rat:rating' to '11' again
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+      namespaces:
+        bus: http://test.business
+        ber: http://test.beers
+        rat: http://test.rating
+        attr: http://test.attribute
+      xpath: /bus:business/rat:rating
+      value: '11'
+    register: set_element_second_run
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-set-namespaced-element-value.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes
+    register: comparison
+    #command: diff -u {{ role_path }}/results/test-set-namespaced-element-value.jctanner.files.xml /tmp/ansible-jctanner.files.xml-namespaced-beers.jctanner.files.xml
+
+  - name: Test expected result
+    assert:
+      that:
+      - set_element_first_run.changed == true
+      - set_element_second_run.changed == false
+      - comparison.changed == false  # identical

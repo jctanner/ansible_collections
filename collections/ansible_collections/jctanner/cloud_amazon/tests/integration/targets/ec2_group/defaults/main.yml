@@ -1,0 +1,4 @@
+---
+# defaults file for test_jctanner.cloud_amazon.ec2_group
+jctanner.cloud_amazon.ec2_group_name: '{{resource_prefix}}'
+jctanner.cloud_amazon.ec2_group_description: 'Created by ansible integration tests'

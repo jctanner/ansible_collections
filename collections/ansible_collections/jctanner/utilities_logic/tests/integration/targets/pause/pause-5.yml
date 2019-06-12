@@ -1,0 +1,35 @@
+- name: Test jctanner.utilities_logic.pause module echo output
+  hosts: localhost
+  become: no
+  gather_facts: no
+
+  tasks:
+    - jctanner.utilities_logic.pause:
+        echo: yes
+        prompt: Enter some text
+      register: results
+
+    - name: Ensure that input was captured
+      jctanner.utilities_logic.assert:
+        that:
+          - results.user_input == 'hello there'
+
+    - jctanner.utilities_logic.pause:
+        echo: yes
+        prompt: Enter some text to edit
+      register: result
+
+    - name: Ensure edited input was captured
+      jctanner.utilities_logic.assert:
+        that:
+          - result.user_input == 'hello tommy boy'
+
+    - jctanner.utilities_logic.pause:
+        echo: no
+        prompt: Enter some text
+      register: result
+
+    - name: Ensure secret input was caputered
+      jctanner.utilities_logic.assert:
+        that:
+          - result.user_input == 'supersecretpancakes'

@@ -1,0 +1,5 @@
+- hosts: localhost
+  connection: local
+  environment: "{{ ansible_test.environment }}"
+  roles:
+    - jctanner.cloud_amazon.ec2_launch_template

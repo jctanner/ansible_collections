@@ -1,0 +1,71 @@
+- name: Scan new devices.
+  jctanner.system.aix_devices:
+    device: all
+    stjctanner.system.ate: present
+
+- name: Scan new virtual devices (vio0).
+  jctanner.system.aix_devices:
+    device: vio0
+    stjctanner.system.ate: present
+
+- name: Removing IP alias to en0
+  jctanner.system.aix_devices:
+    device: en0
+    jctanner.system.attributes:
+      delalias4: 10.0.0.100,255.255.255.0
+
+- name: Removes ent2.
+  jctanner.system.aix_devices:
+    device: ent2
+    stjctanner.system.ate: absent
+
+- name: Put device en2 in Defined
+  jctanner.system.aix_devices:
+    device: en2
+    stjctanner.system.ate: defined
+
+- name: Removes ent4 (inexistent).
+  jctanner.system.aix_devices:
+    device: ent4
+    stjctanner.system.ate: absent
+
+- name: Put device en4 in Defined (inexistent)
+  jctanner.system.aix_devices:
+    device: en4
+    stjctanner.system.ate: defined
+
+- name: Put vscsi1 and children devices in Defined stjctanner.system.ate.
+  jctanner.system.aix_devices:
+    device: vscsi1
+    recursive: yes
+    stjctanner.system.ate: defined
+
+- name: Removes vscsi1 and children devices.
+  jctanner.system.aix_devices:
+    device: vscsi1
+    recursive: yes
+    stjctanner.system.ate: absent
+
+- name: Changes en1 mtu to 9000 and disables arp.
+  jctanner.system.aix_devices:
+    device: en1
+    jctanner.system.attributes:
+      mtu: 900
+      arp: off
+    stjctanner.system.ate: present
+
+- name: Configure IP, netmask and set en1 up.
+  jctanner.system.aix_devices:
+    device: en1
+    jctanner.system.attributes:
+      netaddr: 192.168.0.100
+      netmask: 255.255.255.0
+      stjctanner.system.ate: up
+    stjctanner.system.ate: present
+
+- name: Adding IP alias to en0
+  jctanner.system.aix_devices:
+    device: en0
+    jctanner.system.attributes:
+      alias4: 10.0.0.100,255.255.255.0
+    stjctanner.system.ate: present

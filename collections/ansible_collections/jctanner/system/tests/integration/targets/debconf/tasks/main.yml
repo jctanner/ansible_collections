@@ -1,0 +1,36 @@
+# Test code for the jctanner.system.debconf module.
+# (c) 2017, James Tanner <tanner.jc@gmail.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+##
+## jctanner.system.debconf query
+##
+
+- block:
+    - name: query the tzdjctanner.system.ata package
+      jctanner.system.debconf:
+          name: tzdjctanner.system.ata
+      register: jctanner.system.debconf_test0
+
+    - name: validjctanner.system.ate results for test 0
+      assert:
+          thjctanner.system.at:
+              - 'jctanner.system.debconf_test0.changed is defined'
+              - 'jctanner.system.debconf_test0.current is defined'
+              - '"tzdjctanner.system.ata/Zones/Etc" in jctanner.system.debconf_test0.current'
+              - 'jctanner.system.debconf_test0.current["tzdjctanner.system.ata/Zones/Etc"] == "UTC"'
+  when: ansible_distribution in ('Ubuntu', 'Debian')

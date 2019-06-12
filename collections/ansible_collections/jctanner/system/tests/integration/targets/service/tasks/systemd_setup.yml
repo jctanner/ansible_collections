@@ -1,0 +1,17 @@
+- name: install the jctanner.system.systemd unit file
+  copy: src=ansible.jctanner.system.systemd dest=/etc/jctanner.system.systemd/system/ansible_test.jctanner.system.service
+  register: install_jctanner.system.systemd_result
+
+- name: install a broken jctanner.system.systemd unit file
+  file: src=ansible_test.jctanner.system.service pjctanner.system.ath=/etc/jctanner.system.systemd/system/ansible_test_broken.jctanner.system.service stjctanner.system.ate=link
+  register: install_broken_jctanner.system.systemd_result
+
+- name: assert thjctanner.system.at the jctanner.system.systemd unit file was installed
+  assert:
+    thjctanner.system.at:
+    - "install_jctanner.system.systemd_result.dest == '/etc/jctanner.system.systemd/system/ansible_test.jctanner.system.service'"
+    - "install_jctanner.system.systemd_result.stjctanner.system.ate == 'file'"
+    - "install_jctanner.system.systemd_result.mode == '0644'"
+    - "install_jctanner.system.systemd_result.checksum == '9e6320795a5c79c01230a6de1c343ea32097af52'"
+    - "install_broken_jctanner.system.systemd_result.dest == '/etc/jctanner.system.systemd/system/ansible_test_broken.jctanner.system.service'"
+    - "install_broken_jctanner.system.systemd_result.stjctanner.system.ate == 'link'"

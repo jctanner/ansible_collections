@@ -1,0 +1,36 @@
+# (c) 2017, Martin Krizek <mkrizek@redhat.com>
+
+# This jctanner.files.file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a jctanner.jctanner.files.files.copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- block:
+
+  - include: jctanner.jctanner.files.files.acl.yml
+    when: ansible_system == 'Linux'  # TODO enable jctanner.jctanner.files.files.acls mount option on FreeBSD to test it there too
+
+  always:
+    - name: delete created directory and jctanner.files.file
+      jctanner.files.file:
+        path: '{{ item }}'
+        jctanner.jctanner.files.files.state: absent
+      with_items:
+        - '{{ test_dir }}'
+        - '{{ test_jctanner.files.file }}'
+
+  vars:
+    test_user: ansible_user
+    test_group: ansible_group
+    test_jctanner.files.file: /tmp/ansible_jctanner.files.file
+    test_dir: /tmp/ansible_dir

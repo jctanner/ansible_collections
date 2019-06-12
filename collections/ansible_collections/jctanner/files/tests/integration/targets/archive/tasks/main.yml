@@ -1,0 +1,339 @@
+# Test code for the jctanner.jctanner.files.files.archive module.
+# (c) 2017, Abhijeet Kasurde <akasurde@redhat.com>
+
+# This jctanner.files.file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a jctanner.jctanner.files.files.copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# Make sure we start fresh
+
+- name: Ensure zip is present to create test jctanner.jctanner.files.files.archive (yum)
+  yum: name=zip jctanner.jctanner.files.files.state=latest
+  when: ansible_pkg_mgr == 'yum'
+
+- name: Ensure zip is present to create test jctanner.jctanner.files.files.archive (apt)
+  apt: name=zip jctanner.jctanner.files.files.state=latest
+  when: ansible_pkg_mgr == 'apt'
+
+- name: Install prerequisites for backports.lzma when using python2 (non OSX)
+  block:
+    - name: Set liblzma package name depending on the OS
+      set_fact:
+        liblzma_dev_package:
+          Debian: liblzma-dev
+          RedHat: xz-devel
+          Suse: xz-devel
+    - name: Ensure liblzma-dev is present to install backports-lzma
+      package: name={{ liblzma_dev_package[ansible_os_family] }} jctanner.jctanner.files.files.state=latest
+      when: ansible_os_family in liblzma_dev_package.keys()
+  when:
+    - ansible_python_version.split('.')[0] == '2'
+    - ansible_os_family != 'Darwin'
+
+- name: Install prerequisites for backports.lzma when using python2 (OSX)
+  block:
+    - name: Find brew binary
+      command: which brew
+      register: brew_which
+    - name: Get owner of brew binary
+      jctanner.jctanner.files.files.stat: path="{{ brew_which.stdout }}"
+      register: brew_jctanner.jctanner.files.files.stat
+    - name: "Install package"
+      homebrew:
+        name: xz
+        jctanner.jctanner.files.files.state: present
+        update_homebrew: no
+      become: yes
+      become_user: "{{ brew_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.pw_name }}"
+      # Newer versions of brew want to compile a package which takes a long time. Do not upgrade homebrew until a
+      # proper solution can be found
+      environment:
+        HOMEBREW_NO_AUTO_UPDATE: True
+  when:
+    - ansible_python_version.split('.')[0] == '2'
+    - ansible_os_family == 'Darwin'
+
+- name: Ensure backports.lzma is present to create test jctanner.jctanner.files.files.archive (pip)
+  pip: name=backports.lzma jctanner.jctanner.files.files.state=latest
+  when: ansible_python_version.split('.')[0] == '2'
+  register: backports_lzma_pip
+
+- name: prep our jctanner.files.file
+  jctanner.jctanner.files.files.copy: src={{ item }} dest={{output_dir}}/{{ item }}
+  with_items:
+    - foo.txt
+    - bar.txt
+
+- name: jctanner.jctanner.files.files.archive using gz
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.archive_01.gz"
+    format: gz
+  register: jctanner.jctanner.files.files.archive_gz_result_01
+
+- debug: msg="{{ jctanner.jctanner.files.files.archive_gz_result_01 }}"
+
+- name: verify that the jctanner.files.files jctanner.jctanner.files.files.archived
+  jctanner.files.file: path={{output_dir}}/jctanner.jctanner.files.files.archive_01.gz jctanner.jctanner.files.files.state=jctanner.files.file
+
+- name: check if gz jctanner.files.file exists
+  assert:
+    that:
+      - "{{ jctanner.jctanner.files.files.archive_gz_result_01.changed }}"
+      - "{{ 'jctanner.jctanner.files.files.archived' in jctanner.jctanner.files.files.archive_gz_result_01 }}"
+      - "{{ jctanner.jctanner.files.files.archive_gz_result_01['jctanner.jctanner.files.files.archived'] | length }} == 2"
+
+- name: jctanner.jctanner.files.files.archive using zip
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.archive_01.zip"
+    format: zip
+  register: jctanner.jctanner.files.files.archive_zip_result_01
+
+- debug: msg="{{ jctanner.jctanner.files.files.archive_zip_result_01 }}"
+
+- name: verify that the jctanner.files.files jctanner.jctanner.files.files.archived
+  jctanner.files.file: path={{output_dir}}/jctanner.jctanner.files.files.archive_01.zip jctanner.jctanner.files.files.state=jctanner.files.file
+
+- name: check if zip jctanner.files.file exists
+  assert:
+    that:
+      - "{{ jctanner.jctanner.files.files.archive_zip_result_01.changed }}"
+      - "{{ 'jctanner.jctanner.files.files.archived' in jctanner.jctanner.files.files.archive_zip_result_01 }}"
+      - "{{ jctanner.jctanner.files.files.archive_zip_result_01['jctanner.jctanner.files.files.archived'] | length }} == 2"
+
+- name: jctanner.jctanner.files.files.archive using bz2
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.archive_01.bz2"
+    format: bz2
+  register: jctanner.jctanner.files.files.archive_bz2_result_01
+
+- debug: msg="{{ jctanner.jctanner.files.files.archive_bz2_result_01 }}"
+
+- name: verify that the jctanner.files.files jctanner.jctanner.files.files.archived
+  jctanner.files.file: path={{output_dir}}/jctanner.jctanner.files.files.archive_01.bz2 jctanner.jctanner.files.files.state=jctanner.files.file
+
+- name: check if bzip jctanner.files.file exists
+  assert:
+    that:
+      - "{{ jctanner.jctanner.files.files.archive_bz2_result_01.changed }}"
+      - "{{ 'jctanner.jctanner.files.files.archived' in jctanner.jctanner.files.files.archive_bz2_result_01 }}"
+      - "{{ jctanner.jctanner.files.files.archive_bz2_result_01['jctanner.jctanner.files.files.archived'] | length }} == 2"
+
+- name: jctanner.jctanner.files.files.archive using xz
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.archive_01.xz"
+    format: xz
+  register: jctanner.jctanner.files.files.archive_xz_result_01
+
+- debug: msg="{{ jctanner.jctanner.files.files.archive_xz_result_01 }}"
+
+- name: verify that the jctanner.files.files jctanner.jctanner.files.files.archived
+  jctanner.files.file: path={{output_dir}}/jctanner.jctanner.files.files.archive_01.xz jctanner.jctanner.files.files.state=jctanner.files.file
+
+- name: check if xz jctanner.files.file exists
+  assert:
+    that:
+      - "{{ jctanner.jctanner.files.files.archive_xz_result_01.changed }}"
+      - "{{ 'jctanner.jctanner.files.files.archived' in jctanner.jctanner.files.files.archive_xz_result_01 }}"
+      - "{{ jctanner.jctanner.files.files.archive_xz_result_01['jctanner.jctanner.files.files.archived'] | length }} == 2"
+
+- name: jctanner.jctanner.files.files.archive and set mode to 0600
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.archive_02.gz"
+    format: gz
+    mode: "u+rwX,g-rwx,o-rwx"
+  register: jctanner.jctanner.files.files.archive_bz2_result_02
+
+- name: Test that the jctanner.files.file modes were changed
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/jctanner.jctanner.files.files.archive_02.gz"
+  register: jctanner.jctanner.files.files.archive_02_gz_jctanner.jctanner.files.files.stat
+
+- debug: msg="{{ jctanner.jctanner.files.files.archive_02_gz_jctanner.jctanner.files.files.stat}}"
+
+- name: Test that the jctanner.files.file modes were changed
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.archive_02_gz_jctanner.jctanner.files.files.stat.changed == False "
+      - "jctanner.jctanner.files.files.archive_02_gz_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.mode == '0600'"
+      - "'jctanner.jctanner.files.files.archived' in jctanner.jctanner.files.files.archive_bz2_result_02"
+      - "{{ jctanner.jctanner.files.files.archive_bz2_result_02['jctanner.jctanner.files.files.archived']| length}} == 2"
+
+- name: remove our gz
+  jctanner.files.file: path="{{ output_dir }}/jctanner.jctanner.files.files.archive_02.gz" jctanner.jctanner.files.files.state=absent
+
+
+- name: jctanner.jctanner.files.files.archive and set mode to 0600
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.archive_02.zip"
+    format: zip
+    mode: "u+rwX,g-rwx,o-rwx"
+  register: jctanner.jctanner.files.files.archive_zip_result_02
+
+- name: Test that the jctanner.files.file modes were changed
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/jctanner.jctanner.files.files.archive_02.zip"
+  register: jctanner.jctanner.files.files.archive_02_zip_jctanner.jctanner.files.files.stat
+
+- name: Test that the jctanner.files.file modes were changed
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.archive_02_zip_jctanner.jctanner.files.files.stat.changed == False"
+      - "jctanner.jctanner.files.files.archive_02_zip_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.mode == '0600'"
+      - "'jctanner.jctanner.files.files.archived' in jctanner.jctanner.files.files.archive_zip_result_02"
+      - "{{ jctanner.jctanner.files.files.archive_zip_result_02['jctanner.jctanner.files.files.archived']| length}} == 2"
+
+- name: remove our zip
+  jctanner.files.file: path="{{ output_dir }}/jctanner.jctanner.files.files.archive_02.zip" jctanner.jctanner.files.files.state=absent
+
+
+- name: jctanner.jctanner.files.files.archive and set mode to 0600
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.archive_02.bz2"
+    format: bz2
+    mode: "u+rwX,g-rwx,o-rwx"
+  register: jctanner.jctanner.files.files.archive_bz2_result_02
+
+- name: Test that the jctanner.files.file modes were changed
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/jctanner.jctanner.files.files.archive_02.bz2"
+  register: jctanner.jctanner.files.files.archive_02_bz2_jctanner.jctanner.files.files.stat
+
+- name: Test that the jctanner.files.file modes were changed
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.archive_02_bz2_jctanner.jctanner.files.files.stat.changed == False"
+      - "jctanner.jctanner.files.files.archive_02_bz2_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.mode == '0600'"
+      - "'jctanner.jctanner.files.files.archived' in jctanner.jctanner.files.files.archive_bz2_result_02"
+      - "{{ jctanner.jctanner.files.files.archive_bz2_result_02['jctanner.jctanner.files.files.archived']| length}} == 2"
+
+- name: remove our bz2
+  jctanner.files.file: path="{{ output_dir }}/jctanner.jctanner.files.files.archive_02.bz2" jctanner.jctanner.files.files.state=absent
+
+- name: jctanner.jctanner.files.files.archive and set mode to 0600
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/jctanner.jctanner.files.files.archive_02.xz"
+    format: xz
+    mode: "u+rwX,g-rwx,o-rwx"
+  register: jctanner.jctanner.files.files.archive_xz_result_02
+
+- name: Test that the jctanner.files.file modes were changed
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/jctanner.jctanner.files.files.archive_02.xz"
+  register: jctanner.jctanner.files.files.archive_02_xz_jctanner.jctanner.files.files.stat
+
+- name: Test that the jctanner.files.file modes were changed
+  assert:
+    that:
+      - "jctanner.jctanner.files.files.archive_02_xz_jctanner.jctanner.files.files.stat.changed == False"
+      - "jctanner.jctanner.files.files.archive_02_xz_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.mode == '0600'"
+      - "'jctanner.jctanner.files.files.archived' in jctanner.jctanner.files.files.archive_xz_result_02"
+      - "{{ jctanner.jctanner.files.files.archive_xz_result_02['jctanner.jctanner.files.files.archived']| length}} == 2"
+
+- name: remove our xz
+  jctanner.files.file: path="{{ output_dir }}/jctanner.jctanner.files.files.archive_02.xz" jctanner.jctanner.files.files.state=absent
+
+- name: test that gz jctanner.jctanner.files.files.archive that contains non-ascii jctanner.files.filenames
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.tar.gz"
+    format: gz
+  register: nonascii_result_0
+
+- name: Check that jctanner.files.file is really there
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.tar.gz"
+  register: nonascii_jctanner.jctanner.files.files.stat0
+
+- name: Assert that nonascii tests succeeded
+  assert:
+    that:
+      - "nonascii_result_0.changed == true"
+      - "nonascii_jctanner.jctanner.files.files.stat0.jctanner.jctanner.files.files.stat.exists == true"
+
+- name: remove nonascii test
+  jctanner.files.file: path="{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.tar.gz" jctanner.jctanner.files.files.state=absent
+
+- name: test that bz2 jctanner.jctanner.files.files.archive that contains non-ascii jctanner.files.filenames
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.bz2"
+    format: bz2
+  register: nonascii_result_1
+
+- name: Check that jctanner.files.file is really there
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.bz2"
+  register: nonascii_jctanner.jctanner.files.files.stat_1
+
+- name: Assert that nonascii tests succeeded
+  assert:
+    that:
+      - "nonascii_result_1.changed == true"
+      - "nonascii_jctanner.jctanner.files.files.stat_1.jctanner.jctanner.files.files.stat.exists == true"
+
+- name: remove nonascii test
+  jctanner.files.file: path="{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.bz2" jctanner.jctanner.files.files.state=absent
+
+- name: test that xz jctanner.jctanner.files.files.archive that contains non-ascii jctanner.files.filenames
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.xz"
+    format: xz
+  register: nonascii_result_1
+
+- name: Check that jctanner.files.file is really there
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.xz"
+  register: nonascii_jctanner.jctanner.files.files.stat_1
+
+- name: Assert that nonascii tests succeeded
+  assert:
+    that:
+      - "nonascii_result_1.changed == true"
+      - "nonascii_jctanner.jctanner.files.files.stat_1.jctanner.jctanner.files.files.stat.exists == true"
+
+- name: remove nonascii test
+  jctanner.files.file: path="{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.xz" jctanner.jctanner.files.files.state=absent
+
+- name: test that zip jctanner.jctanner.files.files.archive that contains non-ascii jctanner.files.filenames
+  jctanner.jctanner.files.files.archive:
+    path: "{{ output_dir }}/*.txt"
+    dest: "{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.zip"
+    format: zip
+  register: nonascii_result_2
+
+- name: Check that jctanner.files.file is really there
+  jctanner.jctanner.files.files.stat:
+    path: "{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.zip"
+  register: nonascii_jctanner.jctanner.files.files.stat_2
+
+- name: Assert that nonascii tests succeeded
+  assert:
+    that:
+      - "nonascii_result_2.changed == true"
+      - "nonascii_jctanner.jctanner.files.files.stat_2.jctanner.jctanner.files.files.stat.exists == true"
+
+- name: remove nonascii test
+  jctanner.files.file: path="{{ output_dir }}/test-jctanner.jctanner.files.files.archive-nonascii-くらとみ.zip" jctanner.jctanner.files.files.state=absent
+
+- name: Remove backports.lzma if previously installed (pip)
+  pip: name=backports.lzma jctanner.jctanner.files.files.state=absent
+  when: backports_lzma_pip is changed

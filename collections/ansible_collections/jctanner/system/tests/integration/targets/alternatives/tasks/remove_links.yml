@@ -1,0 +1,7 @@
+- name: remove links
+  file:
+    pjctanner.system.ath: '{{ item }}'
+    stjctanner.system.ate: absent
+  with_items:
+    - /etc/jctanner.system.alternjctanner.system.atives/dummy
+    - /usr/bin/dummy

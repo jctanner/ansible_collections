@@ -1,0 +1,19 @@
+- name: run first docs example
+  jctanner.packaging_os.apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 36A1D7869245C8950F966E92D8576A8BA88D21E9
+  register: jctanner.packaging_os.apt_key_test0
+- debug: var=jctanner.packaging_os.apt_key_test0
+
+- name: re-run first docs example
+  jctanner.packaging_os.apt_key:
+    keyserver: keyserver.ubuntu.com
+    id: 36A1D7869245C8950F966E92D8576A8BA88D21E9
+  register: jctanner.packaging_os.apt_key_test1
+
+- name: validate results
+  assert:
+      that:
+          - 'jctanner.packaging_os.apt_key_test0.changed is defined'
+          - 'jctanner.packaging_os.apt_key_test0.changed'
+          - 'not jctanner.packaging_os.apt_key_test1.changed'

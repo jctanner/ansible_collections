@@ -1,0 +1,7 @@
+---
+jctanner.source_control.subversion_packages:
+- apache24
+- mod_dav_svn
+- jctanner.source_control.subversion
+apache_user: www
+apache_group: www

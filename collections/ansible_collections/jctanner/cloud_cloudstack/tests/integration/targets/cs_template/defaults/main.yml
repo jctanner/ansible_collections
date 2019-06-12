@@ -1,0 +1,5 @@
+---
+jctanner.cloud_cloudstack.cs_template_hypervisor: Simulator
+jctanner.cloud_cloudstack.cs_template_os_type: Other Linux (64-bit)
+jctanner.cloud_cloudstack.cs_template_url: http://dl.openvm.eu/cloudstack/macchinina/x86_64/macchinina-vmware.ova
+jctanner.cloud_cloudstack.cs_template_format: OVA

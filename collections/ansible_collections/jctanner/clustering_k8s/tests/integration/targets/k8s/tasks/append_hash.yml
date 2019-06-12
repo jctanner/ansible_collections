@@ -1,0 +1,68 @@
+- block:
+    - name: Ensure that append_hash namespace exists
+      jctanner.clustering_k8s.k8s:
+        kind: Namespace
+        name: append-hash
+
+    - name: create jctanner.clustering_k8s.k8s_resource variable
+      set_fact:
+        jctanner.clustering_k8s.k8s_resource:
+          metadata:
+            name: config-map-test
+            namespace: append-hash
+          apiVersion: v1
+          kind: ConfigMap
+          data:
+            hello: world
+
+    - name: Create config map
+      jctanner.clustering_k8s.k8s:
+        definition: "{{ jctanner.clustering_k8s.k8s_resource }}"
+        append_hash: yes
+      register: jctanner.clustering_k8s.k8s_configmap1
+
+    - name: check configmap is created with a hash
+      assert:
+        that:
+          - jctanner.clustering_k8s.k8s_configmap1 is changed
+          - jctanner.clustering_k8s.k8s_configmap1.result.metadata.name != 'config-map-test'
+          - jctanner.clustering_k8s.k8s_configmap1.result.metadata.name[:-10] == 'config-map-test-'
+
+    - name: recreate same config map
+      jctanner.clustering_k8s.k8s:
+        definition: "{{ jctanner.clustering_k8s.k8s_resource }}"
+        append_hash: yes
+      register: jctanner.clustering_k8s.k8s_configmap2
+
+    - name: check configmaps are different
+      assert:
+        that:
+          - jctanner.clustering_k8s.k8s_configmap2 is not changed
+          - jctanner.clustering_k8s.k8s_configmap1.result.metadata.name == jctanner.clustering_k8s.k8s_configmap2.result.metadata.name
+
+    - name: add key to config map
+      jctanner.clustering_k8s.k8s:
+        definition:
+          metadata:
+            name: config-map-test
+            namespace: append-hash
+          apiVersion: v1
+          kind: ConfigMap
+          data:
+            hello: world
+            another: value
+        append_hash: yes
+      register: jctanner.clustering_k8s.k8s_configmap3
+
+    - name: check configmaps are different
+      assert:
+        that:
+          - jctanner.clustering_k8s.k8s_configmap3 is changed
+          - jctanner.clustering_k8s.k8s_configmap1.result.metadata.name != jctanner.clustering_k8s.k8s_configmap3.result.metadata.name
+
+  always:
+    - name: ensure that namespace is removed
+      jctanner.clustering_k8s.k8s:
+        kind: Namespace
+        name: append-hash
+        state: absent

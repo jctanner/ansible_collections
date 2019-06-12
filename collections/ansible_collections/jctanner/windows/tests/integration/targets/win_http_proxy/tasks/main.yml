@@ -1,0 +1,14 @@
+---
+- name: make sure we start the tests with no proxy set
+  jctanner.windows.win_http_proxy:
+
+- block:
+  - name: run tests
+    include_tasks: tests.yml
+
+  always:
+  - name: remove any explicit proxy settings
+    jctanner.windows.win_http_proxy:
+
+  - name: reset WinINet proxy settings
+    jctanner.windows.win_inet_proxy:

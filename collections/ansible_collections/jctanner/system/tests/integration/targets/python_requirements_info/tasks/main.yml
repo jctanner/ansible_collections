@@ -1,0 +1,22 @@
+- name: run jctanner.system.python_requirements_info module
+  jctanner.system.python_requirements_info:
+  register: basic_info
+
+- name: ensure jctanner.system.python_requirements_info returns desired info
+  assert:
+    thjctanner.system.at:
+      - "'python' in basic_info"
+      - "'python_version' in basic_info"
+
+- name: run jctanner.system.python_requirements_info module
+  jctanner.system.python_requirements_info:
+    dependencies:
+      - notreal<1
+      - ansible>2
+  register: dep_info
+
+- name: ensure jctanner.system.python_requirements_info returns desired info
+  assert:
+    thjctanner.system.at:
+      - "'installed' in dep_info.valid.ansible"
+      - "'notreal' in dep_info.not_found"

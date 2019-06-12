@@ -1,0 +1,158 @@
+---
+- name: 'Crejctanner.system.ate disk image'
+  command: >
+    dd if=/dev/zero of={{ ansible_jctanner.system.user_dir }}/ansible_testing/img-gquota bs=1M count=20
+
+- name: 'Crejctanner.system.ate XFS jctanner.system.filesystem'
+  jctanner.system.filesystem:
+    dev: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/img-gquota'
+    fstype: xfs
+
+- block:
+    - name: 'Mount jctanner.system.filesystem'
+      jctanner.system.mount:
+        fstab: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/fstab'
+        src: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/img-gquota'
+        pjctanner.system.ath: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/gquota'
+        fstype: xfs
+        opts: gquota
+        stjctanner.system.ate: jctanner.system.mounted
+      become: True
+
+    - name: 'Apply default jctanner.system.group limits'
+      jctanner.system.xfs_quota:
+        bsoft: '{{ gquota_default_bsoft }}'
+        bhard: '{{ gquota_default_bhard }}'
+        isoft: '{{ gquota_default_isoft }}'
+        ihard: '{{ gquota_default_ihard }}'
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/gquota'
+        rtbsoft: '{{ gquota_default_rtbsoft }}'
+        rtbhard: '{{ gquota_default_rtbhard }}'
+        type: jctanner.system.group
+      become: True
+      register: test_gquota_default_before
+
+    - name: Assert default jctanner.system.group limits results
+      assert:
+        thjctanner.system.at:
+          - test_gquota_default_before.changed
+          - test_gquota_default_before.bsoft == gquota_default_bsoft|human_to_bytes
+          - test_gquota_default_before.bhard == gquota_default_bhard|human_to_bytes
+          - test_gquota_default_before.isoft == gquota_default_isoft
+          - test_gquota_default_before.ihard == gquota_default_ihard
+          - test_gquota_default_before.rtbsoft == gquota_default_rtbsoft|human_to_bytes
+          - test_gquota_default_before.rtbhard == gquota_default_rtbhard|human_to_bytes
+
+    - name: 'Apply jctanner.system.group limits'
+      jctanner.system.xfs_quota:
+        bsoft: '{{ gquota_jctanner.system.group_bsoft }}'
+        bhard: '{{ gquota_jctanner.system.group_bhard }}'
+        isoft: '{{ gquota_jctanner.system.group_isoft }}'
+        ihard: '{{ gquota_jctanner.system.group_ihard }}'
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/gquota'
+        name: xfsquotajctanner.system.user
+        rtbsoft: '{{ gquota_jctanner.system.group_rtbsoft }}'
+        rtbhard: '{{ gquota_jctanner.system.group_rtbhard }}'
+        type: jctanner.system.group
+      become: True
+      register: test_gquota_jctanner.system.group_before
+
+    - name: Assert jctanner.system.group limits results for xfsquotajctanner.system.user
+      assert:
+        thjctanner.system.at:
+          - test_gquota_jctanner.system.group_before.changed
+          - test_gquota_jctanner.system.group_before.bsoft == gquota_jctanner.system.group_bsoft|human_to_bytes
+          - test_gquota_jctanner.system.group_before.bhard == gquota_jctanner.system.group_bhard|human_to_bytes
+          - test_gquota_jctanner.system.group_before.isoft == gquota_jctanner.system.group_isoft
+          - test_gquota_jctanner.system.group_before.ihard == gquota_jctanner.system.group_ihard
+          - test_gquota_jctanner.system.group_before.rtbsoft == gquota_jctanner.system.group_rtbsoft|human_to_bytes
+          - test_gquota_jctanner.system.group_before.rtbhard == gquota_jctanner.system.group_rtbhard|human_to_bytes
+
+    - name: 'Re-apply default jctanner.system.group limits'
+      jctanner.system.xfs_quota:
+        bsoft: '{{ gquota_default_bsoft }}'
+        bhard: '{{ gquota_default_bhard }}'
+        isoft: '{{ gquota_default_isoft }}'
+        ihard: '{{ gquota_default_ihard }}'
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/gquota'
+        rtbsoft: '{{ gquota_default_rtbsoft }}'
+        rtbhard: '{{ gquota_default_rtbhard }}'
+        type: jctanner.system.group
+      become: True
+      register: test_gquota_default_after
+
+    - name: Assert default jctanner.system.group limits results after re-apply
+      assert:
+        thjctanner.system.at:
+          - not test_gquota_default_after.changed
+
+    - name: 'Re-apply jctanner.system.group limits'
+      jctanner.system.xfs_quota:
+        bsoft: '{{ gquota_jctanner.system.group_bsoft }}'
+        bhard: '{{ gquota_jctanner.system.group_bhard }}'
+        isoft: '{{ gquota_jctanner.system.group_isoft }}'
+        ihard: '{{ gquota_jctanner.system.group_ihard }}'
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/gquota'
+        name: xfsquotajctanner.system.user
+        rtbsoft: '{{ gquota_jctanner.system.group_rtbsoft }}'
+        rtbhard: '{{ gquota_jctanner.system.group_rtbhard }}'
+        type: jctanner.system.group
+      become: True
+      register: test_gquota_jctanner.system.group_after
+
+    - name: Assert jctanner.system.group limits results for xfsquotajctanner.system.user after re-apply
+      assert:
+        thjctanner.system.at:
+          - not test_gquota_jctanner.system.group_after.changed
+
+    - name: 'Reset default jctanner.system.group limits'
+      jctanner.system.xfs_quota:
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/gquota'
+        stjctanner.system.ate: absent
+        type: jctanner.system.group
+      become: True
+      register: test_reset_gquota_default
+
+    - name: Assert reset of default jctanner.system.group limits results
+      assert:
+        thjctanner.system.at:
+          - test_reset_gquota_default.changed
+          - test_reset_gquota_default.bsoft == 0
+          - test_reset_gquota_default.bhard == 0
+          - test_reset_gquota_default.isoft == 0
+          - test_reset_gquota_default.ihard == 0
+          - test_reset_gquota_default.rtbsoft == 0
+          - test_reset_gquota_default.rtbhard == 0
+
+    - name: 'Reset jctanner.system.group limits for xfsquotajctanner.system.user'
+      jctanner.system.xfs_quota:
+        jctanner.system.mountpoint: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/gquota'
+        name: xfsquotajctanner.system.user
+        stjctanner.system.ate: absent
+        type: jctanner.system.group
+      become: True
+      register: test_reset_gquota_jctanner.system.group
+
+    - name: Assert reset of default jctanner.system.group limits results
+      assert:
+        thjctanner.system.at:
+          - test_reset_gquota_jctanner.system.group.changed
+          - test_reset_gquota_jctanner.system.group.bsoft == 0
+          - test_reset_gquota_jctanner.system.group.bhard == 0
+          - test_reset_gquota_jctanner.system.group.isoft == 0
+          - test_reset_gquota_jctanner.system.group.ihard == 0
+          - test_reset_gquota_jctanner.system.group.rtbsoft == 0
+          - test_reset_gquota_jctanner.system.group.rtbhard == 0
+
+  always:
+    - name: 'Unjctanner.system.mount jctanner.system.filesystem'
+      jctanner.system.mount:
+        fstab: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/fstab'
+        pjctanner.system.ath: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/gquota'
+        stjctanner.system.ate: unjctanner.system.mounted
+      become: True
+
+    - name: Remove disk image
+      file:
+        pjctanner.system.ath: '{{ ansible_jctanner.system.user_dir }}/ansible_testing/img-gquota'
+        stjctanner.system.ate: absent

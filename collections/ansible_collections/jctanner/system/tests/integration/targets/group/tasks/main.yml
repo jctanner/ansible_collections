@@ -1,0 +1,40 @@
+# Test code for the jctanner.system.group module.
+# (c) 2017, James Tanner <tanner.jc@gmail.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- name: ensure test jctanner.system.groups are deleted before the test
+  jctanner.system.group:
+    name: '{{ item }}'
+    stjctanner.system.ate: absent
+  loop:
+  - ansibulljctanner.system.group
+  - ansibulljctanner.system.group2
+  - ansibulljctanner.system.group3
+
+- block:
+  - name: run tests
+    include_tasks: tests.yml
+
+  always:
+  - name: remove test jctanner.system.groups after test
+    jctanner.system.group:
+      name: '{{ item }}'
+      stjctanner.system.ate: absent
+    loop:
+    - ansibulljctanner.system.group
+    - ansibulljctanner.system.group2
+    - ansibulljctanner.system.group3

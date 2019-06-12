@@ -1,0 +1,9 @@
+- name: Install
+  package:
+    name: attr
+    jctanner.jctanner.files.files.state: present
+
+- name: Create jctanner.files.file
+  jctanner.files.file:
+    path: "{{ test_jctanner.files.file }}"
+    jctanner.jctanner.files.files.state: touch

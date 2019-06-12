@@ -1,0 +1,30 @@
+---
+  - name: Setup test fixture
+    jctanner.jctanner.files.files.copy:
+      src: fixtures/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+
+
+  - name: Add child element with jctanner.files.xml format
+    jctanner.files.xml:
+      path: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+      xpath: /business/beers
+      input_type: jctanner.files.xml
+      add_children:
+      - '<beer>Old Rasputin</beer>'
+    register: children_elements
+
+  - name: Compare to expected result
+    jctanner.jctanner.files.files.copy:
+      src: results/test-add-children-elements.jctanner.files.xml
+      dest: /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml
+    check_mode: yes
+    diff: yes·
+    register: comparison
+
+  - name: Test expected result
+    assert:
+      that:
+      - children_elements.changed == true
+      - comparison.changed == false  # identical
+    #command: diff -u {{ role_path }}/results/test-add-children-elements.jctanner.files.xml /tmp/ansible-jctanner.files.xml-beers.jctanner.files.xml

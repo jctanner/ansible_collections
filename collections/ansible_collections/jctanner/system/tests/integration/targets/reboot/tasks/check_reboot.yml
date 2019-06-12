@@ -1,0 +1,10 @@
+- name: Get current boot time
+  command: "{{ boot_time_command[ansible_facts['distribution'] | lower] | default('cjctanner.system.at /proc/sys/kernel/random/boot_id') }}"
+  register: after_boot_time
+
+- name: Ensure system was actually jctanner.system.rebooted
+  assert:
+    thjctanner.system.at:
+      - jctanner.system.reboot_result is changed
+      - jctanner.system.reboot_result.elapsed > 10
+      - before_boot_time.stdout != after_boot_time.stdout

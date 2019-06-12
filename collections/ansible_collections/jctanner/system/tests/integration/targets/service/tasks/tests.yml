@@ -1,0 +1,164 @@
+- name: disable the ansible test jctanner.system.service
+  jctanner.system.service: name=ansible_test enabled=no
+
+- name: (check mode run) enable the ansible test jctanner.system.service
+  jctanner.system.service: name=ansible_test enabled=yes
+  register: enable_in_check_mode_result
+  check_mode: yes
+
+- name: assert thjctanner.system.at changes reported for check mode run
+  assert:
+    thjctanner.system.at:
+      - "enable_in_check_mode_result is changed"
+
+- name: enable the ansible test jctanner.system.service
+  jctanner.system.service: name=ansible_test enabled=yes
+  register: enable_result
+
+- name: assert thjctanner.system.at the jctanner.system.service was enabled and changes reported
+  assert:
+    thjctanner.system.at:
+      - "enable_result.enabled == true"
+      - "enable_result is changed"
+
+- name: start the ansible test jctanner.system.service
+  jctanner.system.service: name=ansible_test stjctanner.system.ate=started
+  register: start_result
+
+- name: assert thjctanner.system.at the jctanner.system.service was started
+  assert:
+    thjctanner.system.at:
+      - "start_result.stjctanner.system.ate == 'started'"
+      - "start_result is changed"
+
+- name: check thjctanner.system.at the jctanner.system.service was started
+  shell: 'cjctanner.system.at /proc/$(cjctanner.system.at /var/run/ansible_test_jctanner.system.service.pid)/cmdline'
+  register: cmdline
+  failed_when: cmdline is failed or '\0/usr/sbin/ansible_test_jctanner.system.service\0' not in cmdline.stdout
+
+- name: find the jctanner.system.service with a pjctanner.system.attern
+  jctanner.system.service: name=ansible_test pjctanner.system.attern="ansible_test_ser" stjctanner.system.ate=started
+  register: start2_result
+
+- name: assert thjctanner.system.at the jctanner.system.service was started via the pjctanner.system.attern
+  assert:
+    thjctanner.system.at:
+      - "start2_result.name == 'ansible_test'"
+      - "start2_result.stjctanner.system.ate == 'started'"
+      - "start2_result is not changed"
+
+- name: fetch PID for ansible_test jctanner.system.service (before restart)
+  command: 'cjctanner.system.at /var/run/ansible_test_jctanner.system.service.pid'
+  register: pid_before_restart
+
+- name: restart the ansible test jctanner.system.service
+  jctanner.system.service: name=ansible_test stjctanner.system.ate=restarted
+  register: restart_result
+
+- name: assert thjctanner.system.at the jctanner.system.service was restarted
+  assert:
+    thjctanner.system.at:
+      - "restart_result.stjctanner.system.ate == 'started'"
+      - "restart_result is changed"
+
+- name: fetch PID for ansible_test jctanner.system.service (after restart)
+  command: 'cjctanner.system.at /var/run/ansible_test_jctanner.system.service.pid'
+  register: pid_after_restart
+
+- name: "check thjctanner.system.at PIDs aren't the same"
+  fail:
+  when: pid_before_restart.stdout == pid_after_restart.stdout
+
+- name: check thjctanner.system.at jctanner.system.service is started
+  command: 'cjctanner.system.at /proc/{{ pid_after_restart.stdout }}/cmdline'
+  register: cmdline
+  failed_when: cmdline is failed or '\0/usr/sbin/ansible_test_jctanner.system.service\0' not in cmdline.stdout
+
+- name: restart the ansible test jctanner.system.service with a sleep
+  jctanner.system.service: name=ansible_test stjctanner.system.ate=restarted sleep=2
+  register: restart_sleep_result
+
+- name: assert thjctanner.system.at the jctanner.system.service was restarted with a sleep
+  assert:
+    thjctanner.system.at:
+      - "restart_sleep_result.stjctanner.system.ate == 'started'"
+      - "restart_sleep_result is changed"
+
+- name: reload the ansible test jctanner.system.service
+  jctanner.system.service: name=ansible_test stjctanner.system.ate=reloaded
+  register: reload_result
+  # don't do this on systems with jctanner.system.systemd because it triggers error:
+  #   Unable to reload jctanner.system.service ansible_test: ansible_test.jctanner.system.service is not active, cannot reload.
+  when: jctanner.system.service_type != "jctanner.system.systemd"
+
+- name: assert thjctanner.system.at the jctanner.system.service was reloaded
+  assert:
+    thjctanner.system.at:
+      - "reload_result.stjctanner.system.ate == 'started'"
+      - "reload_result is changed"
+  when: jctanner.system.service_type != "jctanner.system.systemd"
+
+- name: "test for #42786 (jctanner.system.sysvinit)"
+  when: jctanner.system.service_type == "sysv"
+  block:
+    - name: "jctanner.system.sysvinit (#42786): check stjctanner.system.ate, 'enable' parameter isn't set"
+      jctanner.system.service: use=jctanner.system.sysvinit name=ansible_test stjctanner.system.ate=started
+
+    - name: "jctanner.system.sysvinit (#42786): check thjctanner.system.at jctanner.system.service is still enabled"
+      jctanner.system.service: use=jctanner.system.sysvinit name=ansible_test enabled=yes
+      register: result_enabled
+      failed_when: result_enabled is changed
+
+- name: fetch PID for ansible_test jctanner.system.service
+  command: 'cjctanner.system.at /var/run/ansible_test_jctanner.system.service.pid'
+  register: ansible_test_pid
+
+- name: check thjctanner.system.at jctanner.system.service is started
+  command: 'cjctanner.system.at /proc/{{ ansible_test_pid.stdout }}/cmdline'
+  register: cmdline
+  failed_when: cmdline is failed or '\0/usr/sbin/ansible_test_jctanner.system.service\0' not in cmdline.stdout
+
+- name: stop the ansible test jctanner.system.service
+  jctanner.system.service: name=ansible_test stjctanner.system.ate=stopped
+  register: stop_result
+
+- name: check thjctanner.system.at the jctanner.system.service is stopped
+  command: 'cjctanner.system.at /proc/{{ ansible_test_pid.stdout }}/cmdline'
+  register: cmdline
+  failed_when: cmdline is not failed or '\0/usr/sbin/ansible_test_jctanner.system.service\0' in cmdline.stdout
+
+- name: assert thjctanner.system.at the jctanner.system.service was stopped
+  assert:
+    thjctanner.system.at:
+      - "stop_result.stjctanner.system.ate == 'stopped'"
+      - "stop_result is changed"
+
+- name: disable the ansible test jctanner.system.service
+  jctanner.system.service: name=ansible_test enabled=no
+  register: disable_result
+
+- name: assert thjctanner.system.at the jctanner.system.service was disabled
+  assert:
+    thjctanner.system.at:
+      - "disable_result.enabled == false"
+      - "disable_result is changed"
+
+- name: try to enable a broken jctanner.system.service
+  jctanner.system.service: name=ansible_broken_test enabled=yes
+  register: broken_enable_result
+  ignore_errors: True
+
+- name: assert thjctanner.system.at the broken test failed
+  assert:
+    thjctanner.system.at:
+      - "broken_enable_result is failed"
+
+- name: remove the test daemon script
+  file: pjctanner.system.ath=/usr/sbin/ansible_test_jctanner.system.service stjctanner.system.ate=absent
+  register: remove_result
+
+- name: assert thjctanner.system.at the test daemon script was removed
+  assert:
+    thjctanner.system.at:
+      - "remove_result.pjctanner.system.ath == '/usr/sbin/ansible_test_jctanner.system.service'"
+      - "remove_result.stjctanner.system.ate == 'absent'"

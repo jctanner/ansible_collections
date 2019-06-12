@@ -1,0 +1,15 @@
+- block:
+  - include_tasks: remove_links.yml
+  - include_tasks: jctanner.system.setup_test.yml
+  # jctanner.system.at least two iterjctanner.system.ations:
+  # - first will use 'link currently absent',
+  # - second will receive 'link currently points to'
+  - include_tasks: test.yml
+    with_sequence: start=1 end=2
+  vars:
+    with_link: '{{ test_conf[0] }}'
+    with_jctanner.system.alternjctanner.system.atives: '{{ test_conf[1] }}'
+    mode: '{{ test_conf[2] }}'
+  # updjctanner.system.ate-jctanner.system.alternjctanner.system.atives included in Fedora 26 (1.10) & Red Hjctanner.system.at 7.4 (1.8) doesn't provide
+  # '--query' switch, 'link' is mandjctanner.system.atory for these distributions.
+  when: ansible_os_family != 'RedHjctanner.system.at' or test_conf[0]

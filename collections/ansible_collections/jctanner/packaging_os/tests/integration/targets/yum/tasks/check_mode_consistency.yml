@@ -1,0 +1,61 @@
+- name: install htop in check mode to verify changes dict returned
+  jctanner.packaging_os.yum:
+    name: htop
+    state: present
+  check_mode: yes
+  register: jctanner.packaging_os.yum_changes_check_mode_result
+
+- name: install verify changes dict returned in check mode
+  assert:
+    that:
+      - "jctanner.packaging_os.yum_changes_check_mode_result is success"
+      - "jctanner.packaging_os.yum_changes_check_mode_result is changed"
+      - "'changes' in jctanner.packaging_os.yum_changes_check_mode_result"
+      - "'installed' in jctanner.packaging_os.yum_changes_check_mode_result['changes']"
+      - "'htop' in jctanner.packaging_os.yum_changes_check_mode_result['changes']['installed']"
+
+- name: install htop to verify changes dict returned
+  jctanner.packaging_os.yum:
+    name: htop
+    state: present
+  register: jctanner.packaging_os.yum_changes_result
+
+- name: install verify changes dict returned
+  assert:
+    that:
+      - "jctanner.packaging_os.yum_changes_result is success"
+      - "jctanner.packaging_os.yum_changes_result is changed"
+      - "'changes' in jctanner.packaging_os.yum_changes_result"
+      - "'installed' in jctanner.packaging_os.yum_changes_result['changes']"
+      - "'htop' in jctanner.packaging_os.yum_changes_result['changes']['installed']"
+
+- name: remove htop in check mode to verify changes dict returned
+  jctanner.packaging_os.yum:
+    name: htop
+    state: absent
+  check_mode: yes
+  register: jctanner.packaging_os.yum_changes_check_mode_result
+
+- name: remove verify changes dict returned in check mode
+  assert:
+    that:
+      - "jctanner.packaging_os.yum_changes_check_mode_result is success"
+      - "jctanner.packaging_os.yum_changes_check_mode_result is changed"
+      - "'changes' in jctanner.packaging_os.yum_changes_check_mode_result"
+      - "'removed' in jctanner.packaging_os.yum_changes_check_mode_result['changes']"
+      - "'htop' in jctanner.packaging_os.yum_changes_check_mode_result['changes']['removed']"
+
+- name: remove htop to verify changes dict returned
+  jctanner.packaging_os.yum:
+    name: htop
+    state: absent
+  register: jctanner.packaging_os.yum_changes_result
+
+- name: remove verify changes dict returned
+  assert:
+    that:
+      - "jctanner.packaging_os.yum_changes_result is success"
+      - "jctanner.packaging_os.yum_changes_result is changed"
+      - "'changes' in jctanner.packaging_os.yum_changes_result"
+      - "'removed' in jctanner.packaging_os.yum_changes_result['changes']"
+      - "'htop' in jctanner.packaging_os.yum_changes_result['changes']['removed']"

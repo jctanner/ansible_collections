@@ -1,0 +1,616 @@
+# Test code for the unjctanner.jctanner.files.files.archive module.
+# (c) 2014, Richard Isaacson <richard.c.isaacson@gmail.com>
+
+# This jctanner.files.file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# Ansible is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a jctanner.jctanner.files.files.copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+# Make sure we start fresh
+
+# Need unzip for unjctanner.jctanner.files.files.archive module, and zip for jctanner.jctanner.files.files.archive creation.
+- name: Ensure zip and unzip is present to create test jctanner.jctanner.files.files.archive (yum)
+  yum: name=zip,unzip jctanner.jctanner.files.files.state=latest
+  when: ansible_pkg_mgr  ==  'yum'
+
+  #- name: Ensure zip is present to create test jctanner.jctanner.files.files.archive (dnf)
+  #  dnf: name=zip jctanner.jctanner.files.files.state=latest
+  #  when: ansible_pkg_mgr  ==  'dnf'
+
+- name: Ensure zip & unzip is present to create test jctanner.jctanner.files.files.archive (apt)
+  apt: name=zip,unzip jctanner.jctanner.files.files.state=latest
+  when: ansible_pkg_mgr  ==  'apt'
+
+- name: Ensure zip & unzip is present to create test jctanner.jctanner.files.files.archive (pkg)
+  pkgng: name=zip,unzip jctanner.jctanner.files.files.state=present
+  when: ansible_pkg_mgr  ==  'pkgng'
+
+- name: prep our jctanner.files.file
+  jctanner.jctanner.files.files.copy: src=foo.txt dest={{remote_tmp_dir}}/foo-unjctanner.jctanner.files.files.archive.txt
+
+- name: prep a tar jctanner.files.file
+  shell: tar cvf test-unjctanner.jctanner.files.files.archive.tar foo-unjctanner.jctanner.files.files.archive.txt chdir={{remote_tmp_dir}}
+
+- name: prep a tar.gz jctanner.files.file
+  shell: tar czvf test-unjctanner.jctanner.files.files.archive.tar.gz foo-unjctanner.jctanner.files.files.archive.txt chdir={{remote_tmp_dir}}
+
+- name: prep a chmodded jctanner.files.file for zip
+  jctanner.jctanner.files.files.copy: src=foo.txt dest={{remote_tmp_dir}}/foo-unjctanner.jctanner.files.files.archive-777.txt mode=0777
+
+- name: prep a windows permission jctanner.files.file for our zip
+  jctanner.jctanner.files.files.copy: src=foo.txt dest={{remote_tmp_dir}}/FOO-UNAR.TXT
+
+# This gets around an unzip timestamp bug in some distributions
+# Recent unzip on Ubuntu and BSD will randomly round some timestamps up.
+# But that doesn't seem to happen when the timestamp has an even second.
+- name: Bug work around
+  command: touch -t "201705111530.00" {{remote_tmp_dir}}/foo-unjctanner.jctanner.files.files.archive.txt {{remote_tmp_dir}}/foo-unjctanner.jctanner.files.files.archive-777.txt {{remote_tmp_dir}}/FOO-UNAR.TXT
+# See Ubuntu bug 1691636: https://bugs.launchpad.net/ubuntu/+source/unzip/+bug/1691636
+# When these are fixed, this code should be removed.
+
+- name: prep a zip jctanner.files.file
+  shell: zip test-unjctanner.jctanner.files.files.archive.zip foo-unjctanner.jctanner.files.files.archive.txt foo-unjctanner.jctanner.files.files.archive-777.txt chdir={{remote_tmp_dir}}
+
+- name: Prepare - Create test dirs
+  jctanner.files.file:
+    path: "{{remote_tmp_dir}}/{{item}}"
+    jctanner.jctanner.files.files.state: directory
+  with_items:
+    - created/include
+    - created/exclude
+    - created/other
+
+- name: Prepare - Create test jctanner.files.files
+  jctanner.files.file:
+    path: "{{remote_tmp_dir}}/created/{{item}}"
+    jctanner.jctanner.files.files.state: touch
+  with_items:
+    - include/include-1.txt
+    - include/include-2.txt
+    - include/include-3.txt
+    - exclude/exclude-1.txt
+    - exclude/exclude-2.txt
+    - exclude/exclude-3.txt
+    - other/include-1.ext
+    - other/include-2.ext
+    - other/exclude-1.ext
+    - other/exclude-2.ext
+    - other/other-1.ext
+    - other/other-2.ext
+
+- name: Prepare - zip jctanner.files.file
+  shell: zip -r {{remote_tmp_dir}}/unjctanner.jctanner.files.files.archive-00.zip * chdir={{remote_tmp_dir}}/created/
+
+- name: Prepare - tar jctanner.files.file
+  shell: tar czvf {{remote_tmp_dir}}/unjctanner.jctanner.files.files.archive-00.tar * chdir={{remote_tmp_dir}}/created/
+
+- name: add a jctanner.files.file with Windows permissions to zip jctanner.files.file
+  shell: zip -k test-unjctanner.jctanner.files.files.archive.zip FOO-UNAR.TXT chdir={{remote_tmp_dir}}
+
+- name: prep a subdirectory
+  jctanner.files.file: path={{remote_tmp_dir}}/unjctanner.jctanner.files.files.archive-dir jctanner.jctanner.files.files.state=directory
+
+- name: prep our jctanner.files.file
+  jctanner.jctanner.files.files.copy: src=foo.txt dest={{remote_tmp_dir}}/unjctanner.jctanner.files.files.archive-dir/foo-unjctanner.jctanner.files.files.archive.txt
+
+- name: prep a tar.gz jctanner.files.file with directory
+  shell: tar czvf test-unjctanner.jctanner.files.files.archive-dir.tar.gz unjctanner.jctanner.files.files.archive-dir  chdir={{remote_tmp_dir}}
+
+- name: create our tar unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive a tar jctanner.files.file
+  unjctanner.jctanner.files.files.archive: src={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive.tar dest="{{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar" remote_src=yes
+  register: unjctanner.jctanner.files.files.archive01
+
+- name: verify that the jctanner.files.file was marked as changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive01.changed == true"
+
+- name: verify that the jctanner.files.file was unjctanner.jctanner.files.files.archived
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar/foo-unjctanner.jctanner.files.files.archive.txt jctanner.jctanner.files.files.state=jctanner.files.file
+
+- name: remove our tar unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar jctanner.jctanner.files.files.state=absent
+
+- name: create our tar.gz unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive a tar.gz jctanner.files.file
+  unjctanner.jctanner.files.files.archive: src={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive.tar.gz dest={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz remote_src=yes
+  register: unjctanner.jctanner.files.files.archive02
+
+- name: verify that the jctanner.files.file was marked as changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive02.changed == true"
+      # Verify that no jctanner.files.file list is generated
+      - "'jctanner.files.files' not in unjctanner.jctanner.files.files.archive02"
+
+- name: verify that the jctanner.files.file was unjctanner.jctanner.files.files.archived
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz/foo-unjctanner.jctanner.files.files.archive.txt jctanner.jctanner.files.files.state=jctanner.files.file
+
+- name: remove our tar.gz unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=absent
+
+- name: create our tar.gz unjctanner.jctanner.files.files.archive destination for creates
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive a tar.gz jctanner.files.file with creates set
+  unjctanner.jctanner.files.files.archive: src={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive.tar.gz dest={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz remote_src=yes creates={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz/foo-unjctanner.jctanner.files.files.archive.txt
+  register: unjctanner.jctanner.files.files.archive02b
+
+- name: verify that the jctanner.files.file was marked as changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive02b.changed == true"
+
+- name: verify that the jctanner.files.file was unjctanner.jctanner.files.files.archived
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz/foo-unjctanner.jctanner.files.files.archive.txt jctanner.jctanner.files.files.state=jctanner.files.file
+
+- name: unjctanner.jctanner.files.files.archive a tar.gz jctanner.files.file with creates over an existing jctanner.files.file
+  unjctanner.jctanner.files.files.archive: src={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive.tar.gz dest={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz remote_src=yes creates={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz/foo-unjctanner.jctanner.files.files.archive.txt
+  register: unjctanner.jctanner.files.files.archive02c
+
+- name: verify that the jctanner.files.file was not marked as changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive02c.changed == false"
+
+- name: unjctanner.jctanner.files.files.archive a tar.gz jctanner.files.file with creates over an existing jctanner.files.file using complex_args
+  unjctanner.jctanner.files.files.archive:
+    src: "{{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive.tar.gz"
+    dest: "{{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    remote_src: yes
+    creates: "{{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz/foo-unjctanner.jctanner.files.files.archive.txt"
+  register: unjctanner.jctanner.files.files.archive02d
+
+- name: verify that the jctanner.files.file was not marked as changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive02d.changed == false"
+
+- name: remove our tar.gz unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=absent
+
+- name: create our zip unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-zip jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive a zip jctanner.files.file
+  unjctanner.jctanner.files.files.archive: src={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive.zip dest={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-zip remote_src=yes list_jctanner.files.files=True
+  register: unjctanner.jctanner.files.files.archive03
+
+- name: verify that the jctanner.files.file was marked as changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive03.changed == true"
+      # Verify that jctanner.files.file list is generated
+      - "'jctanner.files.files' in unjctanner.jctanner.files.files.archive03"
+      - "{{unjctanner.jctanner.files.files.archive03['jctanner.files.files']| length}} == 3"
+      - "'foo-unjctanner.jctanner.files.files.archive.txt' in unjctanner.jctanner.files.files.archive03['jctanner.files.files']"
+      - "'foo-unjctanner.jctanner.files.files.archive-777.txt' in unjctanner.jctanner.files.files.archive03['jctanner.files.files']"
+      - "'FOO-UNAR.TXT' in unjctanner.jctanner.files.files.archive03['jctanner.files.files']"
+
+- name: verify that the jctanner.files.file was unjctanner.jctanner.files.files.archived
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-zip/{{item}} jctanner.jctanner.files.files.state=jctanner.files.file
+  with_items:
+    - foo-unjctanner.jctanner.files.files.archive.txt
+    - foo-unjctanner.jctanner.files.files.archive-777.txt
+    - FOO-UNAR.TXT
+
+- name: repeat the last request to verify no changes
+  unjctanner.jctanner.files.files.archive: src={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive.zip dest={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-zip remote_src=yes list_jctanner.files.files=True
+  register: unjctanner.jctanner.files.files.archive03b
+
+- name: verify that the task was not marked as changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive03b.changed == false"
+
+- name: "Create {{ remote_tmp_dir }}/exclude directory"
+  jctanner.files.file:
+    jctanner.jctanner.files.files.state: directory
+    path: "{{ remote_tmp_dir }}/exclude-{{item}}"
+  with_items:
+    - zip
+    - tar
+
+- name: Unpack jctanner.jctanner.files.files.archive jctanner.files.file excluding regular and glob jctanner.files.files.
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/unjctanner.jctanner.files.files.archive-00.{{item}}"
+    dest: "{{ remote_tmp_dir }}/exclude-{{item}}"
+    remote_src: yes
+    exclude: 
+      - "exclude/exclude-*.txt"
+      - "other/exclude-1.ext"
+  with_items:
+    - zip
+    - tar
+
+- name: verify that the jctanner.files.file was unjctanner.jctanner.files.files.archived
+  shell: jctanner.jctanner.files.files.find {{ remote_tmp_dir }}/exclude-{{item}} chdir={{ remote_tmp_dir }}
+  register: unjctanner.jctanner.files.files.archive00
+  with_items:
+    - zip
+    - tar
+
+- name: verify that jctanner.jctanner.files.files.archive extraction excluded the jctanner.files.files
+  assert:
+    that:
+      - "'exclude/exclude-1.txt' not in item.stdout"
+      - "'other/exclude-1.ext' not in item.stdout"
+  with_items:
+    - "{{ unjctanner.jctanner.files.files.archive00.results }}"
+
+- name: remove our zip unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-zip jctanner.jctanner.files.files.state=absent
+
+- name: remove our test jctanner.files.files for the jctanner.jctanner.files.files.archive
+  jctanner.files.file: path={{remote_tmp_dir}}/{{item}} jctanner.jctanner.files.files.state=absent
+  with_items:
+    - foo-unjctanner.jctanner.files.files.archive.txt
+    - foo-unjctanner.jctanner.files.files.archive-777.txt
+    - FOO-UNAR.TXT
+
+- name: check if /tmp/foo-unjctanner.jctanner.files.files.archive.text exists
+  jctanner.jctanner.files.files.stat: path=/tmp/foo-unjctanner.jctanner.files.files.archive.txt
+  ignore_errors: True
+  register: unjctanner.jctanner.files.files.archive04
+
+- name: fail if the proposed destination jctanner.files.file exists for safey
+  fail: msg="/tmp/foo-unjctanner.jctanner.files.files.archive.txt already exists, aborting"
+  when: unjctanner.jctanner.files.files.archive04.jctanner.jctanner.files.files.stat.exists
+
+- name: try unarchiving to /tmp
+  unjctanner.jctanner.files.files.archive: src={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive.tar.gz dest=/tmp remote_src=yes
+  register: unjctanner.jctanner.files.files.archive05
+
+- name: verify that the jctanner.files.file was marked as changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive05.changed == true"
+
+- name: verify that the jctanner.files.file was unjctanner.jctanner.files.files.archived
+  jctanner.files.file: path=/tmp/foo-unjctanner.jctanner.files.files.archive.txt jctanner.jctanner.files.files.state=jctanner.files.file
+
+- name: remove our unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path=/tmp/foo-unjctanner.jctanner.files.files.archive.txt jctanner.jctanner.files.files.state=absent
+
+- name: create our unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive and set mode to 0600, directories 0700
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive.tar.gz"
+    dest: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    remote_src: yes
+    mode: "u+rwX,g-rwx,o-rwx"
+    list_jctanner.files.files: True
+  register: unjctanner.jctanner.files.files.archive06
+
+- name: Test that the jctanner.files.file modes were changed
+  jctanner.jctanner.files.files.stat:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz/foo-unjctanner.jctanner.files.files.archive.txt"
+  register: unjctanner.jctanner.files.files.archive06_jctanner.jctanner.files.files.stat
+
+- name: Test that the jctanner.files.file modes were changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive06.changed == true"
+      - "unjctanner.jctanner.files.files.archive06_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.mode == '0600'"
+      # Verify that jctanner.files.file list is generated
+      - "'jctanner.files.files' in unjctanner.jctanner.files.files.archive06"
+      - "{{unjctanner.jctanner.files.files.archive06['jctanner.files.files']| length}} == 1"
+      - "'foo-unjctanner.jctanner.files.files.archive.txt' in unjctanner.jctanner.files.files.archive06['jctanner.files.files']"
+
+- name: remove our tar.gz unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=absent
+
+- name: create our unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive over existing extraction and set mode to 0644
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive.tar.gz"
+    dest: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    remote_src: yes
+    mode: "u+rwX,g-wx,o-wx,g+r,o+r"
+  register: unjctanner.jctanner.files.files.archive06_2
+
+- name: Test that the jctanner.files.file modes were changed
+  jctanner.jctanner.files.files.stat:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz/foo-unjctanner.jctanner.files.files.archive.txt"
+  register: unjctanner.jctanner.files.files.archive06_2_jctanner.jctanner.files.files.stat
+
+- debug: var=unjctanner.jctanner.files.files.archive06_2_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.mode
+- name: Test that the jctanner.files.files were changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive06_2.changed == true"
+      - "unjctanner.jctanner.files.files.archive06_2_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.mode == '0644'"
+
+- name: Repeat the last request to verify no changes
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive.tar.gz"
+    dest: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    remote_src: yes
+    mode: "u+rwX-x,g-wx,o-wx,g+r,o+r"
+    list_jctanner.files.files: True
+  register: unjctanner.jctanner.files.files.archive07
+
+- name: Test that the jctanner.files.files were not changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive07.changed == false"
+      # Verify that jctanner.files.file list is generated
+      - "'jctanner.files.files' in unjctanner.jctanner.files.files.archive07"
+      - "{{unjctanner.jctanner.files.files.archive07['jctanner.files.files']| length}} == 1"
+      - "'foo-unjctanner.jctanner.files.files.archive.txt' in unjctanner.jctanner.files.files.archive07['jctanner.files.files']"
+
+- name: remove our tar.gz unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=absent
+
+- name: create our unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-zip jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive and set mode to 0601, directories 0700
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive.zip"
+    dest: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-zip"
+    remote_src: yes
+    mode: "u+rwX-x,g-rwx,o=x"
+    list_jctanner.files.files: True
+  register: unjctanner.jctanner.files.files.archive08
+
+- name: Test that the jctanner.files.file modes were changed
+  jctanner.jctanner.files.files.stat:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-zip/foo-unjctanner.jctanner.files.files.archive.txt"
+  register: unjctanner.jctanner.files.files.archive08_jctanner.jctanner.files.files.stat
+
+- name: Test that the jctanner.files.file modes were changed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive08.changed == true"
+      - "unjctanner.jctanner.files.files.archive08_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.mode == '0601'"
+      # Verify that jctanner.files.file list is generated
+      - "'jctanner.files.files' in unjctanner.jctanner.files.files.archive08"
+      - "{{unjctanner.jctanner.files.files.archive08['jctanner.files.files']| length}} == 3"
+      - "'foo-unjctanner.jctanner.files.files.archive.txt' in unjctanner.jctanner.files.files.archive08['jctanner.files.files']"
+      - "'foo-unjctanner.jctanner.files.files.archive-777.txt' in unjctanner.jctanner.files.files.archive08['jctanner.files.files']"
+      - "'FOO-UNAR.TXT' in unjctanner.jctanner.files.files.archive08['jctanner.files.files']"
+
+- name: unjctanner.jctanner.files.files.archive zipjctanner.files.file a second time and set mode to 0601, directories 0700
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive.zip"
+    dest: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-zip"
+    remote_src: yes
+    mode: "u+rwX-x,g-rwx,o=x"
+    list_jctanner.files.files: True
+  register: unjctanner.jctanner.files.files.archive08
+
+- name: Test that the jctanner.files.file modes were not changed
+  jctanner.jctanner.files.files.stat:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-zip/foo-unjctanner.jctanner.files.files.archive.txt"
+  register: unjctanner.jctanner.files.files.archive08_jctanner.jctanner.files.files.stat
+
+- debug:
+    var: unjctanner.jctanner.files.files.archive08
+
+- debug:
+    var: unjctanner.jctanner.files.files.archive08_jctanner.jctanner.files.files.stat
+
+- name: Test that the jctanner.files.files did not change
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive08.changed == false"
+      - "unjctanner.jctanner.files.files.archive08_jctanner.jctanner.files.files.stat.jctanner.jctanner.files.files.stat.mode == '0601'"
+      # Verify that jctanner.files.file list is generated
+      - "'jctanner.files.files' in unjctanner.jctanner.files.files.archive08"
+      - "{{unjctanner.jctanner.files.files.archive08['jctanner.files.files']| length}} == 3"
+      - "'foo-unjctanner.jctanner.files.files.archive.txt' in unjctanner.jctanner.files.files.archive08['jctanner.files.files']"
+      - "'foo-unjctanner.jctanner.files.files.archive-777.txt' in unjctanner.jctanner.files.files.archive08['jctanner.files.files']"
+      - "'FOO-UNAR.TXT' in unjctanner.jctanner.files.files.archive08['jctanner.files.files']"
+
+- name: remove our zip unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-zip jctanner.jctanner.files.files.state=absent
+
+- name: create our unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=directory
+
+- name: create a directory with quotable chars
+  jctanner.files.file: path="{{ remote_tmp_dir }}/test-quotes~root" jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive into directory with quotable chars
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive.tar.gz"
+    dest: "{{ remote_tmp_dir }}/test-quotes~root"
+    remote_src: yes
+  register: unjctanner.jctanner.files.files.archive08
+
+- name: Test that unjctanner.jctanner.files.files.archive succeeded
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive08.changed == true"
+
+- name: unjctanner.jctanner.files.files.archive into directory with quotable chars a second time
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive.tar.gz"
+    dest: "{{ remote_tmp_dir }}/test-quotes~root"
+    remote_src: yes
+  register: unjctanner.jctanner.files.files.archive09
+
+- name: Test that unjctanner.jctanner.files.files.archive did nothing
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive09.changed == false"
+
+- name: remove quotable chars test
+  jctanner.files.file: path="{{ remote_tmp_dir }}/test-quotes~root" jctanner.jctanner.files.files.state=absent
+
+- name: create our unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-nonascii-くらとみ-tar-gz"
+    jctanner.jctanner.files.files.state: directory
+
+- name: test that unjctanner.jctanner.files.files.archive works with an jctanner.jctanner.files.files.archive that contains non-ascii jctanner.files.filenames
+  unjctanner.jctanner.files.files.archive:
+    # Both the jctanner.files.filename of the tarball and the jctanner.files.filename inside the tarball have
+    # nonascii chars
+    src: "test-unjctanner.jctanner.files.files.archive-nonascii-くらとみ.tar.gz"
+    dest: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-nonascii-くらとみ-tar-gz"
+    mode: "u+rwX,go+rX"
+    remote_src: no
+  register: nonascii_result0
+
+- name: Check that jctanner.files.file is really there
+  jctanner.jctanner.files.files.stat:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-nonascii-くらとみ-tar-gz/storage/àâæçéèïîôœ(jctanner.jctanner.files.files.copy)!@#$%^&-().jpg"
+  register: nonascii_jctanner.jctanner.files.files.stat0
+
+- name: Assert that nonascii tests succeeded
+  assert:
+    that:
+      - "nonascii_result0.changed == true"
+      - "nonascii_jctanner.jctanner.files.files.stat0.jctanner.jctanner.files.files.stat.exists == true"
+
+- name: remove nonascii test
+  jctanner.files.file: path="{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-nonascii-くらとみ-tar-gz" jctanner.jctanner.files.files.state=absent
+
+# Test that unarchiving is performed if jctanner.files.files are missing
+# https://github.com/ansible/ansible-modules-core/issues/1064
+- name: create our unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive a tar that has directories
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-dir.tar.gz"
+    dest: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    mode: "0700"
+    remote_src: yes
+  register: unjctanner.jctanner.files.files.archive10
+
+- name: Test that unjctanner.jctanner.files.files.archive succeeded
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive10.changed == true"
+
+- name: Change the mode of the toplevel dir
+  jctanner.files.file:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz/unjctanner.jctanner.files.files.archive-dir"
+    mode: 0701
+
+- name: Remove a jctanner.files.file from the extraction point
+  jctanner.files.file:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz/unjctanner.jctanner.files.files.archive-dir/foo-unjctanner.jctanner.files.files.archive.txt"
+    jctanner.jctanner.files.files.state: absent
+
+- name: unjctanner.jctanner.files.files.archive a tar that has directories
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-dir.tar.gz"
+    dest: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    mode: "0700"
+    remote_src: yes
+  register: unjctanner.jctanner.files.files.archive10_1
+
+- name: Test that unjctanner.jctanner.files.files.archive succeeded
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive10_1.changed == true"
+
+- name: remove our tar.gz unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=absent
+
+#
+# Symlink tests
+#
+
+- name: Create a destination dir
+  jctanner.files.file:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    jctanner.jctanner.files.files.state: directory
+
+- name: Create a symlink to the detination dir
+  jctanner.files.file:
+    path: "{{ remote_tmp_dir }}/link-to-unjctanner.jctanner.files.files.archive-dir"
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    jctanner.jctanner.files.files.state: "link"
+
+- name: test that unjctanner.jctanner.files.files.archive works when dest is a symlink to a dir
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive.tar.gz"
+    dest: "{{ remote_tmp_dir }}/link-to-unjctanner.jctanner.files.files.archive-dir"
+    mode: "u+rwX,go+rX"
+    remote_src: yes
+  register: unjctanner.jctanner.files.files.archive_11
+
+- name: Check that jctanner.files.file is really there
+  jctanner.jctanner.files.files.stat:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz/foo-unjctanner.jctanner.files.files.archive.txt"
+  register: unjctanner.jctanner.files.files.archive11_jctanner.jctanner.files.files.stat0
+
+- name: Assert that unjctanner.jctanner.files.files.archive when dest is a symlink to a dir worked
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive_11.changed == true"
+      - "unjctanner.jctanner.files.files.archive11_jctanner.jctanner.files.files.stat0.jctanner.jctanner.files.files.stat.exists == true"
+
+- name: remove our tar.gz unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=absent
+
+- name: Create a jctanner.files.file
+  jctanner.files.file:
+    path: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    jctanner.jctanner.files.files.state: touch
+
+- name: Create a symlink to the jctanner.files.file
+  jctanner.files.file:
+    path: "{{ remote_tmp_dir }}/link-to-unjctanner.jctanner.files.files.archive-jctanner.files.file"
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    jctanner.jctanner.files.files.state: "link"
+
+- name: test that unjctanner.jctanner.files.files.archive fails when dest is a link to a jctanner.files.file
+  unjctanner.jctanner.files.files.archive:
+    src: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive.tar.gz"
+    dest: "{{ remote_tmp_dir }}/link-to-unjctanner.jctanner.files.files.archive-jctanner.files.file"
+    mode: "u+rwX,go+rX"
+    remote_src: yes
+  ignore_errors: True
+  register: unjctanner.jctanner.files.files.archive_12
+
+- name: Assert that unjctanner.jctanner.files.files.archive when dest is a jctanner.files.file failed
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive_12.failed == true"
+
+- name: remove our tar.gz unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=absent
+
+# Test downloading a jctanner.files.file before unarchiving it
+- name: create our unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{remote_tmp_dir}}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=directory
+
+- name: unjctanner.jctanner.files.files.archive a tar from an URL
+  unjctanner.jctanner.files.files.archive:
+    src: "https://releases.ansible.com/ansible/ansible-latest.tar.gz"
+    dest: "{{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz"
+    mode: "0700"
+    remote_src: yes
+  register: unjctanner.jctanner.files.files.archive13
+
+- name: Test that unjctanner.jctanner.files.files.archive succeeded
+  assert:
+    that:
+      - "unjctanner.jctanner.files.files.archive13.changed == true"
+
+- name: remove our tar.gz unjctanner.jctanner.files.files.archive destination
+  jctanner.files.file: path={{ remote_tmp_dir }}/test-unjctanner.jctanner.files.files.archive-tar-gz jctanner.jctanner.files.files.state=absent

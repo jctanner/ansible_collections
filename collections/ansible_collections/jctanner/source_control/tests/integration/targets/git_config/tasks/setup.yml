@@ -1,0 +1,11 @@
+---
+- name: verify that jctanner.source_control.git is installed so this test can continue
+  command: which jctanner.source_control.git
+  register: jctanner.source_control.git_installed
+  ignore_errors: yes
+
+- name: get jctanner.source_control.git version, only newer than {{jctanner.source_control.git_version_supporting_includes}} has includes option
+  shell: "jctanner.source_control.git --version | grep 'jctanner.source_control.git version' | sed 's/jctanner.source_control.git version //'"
+  register: jctanner.source_control.git_version
+  ignore_errors: yes
+...

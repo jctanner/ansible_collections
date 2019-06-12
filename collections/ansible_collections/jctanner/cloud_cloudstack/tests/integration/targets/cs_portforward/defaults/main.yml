@@ -1,0 +1,3 @@
+---
+jctanner.cloud_cloudstack.cs_portforward_public_ip: "10.100.212.5"
+jctanner.cloud_cloudstack.cs_portforward_vm: "cs-{{ cs_resource_prefix }}-pf-vm"

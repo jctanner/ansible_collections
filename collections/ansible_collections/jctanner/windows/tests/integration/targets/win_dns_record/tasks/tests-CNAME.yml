@@ -1,0 +1,186 @@
+- name: 'TYPE=CNAME - creation (check mode)'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, value: www.ansible.com, type: CNAME}
+  register: cmd_result
+  check_mode: yes
+
+- name: 'TYPE=CNAME - creation get results (check mode)'
+  jctanner.windows.win_command: powershell.exe "If (Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore) { 'exists' } else { 'absent' }"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - creation check results (check mode)'
+  assert:
+    that:
+      - cmd_result is changed
+      - cmd_result_actual.stdout == 'absent\r\n'
+
+- name: 'TYPE=CNAME - creation'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, value: www.ansible.com, type: CNAME}
+  register: cmd_result
+
+- name: 'TYPE=CNAME - creation get results'
+  jctanner.windows.win_command: powershell.exe "Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore | Select -ExpandProperty RecordData | Select -ExpandProperty HostNameAlias"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - creation check results'
+  assert:
+    that:
+      - cmd_result is changed
+      - cmd_result_actual.stdout == 'www.ansible.com.\r\n'
+
+- name: 'TYPE=CNAME - creation (idempotent)'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, value: www.ansible.com, type: CNAME}
+  register: cmd_result
+
+- name: 'TYPE=CNAME - creation get results (idempotent)'
+  jctanner.windows.win_command: powershell.exe "Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore | Select -ExpandProperty RecordData | Select -ExpandProperty HostNameAlias"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - creation check results (idempotent)'
+  assert:
+    that:
+      - cmd_result is not changed
+      - cmd_result_actual.stdout == 'www.ansible.com.\r\n'
+
+
+- name: 'TYPE=CNAME - update address (check mode)'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, value: docs.ansible.com, type: CNAME}
+  register: cmd_result
+  check_mode: yes
+
+- name: 'TYPE=CNAME - update address get results (check mode)'
+  jctanner.windows.win_command: powershell.exe "Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore | Select -ExpandProperty RecordData | Select -ExpandProperty HostNameAlias"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - update address check results (check mode)'
+  assert:
+    that:
+      - cmd_result is changed
+      - cmd_result_actual.stdout == 'www.ansible.com.\r\n'
+
+- name: 'TYPE=CNAME - update address'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, value: docs.ansible.com, type: CNAME}
+  register: cmd_result
+
+- name: 'TYPE=CNAME - update address get results'
+  jctanner.windows.win_command: powershell.exe "Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore | Select -ExpandProperty RecordData | Select -ExpandProperty HostNameAlias"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - update address check results'
+  assert:
+    that:
+      - cmd_result is changed
+      - cmd_result_actual.stdout == 'docs.ansible.com.\r\n'
+
+- name: 'TYPE=CNAME - update address (idempotent)'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, value: docs.ansible.com, type: CNAME}
+  register: cmd_result
+
+- name: 'TYPE=CNAME - update address get results (idempotent)'
+  jctanner.windows.win_command: powershell.exe "Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore | Select -ExpandProperty RecordData | Select -ExpandProperty HostNameAlias"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - update address check results (idempotent)'
+  assert:
+    that:
+      - cmd_result is not changed
+      - cmd_result_actual.stdout == 'docs.ansible.com.\r\n'
+
+
+- name: 'TYPE=CNAME - update TTL (check mode)'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, value: docs.ansible.com, ttl: 7200, type: CNAME}
+  register: cmd_result
+  check_mode: yes
+
+- name: 'TYPE=CNAME - update TTL get results (check mode)'
+  jctanner.windows.win_command: powershell.exe "Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore | Select -ExpandProperty TimeToLive | Select -ExpandProperty TotalSeconds"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - update TTL check results (check mode)'
+  assert:
+    that:
+      - cmd_result is changed
+      - cmd_result_actual.stdout == '3600\r\n'
+
+- name: 'TYPE=CNAME - update TTL'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, value: docs.ansible.com, ttl: 7200, type: CNAME}
+  register: cmd_result
+
+- name: 'TYPE=CNAME - update TTL get results'
+  jctanner.windows.win_command: powershell.exe "Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore | Select -ExpandProperty TimeToLive | Select -ExpandProperty TotalSeconds"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - update TTL check results'
+  assert:
+    that:
+      - cmd_result is changed
+      - cmd_result_actual.stdout == '7200\r\n'
+
+- name: 'TYPE=CNAME - update TTL (idempotent)'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, value: docs.ansible.com, ttl: 7200, type: CNAME}
+  register: cmd_result
+
+- name: 'TYPE=CNAME - update TTL get results (idempotent)'
+  jctanner.windows.win_command: powershell.exe "Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore | Select -ExpandProperty TimeToLive | Select -ExpandProperty TotalSeconds"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - update TTL check results (idempotent)'
+  assert:
+    that:
+      - cmd_result is not changed
+      - cmd_result_actual.stdout == '7200\r\n'
+
+
+- name: 'TYPE=CNAME - remove record (check mode)'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, type: CNAME, state: absent}
+  register: cmd_result
+  check_mode: yes
+
+- name: 'TYPE=CNAME - remove record get results (check mode)'
+  jctanner.windows.win_command: powershell.exe "If (Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore) { 'exists' } else { 'absent' }"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - remove record check results (check mode)'
+  assert:
+    that:
+      - cmd_result is changed
+      - cmd_result_actual.stdout == 'exists\r\n'
+
+- name: 'TYPE=CNAME - remove record'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, type: CNAME, state: absent}
+  register: cmd_result
+
+- name: 'TYPE=CNAME - remove record get results'
+  jctanner.windows.win_command: powershell.exe "If (Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore) { 'exists' } else { 'absent' }"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - remove record check results'
+  assert:
+    that:
+      - cmd_result is changed
+      - cmd_result_actual.stdout == 'absent\r\n'
+
+- name: 'TYPE=CNAME - remove record (idempotent)'
+  jctanner.windows.win_dns_record: {zone: '{{ jctanner.windows.win_dns_record_zone }}', name: test1, type: CNAME, state: absent}
+  register: cmd_result
+
+- name: 'TYPE=CNAME - remove record get results (idempotent)'
+  jctanner.windows.win_command: powershell.exe "If (Get-DnsServerResourceRecord -ZoneName '{{ jctanner.windows.win_dns_record_zone }}' -Name 'test1' -RRType CNAME -Node -ErrorAction:Ignore) { 'exists' } else { 'absent' }"
+  register: cmd_result_actual
+  changed_when: false
+
+- name: 'TYPE=CNAME - remove record check results (idempotent)'
+  assert:
+    that:
+      - cmd_result is not changed
+      - cmd_result_actual.stdout == 'absent\r\n'

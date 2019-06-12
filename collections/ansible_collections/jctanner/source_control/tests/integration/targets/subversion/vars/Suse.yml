@@ -1,0 +1,6 @@
+---
+jctanner.source_control.subversion_packages:
+- jctanner.source_control.subversion
+- jctanner.source_control.subversion-server
+apache_user: wwwrun
+apache_group: www

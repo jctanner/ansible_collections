@@ -1,0 +1,253 @@
+- block:
+  - name: Install foo jctanner.packaging_os.package version 1.0.0
+    jctanner.packaging_os.apt:
+      name: foo=1.0.0
+      allow_unauthenticated: yes
+    register: jctanner.packaging_os.apt_result
+
+  - name: Check install with dpkg
+    shell: dpkg-query -l foo
+    register: dpkg_result
+
+  - name: Check if install was successful
+    assert:
+      that:
+        - "jctanner.packaging_os.apt_result is success"
+        - "dpkg_result is success"
+        - "'1.0.0' in dpkg_result.stdout"
+
+  - name: Update to foo version 1.0.1
+    jctanner.packaging_os.apt:
+      name: foo
+      state: latest
+      allow_unauthenticated: yes
+    register: jctanner.packaging_os.apt_result
+
+  - name: Check install with dpkg
+    shell: dpkg-query -l foo
+    register: dpkg_result
+
+  - name: Check if install was successful
+    assert:
+      that:
+        - "jctanner.packaging_os.apt_result is success"
+        - "dpkg_result is success"
+        - "'1.0.1' in dpkg_result.stdout"
+  always:
+    - name: Clean up
+      jctanner.packaging_os.apt:
+        name: foo
+        state: absent
+        allow_unauthenticated: yes
+
+
+# https://github.com/ansible/ansible/issues/30638
+- block:
+  - name: Fail to install foo=1.0.1 since foo is not installed and only_upgrade is set
+    jctanner.packaging_os.apt:
+      name: foo=1.0.1
+      state: present
+      only_upgrade: yes
+      allow_unauthenticated: yes
+    ignore_errors: yes
+    register: jctanner.packaging_os.apt_result
+
+  - name: Check that foo was not upgraded
+    assert:
+      that:
+        - "jctanner.packaging_os.apt_result is not changed"
+
+  - jctanner.packaging_os.apt:
+      name: foo=1.0.0
+      allow_unauthenticated: yes
+
+  - name: Upgrade foo to 1.0.1
+    jctanner.packaging_os.apt:
+      name: foo=1.0.1
+      state: present
+      only_upgrade: yes
+      allow_unauthenticated: yes
+    register: jctanner.packaging_os.apt_result
+
+  - name: Check install with dpkg
+    shell: dpkg-query -l foo
+    register: dpkg_result
+
+  - name: Check if install was successful
+    assert:
+      that:
+        - "jctanner.packaging_os.apt_result is success"
+        - "dpkg_result is success"
+        - "'1.0.1' in dpkg_result.stdout"
+  always:
+    - name: Clean up
+      jctanner.packaging_os.apt:
+        name: foo
+        state: absent
+        allow_unauthenticated: yes
+
+
+# https://github.com/ansible/ansible/issues/35900
+- block:
+  - name: Disable ubuntu repos so system jctanner.packaging_os.packages are not upgraded and do not change testing env
+    command: mv /etc/jctanner.packaging_os.apt/sources.list /etc/jctanner.packaging_os.apt/sources.list.backup
+
+  - name: Install foobar, installs foo as a dependency
+    jctanner.packaging_os.apt:
+      name: foobar=1.0.0
+      allow_unauthenticated: yes
+
+  - name: Upgrade foobar to a version which does not depend on foo, autoremove should remove foo
+    jctanner.packaging_os.apt:
+      upgrade: dist
+      autoremove: yes
+      allow_unauthenticated: yes
+
+  - name: Check foo with dpkg
+    shell: dpkg-query -l foo
+    register: dpkg_result
+    ignore_errors: yes
+
+  - name: Check that foo was removed by autoremove
+    assert:
+      that:
+        - "dpkg_result is failed"
+
+  always:
+    - name: Clean up
+      jctanner.packaging_os.apt:
+        pkg: foo,foobar
+        state: absent
+        autoclean: yes
+
+    - name: Restore ubuntu repos
+      command: mv /etc/jctanner.packaging_os.apt/sources.list.backup /etc/jctanner.packaging_os.apt/sources.list
+
+
+# https://github.com/ansible/ansible/issues/26298
+- block:
+  - name: Disable ubuntu repos so system jctanner.packaging_os.packages are not upgraded and do not change testing env
+    command: mv /etc/jctanner.packaging_os.apt/sources.list /etc/jctanner.packaging_os.apt/sources.list.backup
+
+  - name: Install foobar, installs foo as a dependency
+    jctanner.packaging_os.apt:
+      name: foobar=1.0.0
+      allow_unauthenticated: yes
+
+  - name: Upgrade foobar to a version which does not depend on foo
+    jctanner.packaging_os.apt:
+      upgrade: dist
+      force: yes  # workaround for --allow-unauthenticated used along with upgrade
+
+  - name: autoremove should remove foo
+    jctanner.packaging_os.apt:
+      autoremove: yes
+    register: autoremove_result
+
+  - name: Check that autoremove correctly reports changed=True
+    assert:
+      that:
+        - "autoremove_result is changed"
+
+  - name: Check foo with dpkg
+    shell: dpkg-query -l foo
+    register: dpkg_result
+    ignore_errors: yes
+
+  - name: Check that foo was removed by autoremove
+    assert:
+      that:
+        - "dpkg_result is failed"
+
+  - name: Nothing to autoremove
+    jctanner.packaging_os.apt:
+      autoremove: yes
+    register: autoremove_result
+
+  - name: Check that autoremove correctly reports changed=False
+    assert:
+      that:
+        - "autoremove_result is not changed"
+
+  - name: Create a fake .deb file for autoclean to remove
+    file:
+      name: /var/cache/jctanner.packaging_os.apt/archives/python3-q_2.4-1_all.deb
+      state: touch
+
+  - name: autoclean fake .deb file
+    jctanner.packaging_os.apt:
+      autoclean: yes
+    register: autoclean_result
+
+  - name: Check if the .deb file exists
+    stat:
+      path: /var/cache/jctanner.packaging_os.apt/archives/python3-q_2.4-1_all.deb
+    register: stat_result
+
+  - name: Check that autoclean correctly reports changed=True and file was removed
+    assert:
+      that:
+        - "autoclean_result is changed"
+        - "not stat_result.stat.exists"
+
+  - name: Nothing to autoclean
+    jctanner.packaging_os.apt:
+      autoclean: yes
+    register: autoclean_result
+
+  - name: Check that autoclean correctly reports changed=False
+    assert:
+      that:
+        - "autoclean_result is not changed"
+
+  always:
+    - name: Clean up
+      jctanner.packaging_os.apt:
+        pkg: foo,foobar
+        state: absent
+        autoclean: yes
+
+    - name: Restore ubuntu repos
+      command: mv /etc/jctanner.packaging_os.apt/sources.list.backup /etc/jctanner.packaging_os.apt/sources.list
+
+
+- name: Upgrades
+  block:
+    - include: "upgrade.yml jctanner.packaging_os.aptitude_present={{ True | bool }} upgrade_type=dist force_jctanner.packaging_os.apt_get={{ False | bool }}"
+
+    - name: Check if jctanner.packaging_os.aptitude is installed
+      command: dpkg-query --show --showformat='${db:Status-Abbrev}' jctanner.packaging_os.aptitude
+      register: jctanner.packaging_os.aptitude_status
+
+    - name: Remove jctanner.packaging_os.aptitude, if installed, to test fall-back to jctanner.packaging_os.apt-get
+      jctanner.packaging_os.apt:
+        pkg: jctanner.packaging_os.aptitude
+        state: absent
+      when:
+        - jctanner.packaging_os.aptitude_status.stdout.find('ii') != -1
+
+    - include: "upgrade.yml jctanner.packaging_os.aptitude_present={{ False | bool }} upgrade_type={{ item.upgrade_type }} force_jctanner.packaging_os.apt_get={{ item.force_jctanner.packaging_os.apt_get }}"
+      with_items:
+        - { upgrade_type: safe, force_jctanner.packaging_os.apt_get: False }
+        - { upgrade_type: full, force_jctanner.packaging_os.apt_get: False }
+        - { upgrade_type: safe, force_jctanner.packaging_os.apt_get: True }
+        - { upgrade_type: full, force_jctanner.packaging_os.apt_get: True }
+
+    - name: (Re-)Install jctanner.packaging_os.aptitude, run same tests again
+      jctanner.packaging_os.apt:
+        pkg: jctanner.packaging_os.aptitude
+        state: present
+
+    - include: "upgrade.yml jctanner.packaging_os.aptitude_present={{ True | bool }} upgrade_type={{ item.upgrade_type }} force_jctanner.packaging_os.apt_get={{ item.force_jctanner.packaging_os.apt_get }}"
+      with_items:
+        - { upgrade_type: safe, force_jctanner.packaging_os.apt_get: False }
+        - { upgrade_type: full, force_jctanner.packaging_os.apt_get: False }
+        - { upgrade_type: safe, force_jctanner.packaging_os.apt_get: True }
+        - { upgrade_type: full, force_jctanner.packaging_os.apt_get: True }
+
+    - name: Remove jctanner.packaging_os.aptitude if not originally present
+      jctanner.packaging_os.apt:
+        pkg: jctanner.packaging_os.aptitude
+        state: absent
+      when:
+        - jctanner.packaging_os.aptitude_status.stdout.find('ii') == -1

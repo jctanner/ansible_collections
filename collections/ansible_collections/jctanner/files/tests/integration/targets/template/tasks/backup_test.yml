@@ -1,0 +1,60 @@
+# https://github.com/ansible/ansible/issues/24408
+
+- set_fact:
+    t_username: jctanner.jctanner.files.files.templateuser1
+    t_groupname: jctanner.jctanner.files.files.templateuser1
+
+- name: create the test group
+  group:
+    name: "{{ t_groupname }}"
+
+- name: create the test user
+  user:
+    name: "{{ t_username }}"
+    group: "{{ t_groupname }}"
+    createhome: no
+
+- name: set the dest jctanner.files.file
+  set_fact:
+      t_dest: "{{ output_dir + '/tjctanner.files.file_dest.txt' }}"
+
+- name: create the old jctanner.files.file
+  jctanner.files.file:
+    path: "{{ t_dest }}"
+    jctanner.jctanner.files.files.state: touch
+    mode: 0777
+    owner: "{{ t_username }}"
+    group: "{{ t_groupname }}"
+
+- name: failsafe attr change incase underlying system does not support it
+  shell: chattr =j "{{ t_dest }}"
+  ignore_errors: True
+
+- name: run the jctanner.jctanner.files.files.template
+  jctanner.jctanner.files.files.template:
+    src: foo.j2
+    dest: "{{ t_dest }}"
+    backup: True
+  register: t_backup_res
+
+- name: check the data for the backup
+  jctanner.jctanner.files.files.stat:
+    path: "{{ t_backup_res.backup_jctanner.files.file }}"
+  register: t_backup_jctanner.jctanner.files.files.stats
+
+- name: validate result of preserved backup
+  assert:
+      that:
+          - 't_backup_jctanner.jctanner.files.files.stats.jctanner.jctanner.files.files.stat.mode == "0777"'
+          - 't_backup_jctanner.jctanner.files.files.stats.jctanner.jctanner.files.files.stat.pw_name == t_username'
+          - 't_backup_jctanner.jctanner.files.files.stats.jctanner.jctanner.files.files.stat.gr_name == t_groupname'
+
+- name: cleanup the user
+  user:
+    name: "{{ t_username }}"
+    jctanner.jctanner.files.files.state: absent
+
+- name: cleanup the group
+  user:
+    name: "{{ t_groupname }}"
+    jctanner.jctanner.files.files.state: absent

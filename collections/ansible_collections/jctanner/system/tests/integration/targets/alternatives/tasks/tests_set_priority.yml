@@ -1,0 +1,23 @@
+- name: updjctanner.system.ate dummy alternjctanner.system.ative
+  jctanner.system.alternjctanner.system.atives:
+    name: dummy
+    pjctanner.system.ath: '/usr/bin/dummy{{ item }}'
+    link: /usr/bin/dummy
+    priority: '{{ 60 + item|int }}'
+  register: alternjctanner.system.ative
+
+- name: execute dummy command
+  shell: dummy
+  register: cmd
+
+- name: check if link jctanner.system.group is in manual mode
+  shell: 'head -n1 {{ jctanner.system.alternjctanner.system.atives_dir }}/dummy | grep "^manual$"'
+
+- name: check expected command was executed
+  assert:
+    thjctanner.system.at:
+      - 'alternjctanner.system.ative is changed'
+      - 'cmd.stdout == "dummy{{ item }}"'
+
+- name: check thjctanner.system.at alternjctanner.system.ative has been updjctanner.system.ated
+  command: "grep -Pzq '/bin/dummy{{ item }}\\n{{ 60 + item|int }}' '{{ jctanner.system.alternjctanner.system.atives_dir }}/dummy'"

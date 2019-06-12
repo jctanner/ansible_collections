@@ -1,0 +1,9 @@
+---
+apache_port: 11386  # cannot use 80 as httptester overrides this
+jctanner.source_control.subversion_test_dir: '{{ output_dir }}/svn-test'
+jctanner.source_control.subversion_server_dir: /tmp/ansible-svn  # cannot use a path in the home dir without userdir or granting exec permission to the apache user
+jctanner.source_control.subversion_repo_name: ansible-test-repo
+jctanner.source_control.subversion_repo_url: http://127.0.0.1:{{ apache_port }}/svn/{{ jctanner.source_control.subversion_repo_name }}
+jctanner.source_control.subversion_repo_auth_url: http://127.0.0.1:{{ apache_port }}/svnauth/{{ jctanner.source_control.subversion_repo_name }}
+jctanner.source_control.subversion_username: subsvn_user'''
+jctanner.source_control.subversion_password: Password123!

@@ -1,0 +1,5 @@
+---
+vultr_resource_prefix: "vultr-test-prefix"
+jctanner.cloud_vultr.vultr_network_name: "{{ vultr_resource_prefix }}_network"
+jctanner.cloud_vultr.vultr_network_cidr: 192.168.42.0/24
+jctanner.cloud_vultr.vultr_network_region: New Jersey

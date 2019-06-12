@@ -1,0 +1,6 @@
+---
+jctanner.cloud_misc.virt_net_packages:
+  - libvirt
+  - libvirt-daemon
+  - python3-libvirt
+  - python3-lxml

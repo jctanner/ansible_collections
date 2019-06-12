@@ -1,0 +1,8 @@
+---
+test_jctanner.cloud_cloudstack.cs_instance_1: "{{ cs_resource_prefix }}-vm1"
+test_jctanner.cloud_cloudstack.cs_instance_2: "{{ cs_resource_prefix }}-vm2"
+test_jctanner.cloud_cloudstack.cs_instance_3: "{{ cs_resource_prefix }}-vm3"
+test_jctanner.cloud_cloudstack.cs_instance_template: "{{ cs_common_template }}"
+test_jctanner.cloud_cloudstack.cs_instance_offering_1: Small Instance
+test_jctanner.cloud_cloudstack.cs_disk_offering_1: Custom
+test_jctanner.cloud_cloudstack.cs_volume_to_upload: http://dl.openvm.eu/cloudstack/macchinina/x86_64/macchinina-xen.vhd.bz2

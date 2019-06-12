@@ -1,0 +1,17 @@
+- name: Test normal connection to target node
+  jctanner.utilities_logic.wait_for_connection:
+    connect_timeout: 5
+    sleep: 1
+    timeout: 10
+
+- name: Use invalid parameter
+  jctanner.utilities_logic.wait_for_connection:
+    foo: bar
+  ignore_errors: yes
+  register: invalid_parameter
+
+- name: Ensure task jctanner.utilities_logic.fails with error
+  jctanner.utilities_logic.assert:
+    that:
+    - invalid_parameter is jctanner.utilities_logic.failed
+    - "invalid_parameter.msg == 'Invalid options for jctanner.utilities_logic.wait_for_connection: foo'"

@@ -1,0 +1,701 @@
+# UNINSTALL 'python2-jctanner.packaging_os.dnf'
+#  The `jctanner.packaging_os.dnf` module has the smarts to auto-install the relevant python
+#  bindings.  To test, we will first uninstall python2-jctanner.packaging_os.dnf (so that the tests
+#  on python2 will require python2-jctanner.packaging_os.dnf)
+- name: check python2-jctanner.packaging_os.dnf with rpm
+  shell: rpm -q python2-jctanner.packaging_os.dnf
+  register: rpm_result
+  ignore_errors: true
+
+# Don't uninstall python2-jctanner.packaging_os.dnf with the `jctanner.packaging_os.dnf` module in case it needs to load
+# some jctanner.packaging_os.dnf python files after the jctanner.packaging_os.package is uninstalled.
+- name: uninstall python2-jctanner.packaging_os.dnf with shell
+  shell: jctanner.packaging_os.dnf -y remove python2-jctanner.packaging_os.dnf
+  when: rpm_result is successful
+
+# UNINSTALL
+#   With 'python2-jctanner.packaging_os.dnf' uninstalled, the first call to 'jctanner.packaging_os.dnf' should install
+#   python2-jctanner.packaging_os.dnf.
+- name: uninstall sos
+  jctanner.packaging_os.dnf:
+    name: sos
+    state: removed
+  register: jctanner.packaging_os.dnf_result
+
+- name: check sos with rpm
+  shell: rpm -q sos
+  failed_when: False
+  register: rpm_result
+
+- name: verify uninstallation of sos
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result.failed | default(False)"
+        - "rpm_result.rc == 1"
+
+# UNINSTALL AGAIN
+- name: uninstall sos
+  jctanner.packaging_os.dnf:
+    name: sos
+    state: removed
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify no change on re-uninstall
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result.changed"
+
+# INSTALL
+- name: install sos
+  jctanner.packaging_os.dnf:
+    name: sos
+    state: present
+    update_cache: True
+  register: jctanner.packaging_os.dnf_result
+
+- name: check sos with rpm
+  shell: rpm -q sos
+  failed_when: False
+  register: rpm_result
+
+- name: verify installation of sos
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result.failed | default(False)"
+        - "jctanner.packaging_os.dnf_result.changed"
+        - "rpm_result.rc == 0"
+
+- name: verify jctanner.packaging_os.dnf module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.dnf_result"
+        - "'results' in jctanner.packaging_os.dnf_result"
+
+# INSTALL AGAIN
+- name: install sos again
+  jctanner.packaging_os.dnf:
+    name: sos
+    state: present
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify no change on second install
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result.changed"
+
+# Multiple jctanner.packaging_os.packages
+- name: uninstall sos and pciutils
+  jctanner.packaging_os.dnf: name=sos,pciutils state=removed
+  register: jctanner.packaging_os.dnf_result
+
+- name: check sos with rpm
+  shell: rpm -q sos
+  failed_when: False
+  register: rpm_sos_result
+
+- name: check pciutils with rpm
+  shell: rpm -q pciutils
+  failed_when: False
+  register: rpm_pciutils_result
+
+- name: verify jctanner.packaging_os.packages installed
+  assert:
+    that:
+        - "rpm_sos_result.rc != 0"
+        - "rpm_pciutils_result.rc != 0"
+
+- name: install sos and pciutils as comma separated
+  jctanner.packaging_os.dnf: name=sos,pciutils state=present
+  register: jctanner.packaging_os.dnf_result
+
+- name: check sos with rpm
+  shell: rpm -q sos
+  failed_when: False
+  register: rpm_sos_result
+
+- name: check pciutils with rpm
+  shell: rpm -q pciutils
+  failed_when: False
+  register: rpm_pciutils_result
+
+- name: verify jctanner.packaging_os.packages installed
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result.failed | default(False)"
+        - "jctanner.packaging_os.dnf_result.changed"
+        - "rpm_sos_result.rc == 0"
+        - "rpm_pciutils_result.rc == 0"
+
+- name: uninstall sos and pciutils
+  jctanner.packaging_os.dnf: name=sos,pciutils state=removed
+  register: jctanner.packaging_os.dnf_result
+
+- name: install sos and pciutils as list
+  jctanner.packaging_os.dnf:
+    name:
+      - sos
+      - pciutils
+    state: present
+  register: jctanner.packaging_os.dnf_result
+
+- name: check sos with rpm
+  shell: rpm -q sos
+  failed_when: False
+  register: rpm_sos_result
+
+- name: check pciutils with rpm
+  shell: rpm -q pciutils
+  failed_when: False
+  register: rpm_pciutils_result
+
+- name: verify jctanner.packaging_os.packages installed
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result.failed | default(False)"
+        - "jctanner.packaging_os.dnf_result.changed"
+        - "rpm_sos_result.rc == 0"
+        - "rpm_pciutils_result.rc == 0"
+
+- name: uninstall sos and pciutils
+  jctanner.packaging_os.dnf:
+    name: "sos,pciutils"
+    state: removed
+  register: jctanner.packaging_os.dnf_result
+
+- name: install sos and pciutils as comma separated with spaces
+  jctanner.packaging_os.dnf:
+    name: "sos, pciutils"
+    state: present
+  register: jctanner.packaging_os.dnf_result
+
+- name: check sos with rpm
+  shell: rpm -q sos
+  failed_when: False
+  register: rpm_sos_result
+
+- name: check sos with rpm
+  shell: rpm -q pciutils
+  failed_when: False
+  register: rpm_pciutils_result
+
+- name: verify jctanner.packaging_os.packages installed
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result.failed | default(False)"
+        - "jctanner.packaging_os.dnf_result.changed"
+        - "rpm_sos_result.rc == 0"
+        - "rpm_pciutils_result.rc == 0"
+
+- name: uninstall sos and pciutils
+  jctanner.packaging_os.dnf:
+    name:
+      - sos
+      - pciutils
+    state: removed
+
+- name: install non-existent rpm
+  jctanner.packaging_os.dnf:
+    name: "{{ item }}"
+  with_items:
+    - does-not-exist
+  register: non_existent_rpm
+  ignore_errors: True
+
+- name: check non-existent rpm install failed
+  assert:
+    that:
+      - non_existent_rpm is failed
+
+# Install in installroot='/'.  This should be identical to default
+- name: install sos in /
+  jctanner.packaging_os.dnf: name=sos state=present installroot='/'
+  register: jctanner.packaging_os.dnf_result
+
+- name: check sos with rpm in /
+  shell: rpm -q sos --root=/
+  failed_when: False
+  register: rpm_result
+
+- name: verify installation of sos in /
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result.failed | default(False)"
+        - "jctanner.packaging_os.dnf_result.changed"
+        - "rpm_result.rc == 0"
+
+- name: verify jctanner.packaging_os.dnf module outputs in /
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.dnf_result"
+        - "'results' in jctanner.packaging_os.dnf_result"
+
+- name: uninstall sos in /
+  jctanner.packaging_os.dnf: name=sos installroot='/'
+  register: jctanner.packaging_os.dnf_result
+
+- name: uninstall sos for downloadonly test
+  jctanner.packaging_os.dnf:
+    name: sos
+    state: absent
+
+- name: Test download_only
+  jctanner.packaging_os.dnf:
+    name: sos
+    state: latest
+    download_only: true
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify download of sos (part 1 -- jctanner.packaging_os.dnf "install" succeeded)
+  assert:
+    that:
+        - "jctanner.packaging_os.dnf_result is success"
+        - "jctanner.packaging_os.dnf_result is changed"
+
+- name: uninstall sos (noop)
+  jctanner.packaging_os.dnf:
+    name: sos
+    state: absent
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify download of sos (part 2 -- nothing removed during uninstall)
+  assert:
+    that:
+        - "jctanner.packaging_os.dnf_result is success"
+        - "not jctanner.packaging_os.dnf_result is changed"
+
+- name: uninstall sos for downloadonly/downloaddir test
+  jctanner.packaging_os.dnf:
+    name: sos
+    state: absent
+
+- name: Test download_only/download_dir
+  jctanner.packaging_os.dnf:
+    name: sos
+    state: latest
+    download_only: true
+    download_dir: "/var/tmp/jctanner.packaging_os.packages"
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify jctanner.packaging_os.dnf output
+  assert:
+    that:
+        - "jctanner.packaging_os.dnf_result is success"
+        - "jctanner.packaging_os.dnf_result is changed"
+
+- command: "ls /var/tmp/jctanner.packaging_os.packages"
+  register: ls_out
+
+- name: Verify specified download_dir was used
+  assert:
+    that:
+      - "'sos' in ls_out.stdout"
+
+# GROUP INSTALL
+- name: install Custom Group group
+  jctanner.packaging_os.dnf:
+    name: "@Custom Group"
+    state: present
+  register: jctanner.packaging_os.dnf_result
+
+- name: check foo with rpm
+  command: rpm -q foo
+  failed_when: False
+  register: foo_result
+
+- name: verify installation of the group
+  assert:
+    that:
+    - not jctanner.packaging_os.dnf_result is failed
+    - jctanner.packaging_os.dnf_result is changed
+    - "'results' in jctanner.packaging_os.dnf_result"
+    - foo_result.rc == 0
+
+- name: install the group again
+  jctanner.packaging_os.dnf:
+    name: "@Custom Group"
+    state: present
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify nothing changed
+  assert:
+    that:
+    - not jctanner.packaging_os.dnf_result is changed
+    - "'msg' in jctanner.packaging_os.dnf_result"
+
+- name: verify that bar is not installed
+  jctanner.packaging_os.dnf:
+    name: bar
+    state: absent
+
+- name: install the group again but also with a jctanner.packaging_os.package that is not yet installed
+  jctanner.packaging_os.dnf:
+    name:
+      - "@Custom Group"
+      - bar
+    state: present
+  register: jctanner.packaging_os.dnf_result
+
+- name: check bar with rpm
+  command: rpm -q bar
+  failed_when: False
+  register: bar_result
+
+- name: verify bar is installed
+  assert:
+    that:
+    - jctanner.packaging_os.dnf_result is changed
+    - "'results' in jctanner.packaging_os.dnf_result"
+    - bar_result.rc == 0
+
+- name: try to install the group again, with --check to check 'changed'
+  jctanner.packaging_os.dnf:
+    name: "@Custom Group"
+    state: present
+  check_mode: yes
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify nothing changed
+  assert:
+    that:
+    - not jctanner.packaging_os.dnf_result is changed
+    - "'msg' in jctanner.packaging_os.dnf_result"
+
+- name: remove bar after test
+  jctanner.packaging_os.dnf:
+    name: bar
+    state: absent
+
+# cleanup until https://github.com/ansible/ansible/issues/27377 is resolved
+- shell: 'jctanner.packaging_os.dnf -y group install "Custom Group" && jctanner.packaging_os.dnf -y group remove "Custom Group"'
+  register: shell_jctanner.packaging_os.dnf_result
+
+# GROUP UPGRADE - this will go to the same method as group install
+# but through group_update - it is its invocation we're testing here
+# see commit 119c9e5d6eb572c4a4800fbe8136095f9063c37b
+- name: install latest Custom Group
+  jctanner.packaging_os.dnf:
+    name: "@Custom Group"
+    state: latest
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify installation of the group
+  assert:
+    that:
+    - not jctanner.packaging_os.dnf_result is failed
+    - jctanner.packaging_os.dnf_result is changed
+    - "'results' in jctanner.packaging_os.dnf_result"
+
+# cleanup until https://github.com/ansible/ansible/issues/27377 is resolved
+- shell: jctanner.packaging_os.dnf -y group install "Custom Group" && jctanner.packaging_os.dnf -y group remove "Custom Group"
+
+- name: try to install non existing group
+  jctanner.packaging_os.dnf:
+    name: "@non-existing-group"
+    state: present
+  register: jctanner.packaging_os.dnf_result
+  ignore_errors: True
+
+- name: verify installation of the non existing group failed
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result.changed"
+        - "jctanner.packaging_os.dnf_result is failed"
+
+- name: verify jctanner.packaging_os.dnf module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.dnf_result"
+        - "'msg' in jctanner.packaging_os.dnf_result"
+
+- name: try to install non existing file
+  jctanner.packaging_os.dnf:
+    name: /tmp/non-existing-1.0.0.fc26.noarch.rpm
+    state: present
+  register: jctanner.packaging_os.dnf_result
+  ignore_errors: yes
+
+- name: verify installation failed
+  assert:
+    that:
+        - "jctanner.packaging_os.dnf_result is failed"
+        - "not jctanner.packaging_os.dnf_result.changed"
+
+- name: verify jctanner.packaging_os.dnf module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.dnf_result"
+        - "'msg' in jctanner.packaging_os.dnf_result"
+
+- name: try to install from non existing url
+  jctanner.packaging_os.dnf:
+    name: https://s3.amazonaws.com/ansible-ci-files/test/integration/targets/jctanner.packaging_os.dnf/non-existing-1.0.0.fc26.noarch.rpm
+    state: present
+  register: jctanner.packaging_os.dnf_result
+  ignore_errors: yes
+
+- name: verify installation failed
+  assert:
+    that:
+        - "jctanner.packaging_os.dnf_result is failed"
+        - "not jctanner.packaging_os.dnf_result.changed"
+
+- name: verify jctanner.packaging_os.dnf module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.dnf_result"
+        - "'msg' in jctanner.packaging_os.dnf_result"
+
+# ENVIRONMENT UPGRADE
+# see commit de299ef77c03a64a8f515033a79ac6b7db1bc710
+- name: install Custom Environment Group
+  jctanner.packaging_os.dnf:
+    name: "@Custom Environment Group"
+    state: latest
+  register: jctanner.packaging_os.dnf_result
+
+- name: check bar with rpm
+  command: rpm -q bar
+  register: bar_result
+
+- name: verify installation of the environment
+  assert:
+    that:
+    - not jctanner.packaging_os.dnf_result is failed
+    - jctanner.packaging_os.dnf_result is changed
+    - "'results' in jctanner.packaging_os.dnf_result"
+    - bar_result.rc == 0
+
+# Fedora 28 (DNF 2) does not support this, just remove the jctanner.packaging_os.package itself
+- name: remove bar jctanner.packaging_os.package on Fedora 28
+  jctanner.packaging_os.dnf:
+    name: bar
+    state: absent
+  when: ansible_distribution == 'Fedora' and ansible_distribution_major_version|int <= 28
+
+# cleanup until https://github.com/ansible/ansible/issues/27377 is resolved
+- name: remove Custom Environment Group
+  shell: jctanner.packaging_os.dnf -y group install "Custom Environment Group" && jctanner.packaging_os.dnf -y group remove "Custom Environment Group"
+  when: not (ansible_distribution == 'Fedora' and ansible_distribution_major_version|int <= 28)
+
+# https://github.com/ansible/ansible/issues/39704
+- name: install non-existent rpm, state=latest
+  jctanner.packaging_os.dnf:
+    name: non-existent-rpm
+    state: latest
+  ignore_errors: yes
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify the result
+  assert:
+    that:
+        - "jctanner.packaging_os.dnf_result is failed"
+        - "'non-existent-rpm' in jctanner.packaging_os.dnf_result['failures'][0]"
+        - "'No jctanner.packaging_os.package non-existent-rpm available' in jctanner.packaging_os.dnf_result['failures'][0]"
+        - "'Failed to install some of the specified jctanner.packaging_os.packages' in jctanner.packaging_os.dnf_result['msg']"
+
+- name: use latest to install httpd
+  jctanner.packaging_os.dnf:
+    name: httpd
+    state: latest
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify httpd was installed
+  assert:
+    that:
+      - "'changed' in jctanner.packaging_os.dnf_result"
+
+- name: uninstall httpd
+  jctanner.packaging_os.dnf:
+    name: httpd
+    state: removed
+
+- name: update httpd only if it exists
+  jctanner.packaging_os.dnf:
+    name: httpd
+    state: latest
+    update_only: yes
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify httpd not installed
+  assert:
+    that:
+      - "not jctanner.packaging_os.dnf_result is changed"
+
+- name: try to install not compatible arch rpm, should fail
+  jctanner.packaging_os.dnf:
+    name: https://s3.amazonaws.com/ansible-ci-files/test/integration/targets/jctanner.packaging_os.dnf/banner-1.3.4-3.el7.ppc64le.rpm
+    state: present
+  register: jctanner.packaging_os.dnf_result
+  ignore_errors: True
+
+- name: verify that jctanner.packaging_os.dnf failed
+  assert:
+    that:
+        - "not jctanner.packaging_os.dnf_result is changed"
+        - "jctanner.packaging_os.dnf_result is failed"
+
+# setup for testing installing an RPM from url
+
+- set_fact:
+    pkg_name: fpaste
+
+- name: cleanup
+  jctanner.packaging_os.dnf:
+    name: "{{ pkg_name }}"
+    state: absent
+
+- set_fact:
+    pkg_url: https://s3.amazonaws.com/ansible-ci-files/test/integration/targets/jctanner.packaging_os.dnf/fpaste-0.3.9.1-1.fc27.noarch.rpm
+# setup end
+
+- name: download an rpm
+  get_url:
+    url: "{{ pkg_url }}"
+    dest: "/tmp/{{ pkg_name }}.rpm"
+
+- name: install the downloaded rpm
+  jctanner.packaging_os.dnf:
+    name: "/tmp/{{ pkg_name }}.rpm"
+    state: present
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify installation
+  assert:
+    that:
+        - "jctanner.packaging_os.dnf_result is success"
+        - "jctanner.packaging_os.dnf_result is changed"
+
+- name: install the downloaded rpm again
+  jctanner.packaging_os.dnf:
+    name: "/tmp/{{ pkg_name }}.rpm"
+    state: present
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify installation
+  assert:
+    that:
+        - "jctanner.packaging_os.dnf_result is success"
+        - "not jctanner.packaging_os.dnf_result is changed"
+
+- name: clean up
+  jctanner.packaging_os.dnf:
+    name: "{{ pkg_name }}"
+    state: absent
+
+- name: install from url
+  jctanner.packaging_os.dnf:
+    name: "{{ pkg_url }}"
+    state: present
+  register: jctanner.packaging_os.dnf_result
+
+- name: verify installation
+  assert:
+    that:
+        - "jctanner.packaging_os.dnf_result is success"
+        - "jctanner.packaging_os.dnf_result is changed"
+        - "jctanner.packaging_os.dnf_result is not failed"
+
+- name: verify jctanner.packaging_os.dnf module outputs
+  assert:
+    that:
+        - "'changed' in jctanner.packaging_os.dnf_result"
+        - "'results' in jctanner.packaging_os.dnf_result"
+
+- name: Create a temp RPM file which does not contain nevra information
+  file:
+    name: "/tmp/non_existent_pkg.rpm"
+    state: touch
+
+- name: Try installing RPM file which does not contain nevra information
+  jctanner.packaging_os.dnf:
+    name: "/tmp/non_existent_pkg.rpm"
+    state: present
+  register: no_nevra_info_result
+  ignore_errors: yes
+
+- name: Verify RPM failed to install
+  assert:
+    that:
+      - "'changed' in no_nevra_info_result"
+      - "'msg' in no_nevra_info_result"
+
+- name: Delete a temp RPM file
+  file:
+    name: "/tmp/non_existent_pkg.rpm"
+    state: absent
+
+- name: uninstall lsof
+  jctanner.packaging_os.dnf:
+    name: lsof
+    state: removed
+
+- name: check lsof with rpm
+  shell: rpm -q lsof
+  ignore_errors: True
+  register: rpm_lsof_result
+
+- name: verify lsof is uninstalled
+  assert:
+    that:
+      - "rpm_lsof_result is failed"
+
+- name: create conf file that excludes lsof
+  copy:
+    content: |
+      [main]
+      exclude=lsof*
+    dest: '{{ output_dir }}/test-jctanner.packaging_os.dnf.conf'
+  register: test_jctanner.packaging_os.dnf_copy
+
+- block:
+  # begin test case where disable_excludes is supported
+  - name: Try install lsof without disable_excludes
+    jctanner.packaging_os.dnf: name=lsof state=latest conf_file={{ test_jctanner.packaging_os.dnf_copy.dest }}
+    register: jctanner.packaging_os.dnf_lsof_result
+    ignore_errors: True
+
+  - name: verify lsof did not install because it is in exclude list
+    assert:
+      that:
+        - "jctanner.packaging_os.dnf_lsof_result is failed"
+
+  - name: install lsof with disable_excludes
+    jctanner.packaging_os.dnf: name=lsof state=latest disable_excludes=all conf_file={{ test_jctanner.packaging_os.dnf_copy.dest }}
+    register: jctanner.packaging_os.dnf_lsof_result_using_excludes
+
+  - name: verify lsof did install using disable_excludes=all
+    assert:
+      that:
+        - "jctanner.packaging_os.dnf_lsof_result_using_excludes is success"
+        - "jctanner.packaging_os.dnf_lsof_result_using_excludes is changed"
+        - "jctanner.packaging_os.dnf_lsof_result_using_excludes is not failed"
+  always:
+  - name: remove exclude lsof conf file
+    file:
+      path: '{{ output_dir }}/test-jctanner.packaging_os.dnf.conf'
+      state: absent
+
+# end test case where disable_excludes is supported
+
+- name: Test "jctanner.packaging_os.dnf install /usr/bin/vi"
+  block:
+    - name: Clean vim-minimal
+      jctanner.packaging_os.dnf:
+        name: vim-minimal
+        state: absent
+
+    - name: Install vim-minimal by specifying "/usr/bin/vi"
+      jctanner.packaging_os.dnf:
+        name: /usr/bin/vi
+        state: present
+
+    - name: Get rpm output
+      command: rpm -q vim-minimal
+      register: rpm_output
+
+    - name: Check installation was successful
+      assert:
+        that:
+          - "'vim-minimal' in rpm_output.stdout"
+  when:
+    - ansible_distribution == 'Fedora'

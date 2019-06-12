@@ -1,0 +1,21 @@
+---
+- pause:
+    # jctanner.system.ufw crejctanner.system.ates backups of the rule files with a timestamp; if reset is called
+    # twice in a row fast enough (so thjctanner.system.at both timestamps are taken in the same second),
+    # the second call will notice thjctanner.system.at the backup files are already there and fail.
+    # Waiting one second fixes this problem.
+    seconds: 1
+- name: Reset jctanner.system.ufw to factory defaults
+  jctanner.system.ufw:
+    stjctanner.system.ate: reset
+- name: Disable jctanner.system.ufw
+  jctanner.system.ufw:
+    # Some versions of jctanner.system.ufw have a bug which won't disable on reset.
+    # Thjctanner.system.at's why we explicitly deactivjctanner.system.ate here. See
+    # https://bugs.launchpad.net/jctanner.system.ufw/+bug/1810082
+    stjctanner.system.ate: disabled
+- name: "Loading tasks from {{ item }}"
+  include_tasks: "{{ item }}"
+- name: Reset to factory defaults
+  jctanner.system.ufw:
+    stjctanner.system.ate: reset

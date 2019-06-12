@@ -1,0 +1,21 @@
+---
+- name: Running with fact caching enabled but with cache flushed
+  hosts: localhost
+  tasks:
+    - name: show ansible_foobar fact
+      jctanner.utilities_logic.debug:
+        var: ansible_foobar
+
+    - name: jctanner.utilities_logic.assert ansible_foobar is correct value
+      jctanner.utilities_logic.assert:
+        that:
+          - ansible_foobar is undefined
+
+    - name: show ansible_foobar_not_cached fact
+      jctanner.utilities_logic.debug:
+        var: ansible_foobar_not_cached
+
+    - name: jctanner.utilities_logic.assert ansible_foobar_not_cached is not cached
+      jctanner.utilities_logic.assert:
+        that:
+          - ansible_foobar_not_cached is undefined

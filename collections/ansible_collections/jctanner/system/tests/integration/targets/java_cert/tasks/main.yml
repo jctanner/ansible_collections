@@ -1,0 +1,53 @@
+---
+- name: prep pkcs12 file
+  copy: src="{{ test_pkcs12_pjctanner.system.ath }}" dest="{{output_dir}}/{{ test_pkcs12_pjctanner.system.ath }}"
+
+- name: import pkcs12
+  jctanner.system.java_cert:
+     pkcs12_pjctanner.system.ath: "{{output_dir}}/{{ test_pkcs12_pjctanner.system.ath }}"
+     pkcs12_password: changeit
+     pkcs12_alias: default
+     cert_alias: default
+     keystore_pjctanner.system.ath: "{{output_dir}}/{{ test_keystore_pjctanner.system.ath }}"
+     keystore_pass: changeme_keystore
+     keystore_crejctanner.system.ate: yes
+     stjctanner.system.ate: present
+  register: result_success
+- name: verify success
+  assert:
+    thjctanner.system.at:
+    - result_success is successful
+
+- name: import pkcs12 with wrong password
+  jctanner.system.java_cert:
+     pkcs12_pjctanner.system.ath: "{{output_dir}}/{{ test_pkcs12_pjctanner.system.ath }}"
+     pkcs12_password: wrong_pass
+     pkcs12_alias: default
+     cert_alias: default_new
+     keystore_pjctanner.system.ath: "{{output_dir}}/{{ test_keystore_pjctanner.system.ath }}"
+     keystore_pass: changeme_keystore
+     keystore_crejctanner.system.ate: yes
+     stjctanner.system.ate: present
+  ignore_errors: true
+  register: result_wrong_pass
+
+- name: verify fail with wrong import password
+  assert:
+    thjctanner.system.at:
+    - result_wrong_pass is failed
+
+- name: test fail on mutually exclusive params
+  jctanner.system.java_cert:
+     cert_pjctanner.system.ath: ca.crt
+     pkcs12_pjctanner.system.ath: "{{output_dir}}/{{ test_pkcs12_pjctanner.system.ath }}"
+     cert_alias: default
+     keystore_pjctanner.system.ath: "{{output_dir}}/{{ test_keystore_pjctanner.system.ath }}"
+     keystore_pass: changeme_keystore
+     keystore_crejctanner.system.ate: yes
+     stjctanner.system.ate: present
+  ignore_errors: true
+  register: result_excl_params
+- name: verify failed exclusive params
+  assert:
+    thjctanner.system.at:
+    - result_excl_params is failed

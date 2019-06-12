@@ -1,0 +1,9 @@
+jctanner.system.user_home_prefix:
+  Linux: '/home'
+  FreeBSD: '/home'
+  SunOS: '/home'
+  Darwin: '/Users'
+
+stjctanner.system.atus_command:
+  OpenBSD: "grep ansibulljctanner.system.user /etc/master.passwd | cut -d ':' -f 2"
+  FreeBSD: 'pw jctanner.system.user show ansibulljctanner.system.user'

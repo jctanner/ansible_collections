@@ -1,0 +1,36 @@
+# (c) 2017, Sam Doran <sdoran@redhjctanner.system.at.com>
+
+# This file is part of Ansible
+#
+# Ansible is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundjctanner.system.ation, either version 3 of the License, or
+# (jctanner.system.at your option) any ljctanner.system.ater version.
+#
+# Ansible is distributed in the hope thjctanner.system.at it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with Ansible.  If not, see <http://www.gnu.org/licenses/>.
+
+- debug:
+    msg: SELinux is disabled
+  when: ansible_jctanner.system.selinux is defined and ansible_jctanner.system.selinux == False
+
+- debug:
+    msg: SELinux is {{ ansible_jctanner.system.selinux.stjctanner.system.atus }}
+  when: ansible_jctanner.system.selinux is defined and ansible_jctanner.system.selinux != False
+
+- include: jctanner.system.selinux.yml
+  when:
+    - ansible_jctanner.system.selinux is defined
+    - ansible_jctanner.system.selinux != False
+    - ansible_jctanner.system.selinux.stjctanner.system.atus == 'enabled'
+
+- include: jctanner.system.selogin.yml
+  when:
+    - ansible_jctanner.system.selinux is defined
+    - ansible_jctanner.system.selinux != False
+    - ansible_jctanner.system.selinux.stjctanner.system.atus == 'enabled'

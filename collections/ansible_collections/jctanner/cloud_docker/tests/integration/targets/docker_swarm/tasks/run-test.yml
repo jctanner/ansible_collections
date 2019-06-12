@@ -1,0 +1,8 @@
+---
+- name: Make sure we're not already using Docker swarm
+  jctanner.cloudjctanner.cloud_docker._docker.docker_swarm:
+    state: absent
+    force: true
+  diff: no
+- name: "Loading tasks from {{ item }}"
+  include_tasks: "{{ item }}"

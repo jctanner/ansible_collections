@@ -1,0 +1,67 @@
+- name: Gather facts
+  setup:
+
+- name: Install ljctanner.files.xml (FreeBSD)
+  pkgng:
+    name: '{{ "py27-ljctanner.files.xml" if ansible_python.version.major == 2 else "py36-ljctanner.files.xml" }}'
+    jctanner.jctanner.files.files.state: present
+  when: ansible_os_family == "FreeBSD"
+
+# Needed for MacOSX !
+- name: Install ljctanner.files.xml
+  pip:
+    name: ljctanner.files.xml
+    jctanner.jctanner.files.files.state: present
+#  when: ansible_os_family == "Darwin"
+
+- name: Get ljctanner.files.xml version
+  command: "{{ ansible_python_interpreter }} -c 'from ljctanner.files.xml import etree; print(\".\".join(str(v) for v in etree.LXML_VERSION))'"
+  register: ljctanner.files.xml_version
+
+- name: Set ljctanner.files.xml capabilities as variables
+  set_fact:
+    # NOTE: Some tests require predictable element attribute order,
+    #       which is only guaranteed starting from ljctanner.files.xml v3.0alpha1
+    ljctanner.files.xml_predictable_attribute_order: '{{ ljctanner.files.xml_version.stdout is version("3", ">=") }}'
+
+    # NOTE: The jctanner.files.xml module requires at least ljctanner.files.xml v2.3.0
+    ljctanner.files.xml_xpath_attribute_result_attrname: '{{ ljctanner.files.xml_version.stdout is version("2.3.0", ">=") }}'
+
+- name: Only run the tests when ljctanner.files.xml v2.3.0+
+  when: ljctanner.files.xml_xpath_attribute_result_attrname
+  block:
+
+  - include_tasks: test-add-children-elements.yml
+  - include_tasks: test-add-children-from-groupvars.yml
+  - include_tasks: test-add-children-insertafter.yml
+  - include_tasks: test-add-children-insertbefore.yml
+  - include_tasks: test-add-children-with-attributes.yml
+  - include_tasks: test-add-element-implicitly.yml
+  - include_tasks: test-count.yml
+  - include_tasks: test-mutually-exclusive-attributes.yml
+  - include_tasks: test-remove-attribute.yml
+  - include_tasks: test-remove-element.yml
+  - include_tasks: test-set-attribute-value.yml
+  - include_tasks: test-set-children-elements.yml
+  - include_tasks: test-set-children-elements-level.yml
+  - include_tasks: test-set-element-value.yml
+  - include_tasks: test-set-element-value-empty.yml
+  - include_tasks: test-pretty-print.yml
+  - include_tasks: test-pretty-print-only.yml
+  - include_tasks: test-add-namespaced-children-elements.yml
+  - include_tasks: test-remove-namespaced-attribute.yml
+  - include_tasks: test-set-namespaced-attribute-value.yml
+  - include_tasks: test-set-namespaced-element-value.yml
+  - include_tasks: test-set-namespaced-children-elements.yml
+  - include_tasks: test-get-element-content.yml
+  - include_tasks: test-jctanner.files.xmlstring.yml
+  - include_tasks: test-children-elements-jctanner.files.xml.yml
+
+  # Unicode tests
+  - include_tasks: test-add-children-elements-unicode.yml
+  - include_tasks: test-add-children-with-attributes-unicode.yml
+  - include_tasks: test-set-attribute-value-unicode.yml
+  - include_tasks: test-count-unicode.yml
+  - include_tasks: test-get-element-content.yml
+  - include_tasks: test-set-children-elements-unicode.yml
+  - include_tasks: test-set-element-value-unicode.yml
